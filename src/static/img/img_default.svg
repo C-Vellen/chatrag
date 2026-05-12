@@ -1,0 +1,25 @@
+<svg id="croix_carree" xmlns="http://www.w3.org/2000/svg" viewBox="-3 -3 43 33">
+<rect x="0" y="0" width="40px" height="30px" fill="#fff"  stroke="#000" stroke-width="1px" ></rect>
+
+<path d="M0,0 h5 l-5,5 z" fill="#bbb"></path>
+<path d="M5,0 h5 l-10,10 v-5 z" fill="#ddd"></path>
+
+<path d="M10,0 h5 l-15,15 v-5 z" fill="#bbb"></path>
+<path d="M15,0 h5 l-20,20 v-5 z" fill="#ddd"></path>
+
+<path d="M20,0 h5 l-25,25 v-5 z" fill="#bbb"></path>
+<path d="M25,0 h5 l-30,30 v-5 z" fill="#ddd"></path>
+
+<path d="M30,0 h5 l-30,30 h-5 z" fill="#bbb"></path>
+<path d="M35,0 h5 l-30,30 h-5 z" fill="#ddd"></path>
+
+<path d="M40,0 v5 l-25,25 h-5 z" fill="#bbb"></path>
+<path d="M40,5 v5 l-20,20 h-5 z" fill="#ddd"></path>
+
+<path d="M40,10 v5 l-15,15 h-5 z" fill="#bbb"></path>
+<path d="M40,15 v5 l-10,10 h-5 z" fill="#ddd"></path>
+
+<path d="M40,20 v5 l-5,5 h-5 z" fill="#bbb"></path>
+<path d="M40,25 v5 h-5 z" fill="#ddd"></path>
+
+</svg>

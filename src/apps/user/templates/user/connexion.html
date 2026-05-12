@@ -1,0 +1,29 @@
+{% extends 'base.html'%}
+
+{% load static template_tags %}
+
+{% block content %}
+
+<section class="mt-10 flex flex-col items-center">
+
+        <h3>Entrez vos informations de connexion :</h3>
+
+        <form class="flex flex-col items-center" method="post" action=".">
+            {% csrf_token %}
+            {% if authentication_fail %}
+                <p class="mt-4 text-red-500 font-bold">Utilisateur inconnu ou mauvais de mot de passe.</p>
+            {% endif %}
+            {% if user.is_authenticated %}
+                <p>Vous êtes connecté {{ user|find_name }} !</p>
+                <p><a class="action-button" href="{% url 'user:deconnexion' %}">Se déconnecter</a></p>
+            {% else %}
+                <div class="mt-10 flex flex-col gap-4">
+                    {{ form.as_p }}
+                </div>
+                <button type="submit" class="mt-10 action-button">Se connecter</button>
+            {% endif %}
+        </form>
+    
+</section>
+
+{% endblock %}

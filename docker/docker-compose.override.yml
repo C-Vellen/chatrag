@@ -1,0 +1,9 @@
+services:
+  web:
+    build:
+      target: development
+    volumes:
+      - ../:/app
+    environment:
+      DJANGO_ENV: development
+    

@@ -1,0 +1,30 @@
+# Git
+.git
+.gitignore
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache
+
+# Environnements
+.env
+.env.*
+.venv/
+
+# Node
+**/node_modules/
+
+# Logs
+*.log
+
+# Docker
+docker-compose*.yml
+Dockerfile
+entrypoint.sh
+
+# Tests / coverage
+.coverage
+htmlcov/

@@ -1,0 +1,16 @@
+<svg id="croix_carree" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+<rect x="47" y="10" width="6" height="63" rx="3" ry="3" fill="#fff" transform="rotate(-50 50 13)"></rect>
+<rect x="47" y="10" width="6" height="63" rx="3" ry="3" fill="#fff" transform="rotate(50 50 13)"></rect>
+<path d="
+M15,43
+V80
+Q15,90,25,90
+H75
+Q85,90,85,80
+V43"
+fill-opacity="0.0"
+stroke="#fff" stroke-width="6"
+></path>
+<rect x="37" y="55" width="26" height="35" rx="5" ry="5" fill-opacity="0.0" stroke="#fff" stroke-width="6"></rect>
+
+</svg>

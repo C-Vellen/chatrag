@@ -1,0 +1,10 @@
+.venv
+.env
+notes
+.launch.sh
+**/__pycache__/**
+**/media/**
+/src/src/settings/develop.py
+/src/src/settings/production.py
+node_modules/
+.vscode

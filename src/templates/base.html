@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+{% load static tailwind_tags template_tags%}
+<html lang="fr" class="scroll-smooth">
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta charset="utf-8" />
+        {% tailwind_css %}
+        {% comment %} <link rel="stylesheet" href="{% static 'theme/static/css/dist/style.css' %}"> {% endcomment %}
+        <link rel="shortcut icon" type="image/png" href="{{ Favicon|find_img }}" />
+        <link rel="apple-touch-icon" sizes="180x180" href="{{ Favicon|find_img }}" />
+        <title>{{titre_onglet}}</title>
+        <meta name="robots" content="index,follow">
+        <script type="module" src="{% static 'js/deconnect.js' %}"></script>
+        {% block header %}
+        {% endblock %}
+    </head>
+    <body class="m-0 p-0 font-sans text-slate-700 bg-page">
+        
+        <div class="w-full min-w-screen-xs min-h-screen flex flex-col justify-start items-center">
+            
+            <header class="fixed z-10 pl-8 pr-12 h-16 w-full flex flex-row justify-between items-center bg-page text-black sm:h-20">
+                <div id="logo">
+                    <a href="{% url 'home:index' %}#accueil">
+                        <img class="h-12 sm:h-16" src="{{ Bandeau_logo|find_file }}" alt="{{ Bandeau_logo|find_content:1 }}" />
+                    </a>
+                </div>
+               
+                <div id="navbar" class="flex flex-row justify-between items-center gap-4 sm:gap-8">
+                
+
+                    <div id="navbar" class="flex flex-row justify-between items-center gap-4 sm:gap-4">
+                
+                        <a href="{% url 'home:index' %}" class="">
+                                <img class="h-8" src="{% static 'img/home_black.svg' %}" />
+                        </a>
+                        
+                        <a href="{% url 'user:connexion' %}" title="connectez-vous !" class="text-sm m-0 p-0 w-8 h-8 border-black border-2 bg-transparent rounded-full text-center flex justify-center items-center" style="color:transparent; text-shadow: 0 0 0 #000;">{{user|initiales}}</a>
+                        
+                        <a id="deconnect-button" class="group hover:cursor-pointer" >
+                            <img class="h-8 group-hover:hidden" src="{% static 'img/deconnexion_black.svg' %}" />  
+                            <img class="h-8 hidden group-hover:inline" src="{% static 'img/deconnexion_red.svg' %}" />
+                        </a>
+                    </div>
+                                              
+            </header>
+
+
+            <main class="mt-20 mb-12 px-6 max-w-6xl w-full flex flex-col justify-between items-center"> 
+                {% block content %}{% endblock %}
+            </main>
+            <footer class="w-full mt-auto px-16 py-4 bg-page text-slate-700">
+                <h2 class="text-md font-bold"> {{ Footer_description|find_content:30 }} </h2>
+                <ul class="flex flex-row justify-center items-center gap-4">
+                    {% if Lien_1|find_file != "" %}
+                    <li>
+                        <a href="{{ Lien_1.lien }}" target=_blank >
+                            <img class="w-10 h-10" src="{{ Lien_1|find_file }}" alt="{{ Lien_1.contenu }}"/>
+                        </a>
+                    </li>
+                    {% endif %}
+                    {% if Lien_2|find_file != "" %}
+                    <li>
+                        <a href="{{ Lien_2.lien }}" target=_blank >
+                            <img class="w-10 h-10" src="{{ Lien_2|find_file }}" alt="{{ Lien_2.contenu }}"/>
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            {% if user.is_staff %}
+                <div class="mt-4 flex flex-row justify-center sm:justify-end">
+                    <a href="/admin/" class="action-button">Administration du site</a> 
+                </div>
+            {% endif %}
+            </footer>
+        </div>
+        <div id="shadow-mask" class="hidden fixed z-20 w-full top-0 left-0 h-full bg-black opacity-50"></div>
+
+        {% include "alert_box.html" with alert="alert-deconnect" message="Voulez-vous vraiment vous déconnecter ?" act_button="hidden" act_link="link" link="/user/deconnexion" back_text="Annuler" act_text="Se déconnecter" %}
+
+        {% if debug %}
+        {# Utilitaire affichant les tailles d'écran - masqué en production #}
+        <div class="fixed z-30 bottom-4 left-4 bg-action p-1 rounded text-slate-300 font-bold">
+            <span class="sm:hidden">XS</span>
+            <span class="hidden sm:block md:hidden">SM</span>
+            <span class="hidden md:block lg:hidden">MD</span>
+            <span class="hidden lg:block xl:hidden">LG</span>
+            <span class="hidden xl:block 2xl:hidden">XL</span>
+            <span class="hidden 2xl:block 3xl:hidden">2XL</span>
+            <span class="hidden 3xl:block ">3XL+</span>
+        </div>
+        {% endif %}
+        
+    </body>
+</html>

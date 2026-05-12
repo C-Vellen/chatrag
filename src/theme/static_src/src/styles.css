@@ -1,0 +1,19 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+@layer components {
+  .action-button {
+    @apply px-2 py-1 text-sm bg-action text-slate-100 hover:text-slate-100 hover:bg-actionHover cursor-pointer;
+  }
+
+  .grey-button {
+    @apply w-1/4 sm:w-40 m-0 py-1 px-4 rounded-md shadow-inner hover:shadow-md text-center text-xs sm:text-base text-slate-800 bg-slate-100 hover:bg-slate-200 hover:transition-all cursor-pointer;
+  }
+
+  .red-button {
+    @apply w-1/4 sm:w-40 m-0 py-1 px-4 rounded-md shadow-inner hover:shadow-md text-center text-xs sm:text-base text-slate-100 bg-red-500 hover:bg-red-600 hover:transition-all cursor-pointer;
+    text-decoration: none !important;
+  }
+}

@@ -1,0 +1,18 @@
+name: chatrag
+
+services:
+  web:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+      target: production
+    env_file: ../.env
+    environment:
+      DJANGO_ENV: production
+    volumes:
+      - static_files:/app/src/staticfiles
+      - media_files:/app/src/media
+
+volumes:
+  static_files:
+  media_files:

@@ -1,0 +1,8 @@
+<svg id="croix_carree" xmlns="http://www.w3.org/2000/svg" viewBox="-20 -20 140 140">
+<style> 
+    svg{cursor:pointer;} /* svg cliquable */
+</style>
+<path d="M30 15.3 A 40 40 0 1 0 70 15.3" stroke-width="15" stroke="#fff" fill-opacity="0.0"></path>
+<path d="M50 -5 v50" stroke-width="15" stroke="#fff"></path>
+</svg>
+

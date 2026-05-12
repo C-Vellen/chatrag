@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% load static template_tags%}
+
+{% block header %}
+{% endblock %}
+
+{% block content %}
+    <section id="accueil" class="reachable">
+        <div class="mt-6 p-4 flex flex-col justify-center items-start bg-slate-200">
+            <div id="titre" class="mb-2 ">
+                <h1 class="text-sm font-bold sm:text-lg">{{Accueil_titre|find_content:10}}</h1>
+            </div>
+            <div id="description" class="text-sm">
+                <p>{{Accueil_description|find_content:150}}</p>
+            </div>
+        </div>
+    </section>
+
+
+{% endblock %}

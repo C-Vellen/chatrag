@@ -1,0 +1,25 @@
+[project]
+name = "chatrag"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "Christophe Vellen",email = "christophe.vellen@gmail.com"}
+]
+readme = "README.md"
+requires-python = ">=3.12, <3.14"
+dependencies = [
+    "django (==5.2)",
+    "pydantic (>=2.13.3,<3.0.0)",
+    "pydantic-settings (>=2.14.0,<3.0.0)",
+    "psycopg[binary] (>=3.3.4,<4.0.0)",
+    "django-debug-toolbar (>=6.3.0,<7.0.0)",
+    "pillow (>=12.2.0,<13.0.0)",
+    "django-tailwind[reload] (>=4.4.2,<5.0.0)",
+    "django-browser-reload (>=1.12.1,<2.0.0)",
+    "gunicorn (>=26.0.0,<27.0.0)",
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"

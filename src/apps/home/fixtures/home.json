@@ -1,0 +1,72 @@
+[
+    {
+        "model": "home.DefaultContent",
+        "pk": 1,
+        "fields": {
+            "description": "default_image",
+            "explication": "charger dans le champ 'image' une image par défaut qui sera affichée"
+        }
+    },
+    {
+        "model": "home.Libelles",
+        "pk": 1,
+        "fields": {
+            "description": "Favicon",
+            "explication": "charger dans le champ 'image' le favicon qui sera affiché dans l'onglet du navigateur"
+        }
+    },
+    {
+        "model": "home.Libelles",
+        "pk": 2,
+        "fields": {
+            "description": "Bandeau_logo",
+            "explication": "charger dans le champ 'image' le logo qui sera affiché en haut à gauche du bandeau",
+            "contenu": "Logo"
+        }
+    },
+    {
+        "model": "home.Libelles",
+        "pk": 3,
+        "fields": {
+            "description": "Accueil_titre",
+            "explication": "écrire dans le champ 'contenu' le texte de présentation de la page d'accueil",
+            "contenu": "Titre de la page d'accueil"
+        }
+    },
+    {
+        "model": "home.Libelles",
+        "pk": 4,
+        "fields": {
+            "description": "Accueil_description",
+            "explication": "écrire dans le champ 'contenu' le texte de présentation de la page d'accueil",
+            "contenu": "Texte de description de la page d'accueil"
+        }
+    },
+    {
+        "model": "home.Libelles",
+        "pk": 5,
+        "fields": {
+            "description": "Footer_description",
+            "explication": "écrire dans le champ 'contenu' le texte du footer",
+            "contenu": ""
+        }
+    },
+    {
+        "model": "home.Libelles",
+        "pk": 6,
+        "fields": {
+            "description": "Lien_1",
+            "explication": "charger le logo dans le champ image (jpg, png) ou dans le champ fichier (svg) et le lien dans le champ lien",
+            "contenu": "Lien 1"
+        }
+    },
+    {
+        "model": "home.Libelles",
+        "pk": 7,
+        "fields": {
+            "description": "Lien_2",
+            "explication": "charger le logo dans le champ image (jpg, png) ou dans le champ fichier (svg) et le lien dans le champ lien",
+            "contenu": "Lien 2"
+        }
+    }
+]
