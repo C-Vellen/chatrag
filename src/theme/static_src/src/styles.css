@@ -9,7 +9,7 @@
   }
 
   .grey-button {
-    @apply w-1/4 sm:w-40 m-0 py-1 px-4 rounded-md shadow-inner hover:shadow-md text-center text-xs sm:text-base text-slate-800 bg-slate-100 hover:bg-slate-200 hover:transition-all cursor-pointer;
+    @apply w-1/4 sm:w-40 m-0 py-1 px-4 rounded-md shadow-inner hover:shadow-md text-center text-xs sm:text-base text-slate-800 bg-blue-200 hover:bg-blue-100 hover:transition-all cursor-pointer;
   }
 
   .red-button {

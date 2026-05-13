@@ -24,7 +24,9 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "home",
     "user",
-    # other apps
+    "ingest",
+    "retrieval",
+    "chat",
     "tailwind",
     "theme",
 ]
