@@ -10,15 +10,15 @@ __pycache__/
 
 media/
 staticfiles/
-/src/theme/static/css/dist/
+src/theme/static/css/dist/
 
 node_modules/
 
 *.pid
 *.log
 
-/src/src/settings/develop.py
-/src/src/settings/production.py
+src/src/settings/develop.py
+src/src/settings/production.py
 
 
 
