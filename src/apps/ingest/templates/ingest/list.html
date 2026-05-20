@@ -8,16 +8,104 @@
 {% block content %}
 
 
-<section id="accueil" class="reachable">
-    <div class="mt-6 mb-8 p-4 flex flex-col justify-center items-start bg-slate-200">
-        <div id="titre" class="mb-2 ">
-            <h1 class="text-sm sm:text-lg">{{title}}</h1>
+<section id="accueil" class="reachable w-full">
+
+    <h1 class="text-grostitre mb-4">Gestion des documents ingérés dans la base de donnée vectorielle</h1>
+
+
+ 
+
+
+    <div class="w-full mb-8 flex flex-col md:flex-row md:justify-between md:gap-10">
+        <div class="mb-16 md:w-1/2 md:justify-around">
+            <h1 class="text-titre">Documents ingérés: {{n_docs}} </h1>
+            <ul class="text-xs flex flex-col mt-4">
+                 <li class="w-full flex justify-between font-bold mb-2">
+                        <span>Titre document</span>
+
+                        <div  class="mr-12">
+                            <span>chunks</span>
+                        </div>
+                </li>
+                {% for doc in docs %}
+                <li class="w-full flex justify-between">
+                    
+                        <span>{{doc.title}}</span>
+
+                        <div  class=" flex justify-between gap-2">
+                            <span class="mr-2">{{doc.nb_chunks}}</span>
+                            <a href="{% url 'ingest:view_document' doc.source %}" class="">
+                                <img class="h-4" src="{% static 'img/eye.svg' %}" />
+                            </a>
+                            <a href="{% url 'ingest:remove_document' doc.source %}" class="">
+                                <img class="h-4" src="{% static 'img/cross_round_black.svg' %}" />
+                            </a>
+                        </div>
+                </li>
+                {% empty %}
+                <li><span>Aucun document trouvé</span><li>
+                {% endfor %}
+
+            </ul>
+
         </div>
+
+        <div class="flex flex-col md:w-1/2">
+
+            <div class="w-full mt-4 mb-4 flex flex-col gap-4 md:flex-row">
+                <div class="w-3/4 mt-4 mb-4 flex flex-col gap-4 justify-start md:flex-row">    
+
+                     <h1 class="text-titre">Paramètres Embedding:</h1>
+                     <ul class="text-xs marker:text-black-500 list-disc">
+                         <li class="flex justify-between gap-12"><span>Collection: </span><span>{{collection_name}}</span></li>
+                         <li class="flex justify-between gap-12"><span>Modèle: </span><span>{{embedding_model}}</span></li>
+                         <li class="flex justify-between gap-12"><span>Chunk size: </span><span>{{chunk_size}} caractères</span></li>
+                         <li class="flex justify-between gap-12"><span>Chunk overlap: </span><span>{{chunk_overlap}} caractères</span></li>
+                     </ul>
+                </div>
+                <div class="w-1/4 mt-4 mb-4 flex gap-4 justify-end">
+                 <p class="text-xs italic"> Modifier:</p>
+                    <a href="http://127.0.0.1:8005/admin/ingest/embeddingconfig/" class="">   
+                    <img class="w-4 h-4" src="{% static 'img/crayon.svg' %}" alt="Modifier">     
+                    </a>
+                 </div>
+             
+             </div>
+
+            
+            <h1 class="text-titre">Ajouter un nouveau document:</h1>
+            <ul class="text-xs flex flex-col gap-4">
+                <li><form class="w-full flex justify-between" method="post" action="." enctype="multipart/form-data" >
+                    {% csrf_token %}
+                    {{ fileform }}
+                    <button type="submit" name="submit_file" class="" title="Ajouter un fichier txt, md ou pdf">
+                    <img class="w-4 h-4" src="{% static 'img/plus_round.svg' %}" alt="Ajouter">     
+                    </button>
+                </form></li>
+                <li><form class="w-full flex justify-between" method="post" action="." >
+                    {% csrf_token %}
+                    {{ dirform }}
+                    <button type="submit" name="submit_dir" class="" title="Ajouter un dossier de fichiers txt, md ou pdf">
+                    <img class="w-4 h-4" src="{% static 'img/plus_round.svg' %}" alt="Ajouter">     
+                    </button>
+                </form></li>
+                <li><form class="w-full flex justify-between" method="post" action=".">
+                    {% csrf_token %}
+                    {{ videoform }}
+                    <button type="submit" name="submit_video" class="" title="Ajouter une video youtube">
+                    <img class="w-4 h-4" src="{% static 'img/plus_round.svg' %}" alt="Ajouter">     
+                    </button>
+                </form></li>
+            </ul>
+
+
+            
+        
+
     </div>
+       
 
 
-
-
-    </section>
+</section>
 
 {% endblock %}
