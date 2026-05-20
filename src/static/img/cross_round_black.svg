@@ -1,0 +1,26 @@
+<svg id="croix_carree" xmlns="http://www.w3.org/2000/svg" viewBox="-20 -20 140 140">
+<circle cx="50" cy="50" r="65px" fill="#fff" stroke="rgb(51, 65, 85)" stroke-width="6"></circle>
+<path d="
+M16,14
+Q20,10 24,14 
+L50,40 
+L76,14
+Q80,10 84,14 
+L86,16
+Q90,20 86,24 
+L60,50 
+L86,76
+Q90,80 86,84
+L84,86
+Q80,90 76,86 
+L50,60 
+L24,86
+Q20,90 16,86
+L14,84
+Q10,80 14,76 
+L40,50
+L14,24
+Q10,20 14,16 
+z
+" fill="rgb(51, 65, 85)"></path>
+</svg>

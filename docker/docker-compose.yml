@@ -19,6 +19,8 @@ services:
       POSTGRES_DB: ${DB_NAME}
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -27,5 +29,37 @@ services:
       timeout: 5s
       retries: 5
 
+  ragdb:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_DB: ${RAGDB_NAME}
+      POSTGRES_USER: ${RAGDB_USER}
+      POSTGRES_PASSWORD: ${RAGDB_PASSWORD}
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgvector_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${RAGDB_USER} -d ${RAGDB_NAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  embeddings:
+    image: ghcr.io/huggingface/text-embeddings-inference:cpu-latest
+    ports:
+      - "8080:80"
+    command: --model-id BAAI/bge-m3
+    volumes:
+      - hf_models:/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:80/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 20
+      start_period: 120s  
+
 volumes:
   postgres_data:
+  pgvector_data:
+  hf_models:

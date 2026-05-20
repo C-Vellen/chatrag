@@ -1,0 +1,129 @@
+from sqlalchemy import create_engine, text
+from src.config import settings
+
+
+def list_ingested_documents() -> list[dict]:
+    """
+    Retourne la liste des documents ingérés avec leurs métadonnées.
+    Se base sur le champ 'source' de cmetadata (chemin du fichier).
+    """
+    engine = create_engine(settings.ragdb_url)
+
+    query = text("""
+        SELECT
+            cmetadata->>'source'                    AS source,
+            COUNT(*)                                AS nb_chunks,
+            MIN(cmetadata->>'page')::int            AS page_min,
+            MAX(cmetadata->>'page')::int            AS page_max
+        FROM langchain_pg_embedding
+        WHERE cmetadata->>'source' IS NOT NULL
+        GROUP BY cmetadata->>'source'
+        ORDER BY source
+    """)
+
+    with engine.connect() as conn:
+        rows = conn.execute(query).mappings().all()
+
+    return [dict(row) for row in rows]
+
+
+def print_ingested_documents() -> None:
+    """Affiche en console les documents ingérés."""
+    docs = list_ingested_documents()
+
+    if not docs:
+        print("Aucun document ingéré.")
+        return
+
+    sep = "=" * 60
+    print(f"\n{sep}")
+    print(f"📚 DOCUMENTS INGÉRÉS ({len(docs)} fichier(s))")
+    print(sep)
+
+    for doc in docs:
+        source = doc["source"]
+        title  = source.split("/")[-1]          # nom du fichier seul
+        chunks = doc["nb_chunks"]
+        pages  = f"pages {doc['page_min']}→{doc['page_max']}" if doc["page_min"] else ""
+        print(f"  • {title:<40} {chunks:>4} chunks   {pages}")
+
+    print(sep + "\n")
+    
+    
+def list_collections() -> None:
+    engine = create_engine(settings.ragdb_url)
+    query = text("""
+        SELECT 
+            c.name                  AS collection,
+            COUNT(e.id)             AS nb_chunks,
+            vector_dims(e.embedding) AS dimensions
+        FROM langchain_pg_collection c
+        JOIN langchain_pg_embedding e ON e.collection_id = c.uuid
+        GROUP BY c.name, vector_dims(e.embedding)
+        ORDER BY c.name
+    """)
+    with engine.connect() as conn:
+        rows = conn.execute(query).mappings().all()
+
+    print("\n📦 COLLECTIONS PGVECTOR")
+    print("=" * 50)
+    for row in rows:
+        print(f"  • {row['collection']:<35} {row['nb_chunks']:>5} chunks   dim={row['dimensions']}")
+    print("=" * 50 + "\n")
+    
+    
+def list_chunks(source: str) -> list[dict]:
+    """
+    Retourne tous les chunks d'un document donné (identifié par son 'source').
+    """
+    engine = create_engine(settings.rag_database_url)
+    query = text("""
+        SELECT
+            id,
+            document                            AS content,
+            cmetadata->>'source'                AS source,
+            cmetadata->>'page'                  AS page,
+            (cmetadata->>'start_index')::int    AS start_index
+        FROM langchain_pg_embedding
+        WHERE cmetadata->>'source' = :source
+        ORDER BY (cmetadata->>'start_index')::int ASC NULLS LAST
+    """)
+    with engine.connect() as conn:
+        rows = conn.execute(query, {"source": source}).mappings().all()
+
+    if not rows:
+        print(f"Aucun chunk trouvé pour le document '{source}'.")
+        return []
+
+    return [dict(row) for row in rows]
+
+    
+def delete_document(source: str) -> int:
+    """
+    Supprime tous les chunks d'un document donné de pgvector.
+    Retourne le nombre de chunks supprimés.
+    """
+    engine = create_engine(settings.ragdb_url)
+
+    # Vérification préalable
+    count_query = text("""
+        SELECT COUNT(*) AS nb
+        FROM langchain_pg_embedding
+        WHERE cmetadata->>'source' = :source
+    """)
+    delete_query = text("""
+        DELETE FROM langchain_pg_embedding
+        WHERE cmetadata->>'source' = :source
+    """)
+
+    with engine.begin() as conn:  # begin() = commit automatique
+        nb = conn.execute(count_query, {"source": source}).scalar()
+
+        if nb == 0:
+            print(f"⚠️  Aucun chunk trouvé pour '{source}'. Rien à supprimer.")
+            return 0
+
+        conn.execute(delete_query, {"source": source})
+
+    print(f"🗑️  {nb} chunk(s) supprimé(s) pour le document '{source}'.")
+    return nb

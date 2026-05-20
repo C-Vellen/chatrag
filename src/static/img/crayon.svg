@@ -1,0 +1,43 @@
+<svg id="croix_carree" xmlns="http://www.w3.org/2000/svg" viewBox="-20 -20 140 140">
+<style> 
+    svg{cursor:pointer;} /* svg cliquable */
+</style>
+<circle cx="50" cy="50" r="65px" stroke-width="3" stroke="rgb(51, 65, 85)" fill="#fff"></circle>
+<g transform="rotate(-45,50,50)">
+<path d="
+M20,40
+L0,50
+L20,60
+" stroke-width="1" stroke="rgb(51, 65, 85)" fill="#fff"></path>
+<path d="
+M6,47
+L0,50
+L6,53
+q1,-3 0,-6
+z
+" stroke-width="1" stroke="rgb(51, 65, 85)" fill="rgb(51, 65, 85)"></path>
+<path d="
+M20,40
+h70
+q3,10 0,20
+h-70
+q3,-10 0,-20
+z
+" stroke-width="1" stroke="rgb(51, 65, 85)" fill="#aaa"></path>
+<path d="
+M90,40
+h10
+q5,10 0,20
+h-10
+q3,-10 0,-20
+z
+" stroke-width="1" stroke="rgb(51, 65, 85)" fill="rgb(51, 65, 85)"></path>
+<path d="
+M21,46
+h70
+M21,54
+h70
+" stroke-width="1" stroke="rgb(51, 65, 85)"></path>
+</g>
+</svg>
+

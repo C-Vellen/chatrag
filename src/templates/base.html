@@ -18,10 +18,10 @@
         
         <div class="w-full min-w-screen-xs min-h-screen flex flex-col justify-start items-center">
             
-            <header class="fixed z-10 pl-8 pr-12 h-16 w-full flex flex-row justify-between items-center bg-page text-black sm:h-20">
+            <header class="fixed z-10 pl-8 pr-12 h-12 w-full flex flex-row justify-between items-center bg-blue-100 text-black">
                 <div id="logo">
                     <a href="{% url 'home:index' %}#accueil">
-                        <img class="h-12 sm:h-16" src="{{ Bandeau_logo|find_file }}" alt="{{ Bandeau_logo|find_content:1 }}" />
+                        <img class="h-12 sm:h-8" src="{{ Bandeau_logo|find_file }}" alt="{{ Bandeau_logo|find_content:1 }}" />
                     </a>
                 </div>
                
@@ -31,21 +31,21 @@
                     <div id="navbar" class="flex flex-row justify-between items-center gap-4 sm:gap-4">
                 
                         <a href="{% url 'home:index' %}" class="">
-                                <img class="h-8" src="{% static 'img/home_black.svg' %}" />
+                                <img class="h-6" src="{% static 'img/home_black.svg' %}" />
                         </a>
                         
-                        <a href="{% url 'user:connexion' %}" title="connectez-vous !" class="text-sm m-0 p-0 w-8 h-8 border-black border-2 bg-transparent rounded-full text-center flex justify-center items-center" style="color:transparent; text-shadow: 0 0 0 #000;">{{user|initiales}}</a>
+                        <a href="{% url 'user:connexion' %}" title="connectez-vous !" class="text-xs m-0 p-0 w-6 h-6 border-black border-2 bg-transparent rounded-full text-center flex justify-center items-center" style="color:transparent; text-shadow: 0 0 0 #000;">{{user|initiales}}</a>
                         
                         <a id="deconnect-button" class="group hover:cursor-pointer" >
-                            <img class="h-8 group-hover:hidden" src="{% static 'img/deconnexion_black.svg' %}" />  
-                            <img class="h-8 hidden group-hover:inline" src="{% static 'img/deconnexion_red.svg' %}" />
+                            <img class="h-6 group-hover:hidden" src="{% static 'img/deconnexion_black.svg' %}" />  
+                            <img class="h-6 hidden group-hover:inline" src="{% static 'img/deconnexion_red.svg' %}" />
                         </a>
                     </div>
                                               
             </header>
 
 
-            <main class="mt-20 mb-12 px-6 max-w-6xl w-full flex flex-col justify-between items-center"> 
+            <main class="mt-16 mb-12 px-6 w-full flex flex-col justify-between items-center xl:px-24"> 
                 {% block content %}{% endblock %}
             </main>
             <footer class="w-full mt-auto px-16 py-4 bg-page text-slate-700">
