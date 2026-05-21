@@ -19,7 +19,7 @@ module.exports = {
             action2: actions secondaires
             access:  boutons pour les droits d'accès */
             colors: {
-                page: colors.slate[100],
+                page: colors.slate[50],
                 action: colors.slate[600],
                 actionHover: colors.slate[500],
                 action2: '#86a',

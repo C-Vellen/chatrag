@@ -1,12 +1,34 @@
 from simple_yt_api import YouTubeAPI
 
 
-
-
-
-
 def video_transcript(url: str) -> dict:
-    """Transcription de la video"""
+    """Transcription de la video à partir de l'url de Youtube
+        Retourne un dictionnaire avec les clés :
+      - "titre"   : titre du document (utilisé dans les métadonnées)
+      - "content" : contenu texte du document
+      """
+    
+    yt = YouTubeAPI()
+    try:
+        data, transcript = yt.get_video_data_and_transcript(
+            url=url,
+            language_code="fr",
+            as_dict=False,
+        )
+        return {
+            "titre":data["title"],
+            "content":transcript
+        }
+        
+    except YouTubeAPI:
+        print("Erreur transcription !")
+
+
+
+def video_transcript_in_file(url: str) -> str:
+    """Transcription de la video
+        entrée : url de la video Youtube
+        sortie : chemin du fichier de la transcription"""
     yt = YouTubeAPI()
 
     try:
