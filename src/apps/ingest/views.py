@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from django.shortcuts import redirect
 from home.context import usercontext
-from .models import EmbeddingConfig
+from .models import Collection, Document
 from .forms import UploadFileForm, UploadDirForm,  UploadVideoForm
 from .services.ingest import ingest
 from .services.inspector import list_ingested_documents, delete_document, list_chunks
@@ -14,7 +14,7 @@ from src.utils import video_transcript, extract_title
 def documents_list(request):
     ''' Liste des documents ingérés + interface pour ingérer un nouveau document'''
     
-    config = EmbeddingConfig.get_active()
+    config = Collection.get_active()
     context = usercontext(request)
     context.update({
         "title": "Liste des documents ingérés:",    
@@ -84,7 +84,7 @@ def documents_list(request):
        
 def remove_document(request, source):
     
-    config = EmbeddingConfig.get_active()
+    config = Collection.get_active()
     context = usercontext(request)
     context.update({
         "title": "Liste des documents ingérés:",    
@@ -118,7 +118,7 @@ def remove_document(request, source):
    
 
 def view_document(request, source):
-    config = EmbeddingConfig.get_active()  
+    config = Collection.get_active()  
     context = usercontext(request)
     context.update({
         "title": "Liste des documents ingérés:",    
