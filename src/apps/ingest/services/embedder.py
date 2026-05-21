@@ -3,11 +3,11 @@ from langchain_core.documents import Document
 from langchain_openai import OpenAIEmbeddings
 from langchain_huggingface import HuggingFaceEndpointEmbeddings
 from langchain_postgres import PGVector
-from ..models import EmbeddingConfig
+from ..models import Collection
 from src.config import settings
 from src.settings import DEBUG
 
-config = EmbeddingConfig.get_active()
+config = Collection.get_active()
 
 def get_openAI_embeddings() -> OpenAIEmbeddings:
     """

@@ -2,7 +2,7 @@ import os
 import textwrap
 from langchain_core.documents import Document
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from ..models import EmbeddingConfig
+from ..models import Collection
 from src.config import settings
 from src.settings import DEBUG
 
@@ -10,7 +10,7 @@ def split_documents(documents: list[Document]) -> list[Document]:
     """
     Découpe les documents en chunks avec RecursiveCharacterTextSplitter.
     """
-    config = EmbeddingConfig.get_active()
+    config = Collection.get_active()
     
     splitter = RecursiveCharacterTextSplitter(
         chunk_size=config.chunk_size,
