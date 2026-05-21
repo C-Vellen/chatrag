@@ -16,9 +16,6 @@
     @apply text-xs md:text-sm font-bold;
   }
 
-  .custom-input-control {
-    @apply h-9 text-xs bg-slate-200; 
-  }
 
   .action-button {
     @apply px-2 py-1 text-sm bg-action text-slate-100 hover:text-slate-100 hover:bg-actionHover cursor-pointer;

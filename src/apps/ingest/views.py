@@ -54,8 +54,9 @@ def documents_list(request):
             if videoform.is_valid():           
                 url = request.POST["url"].split("&")[0]
                 print("> url video: ", url)
-                # Traitez la vidéo ici
-                # mettre le script dans un fichier
+                data = video_transcript(url)
+                print(">>>>>>>>> video >>>>>>>>>>>>> :\n", data)
+                ingest(data)              
                                  
                 
     else:
