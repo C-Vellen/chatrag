@@ -98,9 +98,10 @@ def load_from_upload(file: UploadedFile) -> list[Document]:
         for chunk in file.chunks():
             tmp.write(chunk)
         tmp_path = tmp.name
-
+    
     try:
         if suffix == ".pdf":
+            
             docs = PyPDFLoader(tmp_path).load()
         else:
             docs = TextLoader(tmp_path).load()
@@ -109,6 +110,7 @@ def load_from_upload(file: UploadedFile) -> list[Document]:
         for doc in docs:
             doc.metadata["document_id"] = str(documentref.id)
             doc.metadata["source"] = titre
+            
             
 
     finally:

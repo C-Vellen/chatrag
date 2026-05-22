@@ -26,13 +26,13 @@
                         <span>Titre document</span>
                     </div>
                     <div  class="w-24 flex justify-between gap-2">
-                        <span class="w-6">type</span>
                         <span class="w-8  text-blue-500">chunks</span>
+                        <span class="w-6">source</span>
                         <span class="w-6"></span>
                     </div>
                 </li>
                 {% for doc in docs %}
-                <li class="w-full flex justify-between">
+                <li id="{{doc.id}}" class="w-full flex justify-between">
                         <div class="w-full flex justify-start">
                             <span class="w-16">{{doc.created_at|date:"d/m/y"}}</span>
                             <a href="{% url 'admin:ingest_documentref_change' doc.id %}" class="">
@@ -41,14 +41,15 @@
                         </div>
                         <div  class="w-24 flex justify-between gap-2">
                             {% comment %} <span class="mr-2">{{doc.nb_chunks}}</span> {% endcomment %}
-                            <a href="{% url 'ingest:view_document' doc.id %}" class="">
-                                <span class="w-6 text-red-500 hover:font-bold">PDF</span>
+                            
+                            <a href="{% url 'ingest:read_chunks' doc.id %}" class="">
+                                <span class="w-8 text-blue-500 hover:font-bold">XX</span>
                             </a>
-                            <a href="{% url 'ingest:view_document' doc.id %}" class="">
-                                <span class="w-8 text-blue-500 hover:font-bold">xx</span>
+                            <a href="{{ doc.source_link }}" target="_blank" class="" >
+                                <img class="w-4" src="{% static doc.logo_url %}" alt="Logo pour {{ doc.type_source }}">
                             </a>
                             <a href="{% url 'ingest:remove_document' doc.id %}" class="">
-                                <img class="h-4" src="{% static 'img/cross_round_black.svg' %}" />
+                                <img class="h-3" src="{% static 'img/cross_round_black.svg' %}" />
                             </a>
                         </div>
                 </li>
@@ -60,12 +61,9 @@
 
         </div>
 
+        
         <div class="flex flex-col md:w-1/2">
-
-            
-
-            
-            
+            {% if modeform %}
             <form class="w-full" method="post" action="." enctype="multipart/form-data" >
                 {% csrf_token %}
                 <div class="mb-4 w-full flex justify-between">
@@ -91,27 +89,43 @@
                      </ul>
                 </div>
                 <div class="w-1/4 mt-4 mb-4 flex gap-4 justify-end">
-                 <p class="text-xs italic"> Modifier:</p>
+                    <p class="text-xs italic"> Modifier:</p>
                     <a href="{% url 'admin:ingest_collection_change' collection.id %}" class="">   
-                    <img class="w-4 h-4" src="{% static 'img/crayon.svg' %}" alt="Modifier">     
+                        <img class="w-4 h-4" src="{% static 'img/crayon.svg' %}" alt="Modifier">     
                     </a>
                  </div>
              
-             </div>
+            </div>
+            {% elif modechunks %}
+            <div class="flex justify-between">
+                <h1 class="text-titre">Liste des chunks: </h1>
+                <a href="{% url 'ingest:documents_list' %}" class="">
+                    <span class="w-8 text-xs text-blue-500 hover:font-bold">retour</span>
+                </a>
+            </div>
 
-
-
-                
+            <div class="w-full flex justify-between">
+                        <div class="w-full text-titre flex justify-start">
+                            <span class="w-20">{{doc.created_at|date:"d/m/y"}}</span>
+                            <span class="hover:font-bold">{{doc.titre}}</span>
+                        </div>
+                        <div  class="flex justify-between gap-2">
+                            {% comment %} <span class="mr-2">{{doc.nb_chunks}}</span> {% endcomment %}
+                             <a href="{{ doc.source_link }}" target="_blank" class="" >
+                                <img class="w-6" src="{% static doc.logo_url %}" alt="Logo pour {{ doc.type_source }}">
+                            </a>
+                        </div>
+            </div>
+            <ul class="w-full text-xs flex flex-col gap-4">
+                {% for chunk in chunks %}
+                <li class="">{{chunk}}</li>
+                {% empty %}
+                <p> Aucun chunk trouvé </p>
+                {% endfor %}
             </ul>
-
-
-            
-        
-
+            {% endif %}
+        </div>
     </div>
-       
-
-
 </section>
 
 {% endblock %}
