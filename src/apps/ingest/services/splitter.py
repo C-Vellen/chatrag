@@ -1,12 +1,14 @@
 import os
 import textwrap
+from collections import Counter
 from langchain_core.documents import Document
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from ..models import Collection, DocumentRef
+from ..models import Collection
+from .references import update_documentref
 from src.config import settings
 from src.settings import DEBUG
 
-def split_documents(documents: list[Document]) -> list[Document]:
+def split_documents(documents: list[Document], in_django_project: bool=True) -> list[Document]:
     """
     Découpe les documents en chunks avec RecursiveCharacterTextSplitter.
     """
@@ -21,6 +23,16 @@ def split_documents(documents: list[Document]) -> list[Document]:
         add_start_index=True,   # Ajoute la position d'origine dans les métadonnées
     )
     chunks = splitter.split_documents(documents)
+    
+    if in_django_project:
+        chunks_per_doc = Counter(
+            chunk.metadata["document_id"]
+            for chunk in chunks
+            if "document_id" in chunk.metadata
+        )
+        print(">>>>>>>>>>>>>>>>> in splitter")
+        update_documentref(chunks_per_doc)
+    
     
     # affichage chunk en console:
     if DEBUG:

@@ -4,7 +4,7 @@ from django.core.files.uploadedfile import UploadedFile
 from langchain_community.document_loaders import PyPDFLoader, TextLoader, DirectoryLoader
 from langchain_core.documents import Document
 from src.utils import is_youtube_url, video_transcript, extract_title
-from ..models import Collection, DocumentRef
+from .references import create_documentref
 import tempfile
 import os
 
@@ -14,7 +14,7 @@ import os
 """
 
 
-def load_from_path(source: str | Path) -> list[Document]:
+def load_from_path(source: str | Path, in_django_project: bool=True) -> list[Document]:
     """Charge depuis un chemin fichier ou dossier."""
     source = Path(source)
     
@@ -39,32 +39,26 @@ def load_from_path(source: str | Path) -> list[Document]:
         else:
             raise ValueError(f"Format non supporté : {suffix}")
         
-    collection = Collection.get_active()
+    # collection = Collection.get_active()
     for doc in docs:
         uri = doc.metadata["source"]
         titre = extract_title(uri)
-        documentref = DocumentRef(
-            collection=collection, 
-            titre=titre, 
-            source_uri=uri
-            )    
-
         suffix = Path(uri).suffix.lower()
         if suffix in (".pdf", ".txt", ".md"):
-            documentref.type_source = suffix[1:3].upper() + "P" 
+            type_source = suffix[1:3].upper() + "P" 
         else:  
-            documentref.type_source = "OTH"
-        documentref.save()
-        doc.metadata["document_id"] = str(documentref.id)
+            type_source = "OTH"
+        
+        if in_django_project:         
+            uuid = create_documentref(titre, type_source=type_source, source_uri=uri)
+        
+        doc.metadata["document_id"] = str(uuid)
         doc.metadata["source"] = titre
         
     return docs
 
 
-
-
-
-def load_from_upload(file: UploadedFile) -> list[Document]:
+def load_from_upload(file: UploadedFile, in_django_project: bool=True) -> list[Document]:
     """
     Charge depuis un objet UploadedFile Django.
     Ecrit temporairement le fichier sur disque car les loaders
@@ -77,19 +71,14 @@ def load_from_upload(file: UploadedFile) -> list[Document]:
     
     titre = extract_title(file.name)
     
-    collection = Collection.get_active()
-    documentref = DocumentRef(
-        collection=collection, 
-        titre=titre, 
-        source_file=file
-        )    
     if suffix in (".pdf", ".txt", ".md"):
-        documentref.type_source = suffix[1:3].upper() + "F" 
+        type_source = suffix[1:3].upper() + "F" 
     else:  
-        documentref.type_source = "OTH"
-        
-    documentref.save()
-         
+        type_source = "OTH"  
+    
+    if in_django_project:         
+        uuid = create_documentref(titre, type_source=type_source, file=file)
+      
     # Ecriture dans un fichier temporaire
     with tempfile.NamedTemporaryFile(
         suffix=suffix,
@@ -108,7 +97,7 @@ def load_from_upload(file: UploadedFile) -> list[Document]:
         
         # Remplacer le chemin temporaire par le nom original dans les métadonnées
         for doc in docs:
-            doc.metadata["document_id"] = str(documentref.id)
+            doc.metadata["document_id"] = str(uuid)
             doc.metadata["source"] = titre
             
             
@@ -129,7 +118,7 @@ def load_from_video_yt(source: str) -> dict:
     return transcript
 
 
-def load_from_dict(data: dict) -> list[Document]:
+def load_from_dict(data: dict, in_django_project: bool=True) -> list[Document]:
     """
     Charge depuis un dictionnaire avec les clés :
       - "titre"   : titre du document (utilisé dans les métadonnées)
@@ -146,15 +135,9 @@ def load_from_dict(data: dict) -> list[Document]:
     if not content.strip():
         raise ValueError(f"Le contenu de '{titre}' est vide.")
 
-    collection = Collection.get_active()
-    documentref = DocumentRef(
-        collection=collection, 
-        titre=titre, 
-        type_source = "YTU",
-        source_uri=data["source_uri"]
-        )           
-    documentref.save()
-
+    
+    if in_django_project:         
+        uuid = create_documentref(titre, type_source="YTU", source_uri=data["source_uri"])
 
     # Ecriture dans un fichier temporaire .txt
     with tempfile.NamedTemporaryFile(
@@ -171,7 +154,7 @@ def load_from_dict(data: dict) -> list[Document]:
 
         # Remplacer les métadonnées avec le titre fourni
         for doc in docs:
-            doc.metadata["document_id"] = str(documentref.id)
+            doc.metadata["document_id"] = str(uuid)
             doc.metadata["source"] = titre
            
     finally:
