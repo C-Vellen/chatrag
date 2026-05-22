@@ -1,11 +1,16 @@
+import sys
+from pathlib import Path
+from src.config import settings
 from django.shortcuts import render
 from home.context import usercontext
+from .retriever import retrieve_chunks, ChunkResult, print_chunks_results
+
 
 
   
 
 
-def get_chunks(request):
+def search(request):
     '''
     get closest chunks from DB pg_vector
     '''
@@ -13,7 +18,39 @@ def get_chunks(request):
     context.update({
         "title": "Entrer une question et chercher les extraits les plus pertinents",        
     })
+    if request.method == "POST":
+        prompt = request.POST["prompt"]
+        
+        
+        # Récupérer les k meilleurs chunks avec leurs métriques
+        results = retrieve_chunks(prompt, k=settings.retriever_k)
 
+        # Affichage console debug
+        print_chunks_results(prompt, results)
+
+        context.update({
+            "prompt": prompt,
+            "results": results
+        })
+        
     
-    return render(request, "retrieval/chunks_list.html", context)
+    return render(request, "retrieval/search.html", context)
     
+# def answer(request):
+    
+    
+#     context = usercontext(request)
+#     context.update({
+#         "title": "Entrer une question et chercher les extraits les plus pertinents",        
+#     })  
+    
+    
+#     if request.method == "POST":
+#         data = json.loads(request.body)
+#         prompt = data["prompt"]
+#         response = StreamingHttpResponse(
+#             generate_response(prompt), status=200, content_type="text/plain"
+#         )
+#         return response
+#     else:
+#         return Response({"Error": "not POST"})

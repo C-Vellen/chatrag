@@ -9,9 +9,10 @@
 
 
 <section id="accueil" class="reachable w-full">
-
-    <h1 class="text-grostitre mb-4">Gestion des documents ingérés dans la base de donnée vectorielle</h1>
-
+    <div class="flex flex-row justify-between">
+        <h1 class="text-grostitre mb-4">Gestion des documents ingérés dans la base de donnée vectorielle</h1>
+        <a href="{% url 'retrieval:search' %}" class="text-xs px-2 py-1 h-6 bg-slate-200"> Recherche >> </a>
+    </div>
     <div class="w-full mb-8 flex flex-col md:flex-row md:justify-between md:gap-24">
         <div class="mb-16 md:w-1/2 md:justify-around">
             <h1 class="text-titre">Documents ingérés: {{n_docs}} </h1>
@@ -97,25 +98,25 @@
             </div>
             {% elif modechunks %}
             <div class="flex justify-between">
-                <h1 class="text-titre">Liste des chunks: </h1>
+                <h1 class="text-titre mb-2">Liste des chunks: </h1>
                 <a href="{% url 'ingest:documents_list' %}" class="">
                     <span class="w-8 text-xs text-blue-500 hover:font-bold">retour</span>
                 </a>
             </div>
 
-            <div class="w-full flex justify-between">
-                        <div class="w-full text-titre flex justify-start">
-                            <span class="w-20">{{doc.created_at|date:"d/m/y"}}</span>
-                            <span class="hover:font-bold">{{doc.titre}}</span>
-                        </div>
-                        <div  class="flex justify-between gap-2">
-                            <span class="w-16 text-xs text-blue-500">{{doc.nb_chunks}} chunks </span>
-                             <a href="{{ doc.source_link }}" target="_blank" class="" >
-                                <img class="w-6" src="{% static doc.logo_url %}" alt="Logo pour {{ doc.type_source }}">
-                            </a>
-                        </div>
+            <div class="w-full mb-4 flex justify-between">
+                <div class="w-full text-titre flex justify-start">
+                    <span class="w-20">{{doc.created_at|date:"d/m/y"}}</span>
+                    <span class="hover:font-bold">{{doc.titre}}</span>
+                </div>
+                <div  class="flex justify-between gap-2">
+                    <span class="w-16 text-xs text-blue-500">{{doc.nb_chunks}} chunks </span>
+                     <a href="{{ doc.source_link }}" target="_blank" class="" >
+                        <img class="w-6" src="{% static doc.logo_url %}" alt="Logo pour {{ doc.type_source }}">
+                    </a>
+                </div>
             </div>
-            <ul class="w-full text-xs flex flex-col gap-4">
+            <ul class="w-full text-xs flex flex-col gap-2">
                 {% for chunk in chunks %}
                 <li class="">
                     {{chunk}}
