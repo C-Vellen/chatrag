@@ -72,11 +72,11 @@ def list_collections() -> None:
     print("=" * 50 + "\n")
     
     
-def list_chunks(source: str) -> list[dict]:
+def list_chunks(document_id: str) -> list[dict]:
     """
     Retourne tous les chunks d'un document donné (identifié par son 'source').
     """
-    engine = create_engine(settings.rag_database_url)
+    engine = create_engine(settings.ragdb_url)
     query = text("""
         SELECT
             id,
@@ -85,14 +85,14 @@ def list_chunks(source: str) -> list[dict]:
             cmetadata->>'page'                  AS page,
             (cmetadata->>'start_index')::int    AS start_index
         FROM langchain_pg_embedding
-        WHERE cmetadata->>'source' = :source
+        WHERE cmetadata->>'document_id' = :document_id
         ORDER BY (cmetadata->>'start_index')::int ASC NULLS LAST
     """)
     with engine.connect() as conn:
-        rows = conn.execute(query, {"source": source}).mappings().all()
+        rows = conn.execute(query, {"document_id": document_id}).mappings().all()
 
     if not rows:
-        print(f"Aucun chunk trouvé pour le document '{source}'.")
+        print(f"Aucun chunk trouvé pour le document '{document_id}'.")
         return []
 
     return [dict(row) for row in rows]

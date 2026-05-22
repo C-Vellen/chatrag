@@ -16,6 +16,17 @@ DOCUMENT_SOURCE_TYPE = {
     "OTH":  "other format"
 } 
 
+LOGOS = {
+    "TXF":  "TXT.svg",
+    "PDF":  "PDF.svg",
+    "MDF":  "MD.svg",
+    "TXP":  "TXT.svg",
+    "PDP":  "PDF.svg",
+    "MDP":  "MD.svg",
+    "YTU":  "youtube.svg",
+    "OTH":  "blank.svg"
+} 
+
 
 def valider_uri(valeur):
     """ Validation d'une URI (chemin vers un fichier ou url) """
@@ -84,3 +95,21 @@ class DocumentRef(models.Model):
 
     def __str__(self):
         return f"{self.titre} ({self.id})"
+    
+    @property
+    def logo_url(self):
+        # On définit le dictionnaire de correspondance "source -> nom de l'image"
+               
+        # On récupère le bon logo. Si la source est inconnue, on fournit un logo par défaut.
+        nom_logo = LOGOS.get(self.type_source, "OTH")
+        
+        # On retourne le chemin complet vers le dossier static
+        return f"img/{nom_logo}"
+    
+    @property
+    def source_link(self):
+        if self.type_source[-1] == "F" and self.source_file:
+            return self.source_file.url
+        elif self.type_source[-1] in ["P", "U"] and self.source_uri.startswith(('http://', 'https://')):
+            return self.source_uri
+        return "#"
