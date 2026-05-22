@@ -19,6 +19,8 @@ class Settings(BaseSettings):
         extra="ignore"  
         )
     
+    retriever_k:int = 4
+    
     @computed_field
     @property
     def ragdb_url(self) -> str:

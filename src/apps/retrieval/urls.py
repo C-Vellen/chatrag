@@ -6,6 +6,6 @@ from . import apps
 app_name = apps.RetrievalConfig.name
 
 urlpatterns = [
-    re_path(r"^search/$", views.get_chunks, name="search"),
+    re_path(r"^search/$", views.search, name="search"),
     
 ]
