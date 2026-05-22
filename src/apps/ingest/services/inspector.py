@@ -98,32 +98,36 @@ def list_chunks(source: str) -> list[dict]:
     return [dict(row) for row in rows]
 
     
-def delete_document(source: str) -> int:
+def delete_document(document_id: str) -> int:
     """
     Supprime tous les chunks d'un document donné de pgvector.
     Retourne le nombre de chunks supprimés.
     """
+    document_id = str(document_id)
+    print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+    print("> document_id: ", document_id, type(document_id))
+    print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
     engine = create_engine(settings.ragdb_url)
 
     # Vérification préalable
     count_query = text("""
         SELECT COUNT(*) AS nb
         FROM langchain_pg_embedding
-        WHERE cmetadata->>'source' = :source
+        WHERE cmetadata->>'document_id' = :document_id
     """)
     delete_query = text("""
         DELETE FROM langchain_pg_embedding
-        WHERE cmetadata->>'source' = :source
+        WHERE cmetadata->>'document_id' = :document_id
     """)
 
     with engine.begin() as conn:  # begin() = commit automatique
-        nb = conn.execute(count_query, {"source": source}).scalar()
+        nb = conn.execute(count_query, {"document_id": document_id}).scalar()
 
         if nb == 0:
-            print(f"⚠️  Aucun chunk trouvé pour '{source}'. Rien à supprimer.")
+            print(f"⚠️  Aucun chunk trouvé pour '{document_id}'. Rien à supprimer.")
             return 0
 
-        conn.execute(delete_query, {"source": source})
+        conn.execute(delete_query, {"document_id": document_id})
 
-    print(f"🗑️  {nb} chunk(s) supprimé(s) pour le document '{source}'.")
+    print(f"🗑️  {nb} chunk(s) supprimé(s) pour le document '{document_id}'.")
     return nb

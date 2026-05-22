@@ -1,5 +1,5 @@
 <svg id="croix_carree" xmlns="http://www.w3.org/2000/svg" viewBox="-20 -20 140 140">
-<circle cx="50" cy="50" r="65px" stroke-width="3" stroke="rgb(51, 65, 85)" fill="#fff"></circle>
+<circle cx="50" cy="50" r="65px" stroke-width="3" stroke="rgb(12, 100, 6)" fill="#fff"></circle>
 <path d="
 M10,40
 h30
@@ -14,5 +14,5 @@ h-20
 v-30
 h-30
 z
-" fill="rgb(51, 65, 85)"></path>
+" fill="rgb(12, 100, 6)"></path>
 </svg>

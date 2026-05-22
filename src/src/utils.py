@@ -1,4 +1,41 @@
+import re
 from simple_yt_api import YouTubeAPI
+
+
+
+
+def is_youtube_url(url: str) -> bool:
+    """
+    Vérifie si une chaîne est une URL YouTube valide.
+    
+    Formats supportés :
+    - https://www.youtube.com/watch?v=VIDEO_ID
+    - https://youtu.be/VIDEO_ID
+    - https://youtube.com/shorts/VIDEO_ID
+    - https://www.youtube.com/embed/VIDEO_ID
+    - https://m.youtube.com/watch?v=VIDEO_ID
+    - Avec ou sans https/http, www, paramètres supplémentaires (&t=30s, &list=..., etc.)
+    """
+    if not isinstance(url, str) or not url.strip():
+        return False
+
+    pattern = re.compile(
+        r'^(https?://)?'                             # http:// ou https:// (optionnel)
+        r'(www\.|m\.)?'                              # www. ou m. (optionnel)
+        r'(youtube\.com|youtu\.be)'                  # domaine principal
+        r'('
+            r'/watch\?([^#]*&)?v=[A-Za-z0-9_-]{11}' # /watch?v=VIDEO_ID
+            r'|/shorts/[A-Za-z0-9_-]{11}'            # /shorts/VIDEO_ID
+            r'|/embed/[A-Za-z0-9_-]{11}'             # /embed/VIDEO_ID
+            r'|/v/[A-Za-z0-9_-]{11}'                 # /v/VIDEO_ID (ancien format)
+            r'|/[A-Za-z0-9_-]{11}'                   # youtu.be/VIDEO_ID
+        r')'
+        r'([?&][^#]*)?'                              # paramètres supplémentaires (&t=, &list=…)
+        r'(#.*)?$',                                  # ancre (optionnelle)
+        re.IGNORECASE
+    )
+
+    return bool(pattern.match(url.strip()))
 
 
 def video_transcript(url: str) -> dict:
@@ -56,8 +93,13 @@ def video_transcript_in_file(url: str) -> str:
         print("Erreur transcription !")
     
 
+def extract_title(doc: str) -> list:
+    """extrait des documents le nom du fichier du chemin, sans l'extension"""        
+    filename = doc.split("/")[-1]
+    return filename.split(".")[0]
+    
 
-def extract_title(docs: list) -> list:
+def extract_title_list(docs: list) -> list:
     """extrait des documents le nom du fichier du chemin, sans l'extension"""
     for doc in docs:
         filename = doc["source"].rsplit("/", 1)[-1]

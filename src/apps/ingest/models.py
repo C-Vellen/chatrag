@@ -1,18 +1,34 @@
 import uuid
 from django.db import models
 from django.core.cache import cache
+from django.core.exceptions import ValidationError
+from urllib.parse import urlparse
+
 
 DOCUMENT_SOURCE_TYPE = {
-    "TX":  "Fichier .txt",
-    "PD":  "Fichier .pdf",
-    "MD":  "Fichier .md",
-    "PTX": "Chemin vers fivhier .txt",
-    "PPD": "Chemin vers fivhier .pdf",
-    "PMD": "Chemin vers fivhier .md",
-    "LYT": "Lien Video Youtube",
-}
+    "TXF":  "Fichier .txt",
+    "PDF":  "Fichier .pdf",
+    "MDF":  "Fichier .md",
+    "TXP":  "Chemin vers fichier .txt",
+    "PDP":  "Chemin vers fichier .pdf",
+    "MDP":  "Chemin vers fichier .md",
+    "YTU":  "URL Video Youtube",
+    "OTH":  "other format"
+} 
 
-   
+
+def valider_uri(valeur):
+    """ Validation d'une URI (chemin vers un fichier ou url) """
+    try:
+        resultat = urlparse(valeur)
+        # Une URI valide doit au moins avoir un schéma (ex: urn, file, http) 
+        # ou un chemin (path)
+        if not resultat.scheme and not resultat.path:
+            raise ValidationError("Ceci n'est pas une URI valide.")
+    except Exception:
+        raise ValidationError("Format d'URI invalide.")
+
+
 class Collection(models.Model):
     """ 
     collection parameters
@@ -51,18 +67,18 @@ class Collection(models.Model):
         super().save(*args, **kwargs)
 
     
-class Document(models.Model):
+class DocumentRef(models.Model):
     """Référentiel des documents ingérés dans pgvector."""
     id          = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     collection  = models.ForeignKey("Collection", on_delete=models.CASCADE, related_name="document")
     titre       = models.CharField(max_length=500)
     is_active   = models.BooleanField(default=True)
     type_source = models.CharField(max_length=20, choices=DOCUMENT_SOURCE_TYPE)
-    source      = models.CharField(max_length=1000, blank=True)
-    source_file = models.FileField(upload_to="ingest/file/", blank=True)  
-    nb_chunks   = models.IntegerField(blank=True)
-    nb_words    = models.IntegerField(blank=True)
-    nb_chars    = models.IntegerField(blank=True)
+    source_uri  = models.CharField(max_length=1000, validators=[valider_uri], blank=True, null=True) # uri = URL ou path
+    source_file = models.FileField(upload_to="ingest/file/", blank=True, null=True)  
+    nb_chunks   = models.IntegerField(blank=True, null=True)
+    nb_words    = models.IntegerField(blank=True, null=True)
+    nb_chars    = models.IntegerField(blank=True, null=True)
      
     created_at  = models.DateTimeField(auto_now_add=True)
 
