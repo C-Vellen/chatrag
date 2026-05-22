@@ -1,131 +1,68 @@
 from django.shortcuts import render
 from django.shortcuts import redirect
 from home.context import usercontext
-from .models import Collection, Document
-from .forms import UploadFileForm, UploadDirForm,  UploadVideoForm
+from .models import Collection, DocumentRef
+from .forms import DocumentForm
 from .services.ingest import ingest
-from .services.inspector import list_ingested_documents, delete_document, list_chunks
+from .services.inspector import delete_document, list_chunks
 from src.config import settings
-from src.utils import video_transcript, extract_title
-
-
 
     
 def documents_list(request):
     ''' Liste des documents ingérés + interface pour ingérer un nouveau document'''
     
-    config = Collection.get_active()
+    collection = Collection.get_active()
     context = usercontext(request)
     context.update({
         "title": "Liste des documents ingérés:",    
-        "collection_name": config.collection_name,
-        "embedding_model": config.embedding_model,
-        "chunk_size": config.chunk_size,
-        "chunk_overlap": config.chunk_overlap
+        "collection_name": collection.collection_name,
+        "embedding_model": collection.embedding_model,
+        "chunk_size": collection.chunk_size,
+        "chunk_overlap": collection.chunk_overlap
     })
+    form = DocumentForm()
     
-    source = ""
     if request.method == "POST":
-        upload = True
-        
-        fileform = UploadFileForm()
-        dirform = UploadDirForm()
-        videoform = UploadVideoForm()
-        print("="*20)
-        print(request.POST)
-        print("="*20)
-        
-        if "submit_file" in request.POST:
-            fileform = UploadFileForm(request.POST, request.FILES)
-            if fileform.is_valid():
-                file = request.FILES["file"]
+        form = DocumentForm(request.POST, request.FILES)
+        if form.is_valid():
+            file = form.cleaned_data.get('file')
+            uri = form.cleaned_data.get('uri')
+            if file:
                 print("> nom fichier: ", file.name)
                 ingest(file)
-        
-        elif "submit_dir" in request.POST:
-            dirform = UploadDirForm(request.POST)
-            if dirform.is_valid():           
-                path = request.POST["path"]
-                print("> chemin dossier: ", path)
-                ingest(path)        
-   
-        elif "submit_video" in request.POST:
-            videoform = UploadVideoForm(request.POST)
-            if videoform.is_valid():           
-                url = request.POST["url"].split("&")[0]
-                print("> url video: ", url)
-                data = video_transcript(url)
-                print(">>>>>>>>> video >>>>>>>>>>>>> :\n", data)
-                ingest(data)              
-                                 
-                
-    else:
-        fileform = UploadFileForm()
-        dirform = UploadDirForm()
-        videoform = UploadVideoForm()
-        
+            elif uri:           
+                print("> URI : ", uri)
+                ingest(uri)
     
-    docs = list_ingested_documents()
-    docs = extract_title(docs)
+            return redirect("ingest:documents_list")
     
-    
+    docs = DocumentRef.objects.filter(collection=collection, is_active=True)
     context.update({
+        "collection":collection,
         "docs":docs,
         "n_docs":len(docs),
-        "fileform":fileform,
-        "dirform":dirform,
-        "videoform":videoform,
+        "form":form,
     })
-    
     
     return render(request, "ingest/list.html", context)
     
     
        
-def remove_document(request, source):
-    
-    config = Collection.get_active()
-    context = usercontext(request)
-    context.update({
-        "title": "Liste des documents ingérés:",    
-        "collection_name": config.collection_name,
-        "embedding_model": config.embedding_model,
-        "chunk_size": config.chunk_size,
-        "chunk_overlap": config.chunk_overlap
-    })
-    
-    delete_document(source)
-    
-    fileform = UploadFileForm()
-    dirform = UploadDirForm()
-    videoform = UploadVideoForm()
-        
-    
-    docs = list_ingested_documents()
-    docs = extract_title(docs)
-    
-    
-    context.update({
-        "docs":docs,
-        "n_docs":len(docs),
-        "fileform":fileform,
-        "dirform":dirform,
-        "videoform":videoform,
-    })
-    
+def remove_document(request, document_id):
+    delete_document(document_id)
+    DocumentRef.objects.filter(id=document_id).delete()   
     return redirect("ingest:documents_list")
-    # return render(request, "ingest/list.html", context)
    
 
-def view_document(request, source):
-    config = Collection.get_active()  
+def view_document(request, document_id):
+    collection = Collection.get_active()  
     context = usercontext(request)
     context.update({
         "title": "Liste des documents ingérés:",    
-        "collection_name": config.collection_name,
-        "embedding_model": config.embedding_model,
-        "chunk_size": config.chunk_size,
-        "chunk_overlap": config.chunk_overlap
+        "collection_name": collection.collection_name,
+        "embedding_model": collection.embedding_model,
+        "chunk_size": collection.chunk_size,
+        "chunk_overlap": collection.chunk_overlap
     })
     return render(request, "ingest/list.html", context)
   
