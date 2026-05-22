@@ -40,10 +40,9 @@
                             </a>
                         </div>
                         <div  class="w-24 flex justify-between gap-2">
-                            {% comment %} <span class="mr-2">{{doc.nb_chunks}}</span> {% endcomment %}
                             
                             <a href="{% url 'ingest:read_chunks' doc.id %}" class="">
-                                <span class="w-8 text-blue-500 hover:font-bold">XX</span>
+                                <span class="w-8 text-blue-500 hover:font-bold">{{doc.nb_chunks}}</span>
                             </a>
                             <a href="{{ doc.source_link }}" target="_blank" class="" >
                                 <img class="w-4" src="{% static doc.logo_url %}" alt="Logo pour {{ doc.type_source }}">
@@ -110,7 +109,7 @@
                             <span class="hover:font-bold">{{doc.titre}}</span>
                         </div>
                         <div  class="flex justify-between gap-2">
-                            {% comment %} <span class="mr-2">{{doc.nb_chunks}}</span> {% endcomment %}
+                            <span class="w-16 text-xs text-blue-500">{{doc.nb_chunks}} chunks </span>
                              <a href="{{ doc.source_link }}" target="_blank" class="" >
                                 <img class="w-6" src="{% static doc.logo_url %}" alt="Logo pour {{ doc.type_source }}">
                             </a>
@@ -118,7 +117,10 @@
             </div>
             <ul class="w-full text-xs flex flex-col gap-4">
                 {% for chunk in chunks %}
-                <li class="">{{chunk}}</li>
+                <li class="">
+                    {{chunk}}
+                    <span class="font-bold">[{{chunk|length}} car., {{chunk|wordcount}} mots]</span>
+                </li>
                 {% empty %}
                 <p> Aucun chunk trouvé </p>
                 {% endfor %}
