@@ -63,6 +63,16 @@ Projet Django : chatbot orienté pour répondre en fonction d'une base documenta
     # créer le superuser
 ```
 
+- ### Créer le 1er objet Collection
+sur le site de l'administration, créer un objet Collection. Les champs sont documentés par défaut :
+
+    - name:                 documents_chunk1000_bge-m3
+    - is_active:            True
+    - embedding model:      BAAI/bge-m3
+    - chunk size:           1000
+    - chunk overlap:        200
+    - chunk number:         32 
+
 ## 🛢️ Voir directement les champs de la BD vectorielle :
 ```bash
 # se connecter à la BD:

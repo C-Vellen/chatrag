@@ -7,15 +7,15 @@ from ingest.models import Collection
 from src.config import settings
 from src.settings import DEBUG
 
-config = Collection.get_active()
 
 def get_openAI_embeddings() -> OpenAIEmbeddings:
     """
     embeddings avec openAI 
     """
+    collection = Collection.get_active()
     return OpenAIEmbeddings(
-        model=config.embedding_model,
-        # dimensions=config.model_dimensions,
+        model=collection.embedding_model,
+        # dimensions=collection.model_dimensions,
         api_key=settings.openai_api_key
     )
 
@@ -23,12 +23,13 @@ def get_hf_embeddings() -> OpenAIEmbeddings:
     """
     embeddings avec hugging-face 
     """
+    collection = Collection.get_active()
     return OpenAIEmbeddings(
         openai_api_base=f"{settings.embedding_api_url}/v1",
         openai_api_key="none", 
-        model=config.embedding_model,
+        model=collection.embedding_model,
         check_embedding_ctx_length=False,
-        chunk_size=config.chunk_number
+        chunk_size=collection.chunk_number
     )
 
 def get_vectorstore_explicit(chunks):
@@ -38,6 +39,7 @@ def get_vectorstore_explicit(chunks):
         ou
         embeddings=get-hf-embeddings()
     """
+    collection = Collection.get_active()
     embeddings = get_hf_embeddings()
     texts = [doc.page_content for doc in chunks]
     metadatas=[d.metadata for d in chunks]
@@ -51,7 +53,7 @@ def get_vectorstore_explicit(chunks):
     
     vectorstore = PGVector(
         embeddings=embeddings,
-        collection_name=config.collection_name,
+        collection_name=collection.collection_name,
         connection=settings.ragdb_url,
         # Crée la table + l'extension pgvector si elle n'existe pas
         create_extension=True,
@@ -69,9 +71,10 @@ def get_vectorstore_explicit(chunks):
 def get_vectorstore() -> PGVector:
     """Retourne le vectorstore connecté à PostgreSQL."""
   
+    collection = Collection.get_active()
     return PGVector(
         embeddings=get_hf_embeddings(),
-        collection_name=config.collection_name,
+        collection_name=collection.collection_name,
         connection=settings.ragdb_url,
         # Crée la table + l'extension pgvector si elle n'existe pas
         create_extension=True,
