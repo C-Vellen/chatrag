@@ -33,28 +33,37 @@
             <div class="flex justify-between">
                 <h1 class="text-titre mb-2">Liste des chunks sélectionnés: </h1>
             </div>
-             <ul class="w-full text-xs flex flex-col gap-2">
+            <ul class="w-full mb-8 text-xs flex flex-col gap-2">
 
-            {% for result in results %}
-            <div class="chunk-card">
-            
-                <div class="chunk-metrics font-bold">
-                    <span>{{ forloop.counter }}</span>
-                    <span>📏 Distance L2 : {{ result.distance }}</span>
-                    <span>🎯 Similarité : {{ result.similarity }}</span>
-                    <span>📄 {{ result.chunk.metadata.source }}</span>
-                    {% if result.chunk.metadata.page %}
-                        <span>Page {{ result.chunk.metadata.page }}</span>
-                    {% endif %}
+                {% for result in results %}
+                <div class="chunk-card">
+                
+                    <div class="chunk-metrics font-bold flex justify-between">
+
+                        <div>
+                        <span>{{ forloop.counter }}</span>
+                        {% comment %} <span>📏 Distance L2 : {{ result.distance }}</span> {% endcomment %}
+                        {% comment %} <span>🎯 Similarité : {{ result.similarity }}</span> {% endcomment %}
+                        <span>📄 {{ result.chunk.metadata.source }}</span>
+                        <span> [index: {{ result.chunk.metadata.start_index }}]</span>
+                        
+                        </div>
+
+                        <div>
+                        <span> [similarité : {{ result.similarity }}]</span>
+                        {% if result.chunk.metadata.page %}
+                            <span>Page {{ result.chunk.metadata.page }}</span>
+                        {% endif %}
+                        </div>
+                    </div>
+                
+                    <div class="chunk-content">
+                        {{ result.chunk.page_content }}
+                    </div>
+                
                 </div>
-            
-                <div class="chunk-content">
-                    {{ result.chunk.page_content }}
-                </div>
-            
-            </div>
-            {% endfor %} 
-        </ul>
+                {% endfor %} 
+             </ul>
 
 
 
