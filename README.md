@@ -10,43 +10,67 @@ Projet Django : chatbot orienté pour répondre en fonction d'une base documenta
 - poetry
 - tailwind css v3
 - base de données postgres
-- Docker : conteneurs web, tailwind, db
+- base de données vectorielles pgvector
+- docker : conteneurs web, db, ragdb, embedding
  
 
-##  &#8205;&#127891; Démonstration : [ici](https://www.xxxxxx.fr)
+## &#8205;&#127891; Démonstration : [ici](#)
 
-## &#129520; Fonctionnalités :
-- ### Fonctionnalités ...
+## 🤖 Fonctionnalités :
+- ### Ingestion
 
-## &#129489;&#8205;&#127891; Les utilisateurs :
-- ### ...
+    - documents textes : formats .pdf, .txt, .md
+    - video youtubes (inclut la transcription)
+    - split, vectorisation et enregistrement dans la bd vectorielle pg-vector
 
-## &#128736; Installation : 
+- ### Retrieval
+    - à partir d'un prompt, recherche des meilleurs chunks
 
-- settings : 
-  - créer settings/develop.py et settings/production.py : voir les modèles settings/develop.example.py et settings/production.example.py
-  - créer .env pour les paramètres de la bd et les variables d'environnement utiles (TOKEN_API...)
-- cloner le projet :
+- ### Chat
+
+
+
+## 🛠️ Installation : 
+
+- ### cloner le projet :
 ```bash
     git clone https://xxxxxxxxx.git
 ```
-- installation en dev:
+- ### Mettre à jour les settings : SECRET_KEY, paramètres de base de donnée, noms de domaine, ports
+    - créer settings/develop.py et settings/production.py : à parir des settings/develop.example.py et settings/production.example.py
+    - créer .env : à partir de .env.example
+
+- ### Déploiement en developpement:
 ```bash
-    
-```
-- installation en prod:
-```bash
-    d
+    poetry install
+    docker compose --env-file .env -f docker/docker-compose.yml -f docker/docker-compose.override.yml build
+    docker compose --env-file .env -f docker/docker-compose.yml -f docker/docker-compose.override.yml up -d db dbrag
+    docker compose --env-file .env -f docker/docker-compose.yml -f docker/docker-compose.override.yml run --rm web src/manage.py migrate 
+    docker compose --env-file .env -f docker/docker-compose.yml -f docker/docker-compose.override.yml run --rm web src/manage.py createsuperuser
+    # créer le superuser
+    docker compose --env-file .env -f docker/docker-compose.yml -f docker/docker-compose.override.yml run --rm web src/manage.py tailwind install
+    docker compose --env-file .env -f docker/docker-compose.yml -f docker/docker-compose.override.yml run --rm web src/manage.py tailwind start
+    docker compose --env-file .env -f docker/docker-compose.yml -f docker/docker-compose.override.yml up -d 
 ```
 
-### Voir la BD vectorielle :
+- ### Déploiement en production:
+
+```bash
+    docker compose --env-file .env -f docker/docker-compose.yml -f docker/docker-compose.prod.yml build
+    docker compose --env-file .env -f docker/docker-compose.yml -f docker/docker-compose.prod.yml up -d
+    # entrypoint.sh exécute automatiquement: wait_for_db,migrate, collectstatic
+    docker compose --env-file .env -f docker/docker-compose.yml -f docker/docker-compose.prod exec web python src/manage.py createsuperuser
+    # créer le superuser
+```
+
+## 🛢️ Voir directement les champs de la BD vectorielle :
 ```bash
 # se connecter à la BD:
 docker compose exec ragdb psql -U rag -d ragdb
 ```
 ```sql
 -- table des collections:
-select * from langchain_pg_collection
+select * from langchain_pg_collection;
 
 -- table des embeddings(tronqué pour la lisibilité):
 select 
@@ -55,7 +79,7 @@ select
     left(embedding::text, 40) || '...]' as "embedding",
     left(document::text, 80) || '...' || right(document::text, 20) as "document chunk ~ 1000 caractères / 180 mots",
     left(cmetadata::text, 1) || '...' || right(cmetadata::text, 6) as cmetadata
-    from langchain_pg_embedding;q
+    from langchain_pg_embedding;q;
 
 -- dimension des vecteurs :
 select 
