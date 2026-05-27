@@ -7,12 +7,18 @@ from ..models import Collection
 from .references import update_documentref
 from src.config import settings
 from src.settings import DEBUG
+from src.utils import get_closest_smaller_index, get_closest_bigger_index
 
 def split_documents(documents: list[Document], in_django_project: bool=True) -> list[Document]:
     """
     Découpe les documents en chunks avec RecursiveCharacterTextSplitter.
     """
     collection = Collection.get_active()
+    
+    # extraction du timestamp:
+    
+    
+        
     
     splitter = RecursiveCharacterTextSplitter(
         chunk_size=collection.chunk_size,
@@ -21,6 +27,7 @@ def split_documents(documents: list[Document], in_django_project: bool=True) -> 
         # Séparateurs par ordre de priorité
         separators=["\n\n", "\n", ". ", " ", ""],
         add_start_index=True,   # Ajoute la position d'origine dans les métadonnées
+
     )
     chunks = splitter.split_documents(documents)
     
@@ -33,6 +40,25 @@ def split_documents(documents: list[Document], in_django_project: bool=True) -> 
         print(">>>>>>>>>>>>>>>>> in splitter")
         update_documentref(chunks_per_doc)
     
+    for chunk in chunks:
+        if "start_index" in chunk.metadata:
+            chunk.metadata["end_index"] = (
+                chunk.metadata["start_index"] + len(chunk.page_content)
+            )
+            timestamp = chunk.metadata.pop("timestamp", None)
+            if timestamp:
+                first_index = get_closest_smaller_index(chunk.metadata["start_index"], timestamp.keys())
+                last_index = get_closest_bigger_index(chunk.metadata["end_index"], timestamp.keys())
+
+                print("fist_index: ", first_index)
+                print("timestamp: ", timestamp)
+
+
+                chunk.metadata["start_time"] = timestamp[first_index]
+                if last_index:
+                    chunk.metadata["end_time"] = timestamp[last_index]
+            
+        
     
     # affichage chunk en console:
     if DEBUG:

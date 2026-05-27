@@ -7,6 +7,7 @@
 
 {% block content %}
 
+<script src="{% static 'js/openvideo.js' %}"></script>
 
 <section id="accueil" class="reachable w-full">
     <div class="flex flex-row justify-between">
@@ -25,6 +26,26 @@
             <button id="send_prompt" class="text-xs px-2 py-1 h-6 w-24 bg-slate-200" data-url=" {% url 'retrieval:search' %} " >Envoyer</button>
             </form>
 
+
+            <div id="video-modal"
+                 style="display:none; position:fixed; top:0; left:0; width:100%; height:100%;
+                        background:rgba(0,0,0,0.7); z-index:1000; justify-content:center; align-items:center;">
+                <div style="position:relative; background:#000; padding:10px; border-radius:8px; width:720px;">
+                    <!-- Bouton fermer -->
+                    <button onclick="closeVideoModal()"
+                            style="position:absolute; top:-15px; right:-15px; background:white;
+                                   border:none; border-radius:50%; width:30px; height:30px; cursor:pointer;">
+                        ✕
+                    </button>
+                    <iframe id="video-iframe"
+                            width="700" height="400"
+                            frameborder="0"
+                            allowfullscreen
+                            allow="autoplay">
+                    </iframe>
+                </div>
+            </div>
+
         
         </div>
 
@@ -40,20 +61,34 @@
                 
                     <div class="chunk-metrics font-bold flex justify-between">
 
-                        <div>
-                        <span>{{ forloop.counter }}</span>
-                        {% comment %} <span>📏 Distance L2 : {{ result.distance }}</span> {% endcomment %}
-                        {% comment %} <span>🎯 Similarité : {{ result.similarity }}</span> {% endcomment %}
-                        <span>📄 {{ result.chunk.metadata.source }}</span>
-                        <span> [index: {{ result.chunk.metadata.start_index }}]</span>
+                        <div class="flex flex-start gap-4">
+                            <span>{{ forloop.counter }}</span>
+                            <span>{{ result.chunk.metadata.source }}</span>
+                             {% if result.chunk.metadata.type_source == "YTU" %}
+                                <a href="#"
+                                    onclick="openVideoModal(
+                                        '{{ result.chunk.metadata.source_uri }}',
+                                        {{ result.chunk.metadata.start_time }},
+                                        {{ result.chunk.metadata.end_time }}
+                                    ); return false;">
+                                    <img class="w-4" src="{% static "img/youtube.svg" %}" alt="urlvideo">
+                                </a>
+                            {% elif result.chunk.metadata.page_label %}
+                                <span>Page {{ result.chunk.metadata.page_label }}</span>
+                           
+
+                                {% comment %} <a href="{{ result.chunk.metadata.source_uri }}?t={{result.chunk.metadata.start_time}}" target="_blank" class="" >
+                                    <img class="w-4" src="{% static img.youtube.svg %}" alt="urlvideo">
+                                    </a> {% endcomment %}
+                            {% else %}
+                                <span> [index: {{ result.chunk.metadata.start_index }}]</span>
+                            {% endif %}
                         
                         </div>
 
                         <div>
                         <span> [similarité : {{ result.similarity }}]</span>
-                        {% if result.chunk.metadata.page %}
-                            <span>Page {{ result.chunk.metadata.page }}</span>
-                        {% endif %}
+                        
                         </div>
                     </div>
                 
@@ -90,5 +125,7 @@
 
 
 </section>
+
+
 
 {% endblock %}
