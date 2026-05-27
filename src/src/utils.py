@@ -1,7 +1,105 @@
 import re
+import bisect
 from simple_yt_api import YouTubeAPI
+from django.http import JsonResponse
+from youtube_transcript_api import YouTubeTranscriptApi
+import yt_dlp
+
+def format_time(seconds):
+    """Transforme des secondes (ex: 75.5) en chaîne lisible (ex: '01:15')"""
+    hours = int(seconds // 3600)
+    minutes = int((seconds % 3600) // 60)
+    secs = int(seconds % 60)
+
+    if hours > 0:
+        return f"{hours:02d}:{minutes:02d}:{secs:02d}"
+    return f"{minutes:02d}:{secs:02d}"
 
 
+def extract_video_id(url):
+    """Extrait l'identifiant unique de la vidéo YouTube."""
+    pattern = r"(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})"
+    match = re.search(pattern, url)
+    return match.group(1) if match else None
+
+
+def get_video_title(url):
+    """Récupère le titre de la vidéo de manière légère avec yt-dlp."""
+    ydl_opts = {
+        "quiet": True,
+        "skip_download": True,
+    }
+    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+        try:
+            info = ydl.extract_info(url, download=False)
+            return info.get("title", "Titre inconnu")
+        except Exception:
+            return "Titre inconnu (Erreur d'extraction)"
+
+
+def get_youtube_script_with_mapping(video_url: str) -> dict:
+    """ 
+    Effectue la transcription d'une video youtube avac l'API youtube_transcript_api
+    Args:
+        video_url (str): url d'une video youtube
+   
+    Raises:
+        ValueError: L'URL de la vidéo YouTube est invalide.
+        RuntimeError: Impossible de récupérer les sous-titres
+    Returns:
+        dict: { "titre" (str): titre de la video,
+                "content" (str): transcrption de la video
+                "timestamp (dict): dictionnaire horodatage {index_caractère : start_time} 
+    """
+    
+    
+    # Récupération video_id
+    video_id = extract_video_id(video_url)
+    if not video_id:
+        raise ValueError("L'URL de la vidéo YouTube est invalide.")
+
+    # Récupération du titre
+    title = get_video_title(video_url)
+
+    # Récupération des sous-titres
+    try:
+        # raw_transcript = YouTubeTranscriptApi.get_transcript(
+        #     video_id, languages=["fr", "en"]
+        # )
+        ytt_api = YouTubeTranscriptApi()
+        fetched_transcript = ytt_api.fetch(video_id, languages=["fr", "en"])
+        raw_transcript = fetched_transcript.to_raw_data()
+        
+    except Exception as e:
+        raise RuntimeError(f"Impossible de récupérer les sous-titres : {str(e)}")
+
+    # Construction du contenu et de la table de correspondance horodatage
+    full_content = []
+    timestamp = {}
+    current_char_index = 0 # initialisation de l'index au 1er caractère
+
+    for item in raw_transcript:
+        text_segment = item["text"]
+        # On arrondit le temps en secondes (ex: 3.45 -> 3) selon votre besoin
+        start_time = int(round(item["start"])) # arrondi à la seconde
+
+        # On enregistre l'index de départ de ce bloc de texte
+        timestamp[current_char_index] = start_time
+
+        # On ajoute le texte
+        full_content.append(text_segment)
+
+        # Mise à jour de l'index en comptant le texte + 1 pour l'espace de séparation
+        current_char_index += len(text_segment) + 1
+
+    # On fusionne tous les morceaux avec un espace
+    full_content = " ".join(full_content)
+
+    return {"titre": title, "content": full_content, "timestamp": timestamp}
+
+ 
+
+# ----------------------------------------------------------------------------------------
 
 
 def is_youtube_url(url: str) -> bool:
@@ -106,3 +204,37 @@ def extract_title_list(docs: list) -> list:
         doc.update({"title":filename.rsplit(".", 1)[0] })
     return docs  
     
+    
+    
+def get_closest_smaller_index(n: int, liste: list[str]) -> int:
+    """_summary_
+
+    Args:
+        n (int): integer
+        liste (list[int]): list of str
+
+    Returns:
+        int:    if n >= liste[0] return closest smaller item of the list
+                if n < liste[0] return 0
+    """
+    valid_values = [int(x) for x in liste if int(x) <= n]
+    if not valid_values:
+        return 0
+    return max(valid_values)
+
+
+def get_closest_bigger_index(n: int, liste: list[str]) -> int | None:
+    """_summary_
+
+    Args:
+        n (int): integer
+        liste (list[int]): list of str
+
+    Returns:
+        int:    if n <= liste[-1] return closest bigger item of the list
+                if n > liste[-1] return None
+    """
+    valid_values = [int(x) for x in liste if int(x) > n]
+    if not valid_values:
+        return None
+    return min(valid_values)
