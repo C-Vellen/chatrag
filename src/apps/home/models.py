@@ -89,11 +89,11 @@ class Libelles(models.Model):
 
 # Suppression des fichiers MEDIAROOT inutiles lors de la mise à jour ou suppression
 @receiver(post_delete, sender=Libelles)
-def auto_delete_miniatures_on_delete(sender, instance, **kwargs):
+def auto_delete_content_on_delete(sender, instance, **kwargs):
     auto_delete_file_on_delete(sender, instance) 
 
 @receiver(pre_save, sender=Libelles)
-def auto_delete_miniatures_on_change(sender, instance, **kwargs):
+def auto_delete_content_on_change(sender, instance, **kwargs):
     auto_delete_file_on_change(sender, instance) 
 
 

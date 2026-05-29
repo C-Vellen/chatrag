@@ -64,7 +64,7 @@
                         <div class="flex flex-start gap-4">
                             <span>{{ forloop.counter }}</span>
                             <span>{{ result.chunk.metadata.source }}</span>
-                             {% if result.chunk.metadata.type_source == "YTU" %}
+                             {% if result.chunk.metadata.source_type == "YT" %}
                                 <a href="#"
                                     onclick="openVideoModal(
                                         '{{ result.chunk.metadata.source_uri }}',

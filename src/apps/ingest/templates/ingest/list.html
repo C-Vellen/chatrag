@@ -46,7 +46,7 @@
                                 <span class="w-8 text-blue-500 hover:font-bold">{{doc.nb_chunks}}</span>
                             </a>
                             <a href="{{ doc.source_link }}" target="_blank" class="" >
-                                <img class="w-4" src="{% static doc.logo_url %}" alt="Logo pour {{ doc.type_source }}">
+                                <img class="w-4" src="{% static doc.source_logo %}" alt="Logo pour {{ doc.source_type }}">
                             </a>
                             <a href="{% url 'ingest:remove_document' doc.id %}" class="">
                                 <img class="h-3" src="{% static 'img/cross_round_black.svg' %}" />
@@ -112,7 +112,7 @@
                 <div  class="flex justify-between gap-2">
                     <span class="w-16 text-xs text-blue-500">{{doc.nb_chunks}} chunks </span>
                      <a href="{{ doc.source_link }}" target="_blank" class="" >
-                        <img class="w-6" src="{% static doc.logo_url %}" alt="Logo pour {{ doc.type_source }}">
+                        <img class="w-6" src="{% static doc.source_logo %}" alt="Logo pour {{ doc.source_type }}">
                     </a>
                 </div>
             </div>

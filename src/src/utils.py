@@ -1,9 +1,97 @@
+import os
 import re
-import bisect
+import requests
+from pathlib import Path
+from urllib.parse import urlparse
+from django.core.files.uploadedfile import InMemoryUploadedFile, SimpleUploadedFile
 from simple_yt_api import YouTubeAPI
-from django.http import JsonResponse
 from youtube_transcript_api import YouTubeTranscriptApi
 import yt_dlp
+
+
+def parse_uri(uri: str) -> dict:
+    """
+    Analyse une URI et retourne son type avec le fichier associé si applicable.
+
+    Returns:
+        {"type": "path", "path": str}
+        {"type": "filepath", "path": str, "file": InMemoryUploadedFile}
+        {"type": "fileurl","path": str,  "file": SimpleUploadedFile}
+        {"type": "error", "reason": str}
+    """
+
+    # URI de type répertoire : se termine par "/"
+    if uri.endswith("/"):
+        if os.path.isdir(uri):
+            return {"type": "path", "path": uri}
+        else:
+            return {"type": "error", "reason": f"Directory not found: {uri}"}
+
+    # URI de type URL distante (http/https)
+    parsed = urlparse(uri)
+    if parsed.scheme in ("http", "https"):
+        try:
+            response = requests.get(uri, timeout=10, stream=True)
+            response.raise_for_status()
+
+            filename = os.path.basename(parsed.path) or "downloaded_file"
+            content_type = response.headers.get("Content-Type", "application/octet-stream").split(";")[0].strip()
+            content = response.content
+
+            file = SimpleUploadedFile(
+                name=filename,
+                content=content,
+                content_type=content_type,
+            )
+            return {"type": "fileurl", "path": uri, "file": file}
+
+        except requests.RequestException as e:
+            return {"type": "error", "reason": f"Failed to fetch URL: {e}"}
+
+    # URI de type chemin local vers un fichier
+    if os.path.isfile(uri):
+        filename = os.path.basename(uri)
+        content_type = _guess_content_type(filename)
+
+        with open(uri, "rb") as f:
+            content = f.read()
+
+        file = InMemoryUploadedFile(
+            file=__import__("io").BytesIO(content),
+            field_name=None,
+            name=filename,
+            content_type=content_type,
+            size=len(content),
+            charset=None,
+        )
+        return {"type": "filepath", "path": uri, "file": file}
+
+    # Rien trouvé
+    return {"type": "error", "reason": f"No file or directory found for URI: {uri}"}
+
+
+def iter_uri(uri: str):
+    """ Itérateur qui retourne tous les fichiers se trouvant dans un dossier, de manière récursive
+    Args:
+        uri (str): l'uri d'un dossier (ex: documents/data/mesfichiers/)
+    Yields:
+        _le dictionnaire {"type":"filepath", "file":file} de tous les fichiers qui se trouvent dans le dossier ou ses sous-dossiers
+    """
+    for path in Path(uri).rglob("*"): 
+        if path.is_file():
+            result = parse_uri(str(path))
+            yield result    
+        
+
+def _guess_content_type(filename: str) -> str:
+    """Devine le content-type à partir de l'extension."""
+    import mimetypes
+    mime, _ = mimetypes.guess_type(filename)
+    return mime or "application/octet-stream"
+
+
+# -----------FIN REFACTORING ----------------------------------------
+
 
 def format_time(seconds):
     """Transforme des secondes (ex: 75.5) en chaîne lisible (ex: '01:15')"""
@@ -37,19 +125,20 @@ def get_video_title(url):
             return "Titre inconnu (Erreur d'extraction)"
 
 
-def get_youtube_script_with_mapping(video_url: str) -> dict:
+def get_youtube_script_with_timestamp(video_url: str) -> dict:
     """ 
     Effectue la transcription d'une video youtube avac l'API youtube_transcript_api
     Args:
         video_url (str): url d'une video youtube
    
     Raises:
-        ValueError: L'URL de la vidéo YouTube est invalide.
-        RuntimeError: Impossible de récupérer les sous-titres
+        ValueError:     L'URL de la vidéo YouTube est invalide.
+        RuntimeError:   Impossible de récupérer les sous-titres
     Returns:
-        dict: { "titre" (str): titre de la video,
-                "content" (str): transcrption de la video
-                "timestamp (dict): dictionnaire horodatage {index_caractère : start_time} 
+        dict: { "video_id" (str):   id de la video
+                "titre" (str):      titre de la video,
+                "content" (str):    transcrption de la video
+                "timestamp (dict):  dictionnaire horodatage {index_caractère : start_time} 
     """
     
     
@@ -95,11 +184,7 @@ def get_youtube_script_with_mapping(video_url: str) -> dict:
     # On fusionne tous les morceaux avec un espace
     full_content = " ".join(full_content)
 
-    return {"titre": title, "content": full_content, "timestamp": timestamp}
-
- 
-
-# ----------------------------------------------------------------------------------------
+    return {"titre": title, "content": full_content, "timestamp": timestamp, "video_id": video_id}
 
 
 def is_youtube_url(url: str) -> bool:
@@ -132,82 +217,20 @@ def is_youtube_url(url: str) -> bool:
         r'(#.*)?$',                                  # ancre (optionnelle)
         re.IGNORECASE
     )
-
     return bool(pattern.match(url.strip()))
 
-
-def video_transcript(url: str) -> dict:
-    """Transcription de la video à partir de l'url de Youtube
-        Retourne un dictionnaire avec les clés :
-      - "titre"   : titre du document (utilisé dans les métadonnées)
-      - "content" : contenu texte du document
-      """
-    
-    yt = YouTubeAPI()
-    try:
-        data, transcript = yt.get_video_data_and_transcript(
-            url=url,
-            language_code="fr",
-            as_dict=False,
-        )
-        return {
-            "titre":data["title"],
-            "content":transcript
-        }
-        
-    except YouTubeAPI:
-        print("Erreur transcription !")
-
-
-
-def video_transcript_in_file(url: str) -> str:
-    """Transcription de la video
-        entrée : url de la video Youtube
-        sortie : chemin du fichier de la transcription"""
-    yt = YouTubeAPI()
-
-    try:
-        data, transcript = yt.get_video_data_and_transcript(
-            url=url,
-            language_code="fr",
-            as_dict=False,
-        )
-        # transcript2 = yt.get_transcript(
-        #     url=url, language_code="fr", as_dict=True
-        # )
-        video_has_transcript = True
-        video_title = data["title"]
-        short_description = data["short_description"]
-        thumbnail_url = data["img_url"]
-        
-        source = f"src/documents/{video_title}.txt"
-        print("\n📝 Transcription terminée." )
-        
-        with open(source, mode='w', encoding='utf-8') as file:
-            file.write(transcript)
-        print("💾 Transcription enregistrée dans documents/")
-        return source
-    except YouTubeAPI:
-        print("Erreur transcription !")
-    
 
 def extract_title(doc: str) -> list:
     """extrait des documents le nom du fichier du chemin, sans l'extension"""        
     filename = doc.split("/")[-1]
     return filename.split(".")[0]
     
-
-def extract_title_list(docs: list) -> list:
-    """extrait des documents le nom du fichier du chemin, sans l'extension"""
-    for doc in docs:
-        filename = doc["source"].rsplit("/", 1)[-1]
-        doc.update({"title":filename.rsplit(".", 1)[0] })
-    return docs  
-    
-    
     
 def get_closest_smaller_index(n: int, liste: list[str]) -> int:
-    """_summary_
+    """Exemple : 
+        n= 8
+        liste = [0, 5, 12, 20]
+        retourne 5
 
     Args:
         n (int): integer
@@ -224,7 +247,10 @@ def get_closest_smaller_index(n: int, liste: list[str]) -> int:
 
 
 def get_closest_bigger_index(n: int, liste: list[str]) -> int | None:
-    """_summary_
+    """Exemple : 
+        n= 8
+        liste = [0, 5, 12, 20]
+        retourne 12
 
     Args:
         n (int): integer

@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from home.context import usercontext
 from .models import Collection, DocumentRef
 from .forms import DocumentForm
-from .services.ingest import ingest
+from .services.ingest import ingest_file, ingest_uri
 from .services.inspector import delete_document, list_chunks
 from src.config import settings
 
@@ -32,10 +32,11 @@ def documents_list(request):
             uri = form.cleaned_data.get('uri')
             if file:
                 print("> nom fichier: ", file.name)
-                ingest(file)
+                source_origin = "download"
+                ingest_file(source_origin, file)
             elif uri:           
                 print("> URI : ", uri)
-                ingest(uri)
+                ingest_uri(uri)
     
             return redirect("ingest:documents_list")
     
@@ -88,7 +89,6 @@ def read_chunks(request, document_id):
         "chunks":[c["content"] for c in chunks]
         
     })
-   
 
     return render(request, "ingest/list.html", context)
   

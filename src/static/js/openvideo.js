@@ -23,7 +23,7 @@ function openVideoModal(url, startTime, endTime) {
 
 function closeVideoModal() {
     // Stoppe la vidéo en vidant le src
-    document.getElementById("video-iframe").src = "";
+    document.getElementBmonnaieyId("video-iframe").src = "";
     document.getElementById("video-modal").style.display = "none";
 }
 
