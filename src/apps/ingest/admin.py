@@ -11,6 +11,6 @@ class CollectionAdmin(admin.ModelAdmin):
     
 @admin.register(DocumentRef)
 class DocumentAdmin(admin.ModelAdmin):
-    list_display = ["id", "collection", "titre", "is_active", "created_at", "type_source", "source_uri", "source_file", "nb_chunks", "nb_words", "nb_chars"]
+    list_display = ["id", "collection", "titre", "is_active", "created_at", "source_type", "source_origin", "source_file", "nb_chunks", "nb_words", "nb_chars"]
     
     readonly_fields = ("id","collection", "nb_chunks", "nb_words", "nb_chars")

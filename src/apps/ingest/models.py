@@ -1,30 +1,26 @@
 import uuid
 from django.db import models
+from django.dispatch import receiver
+from django.db.models.signals import post_delete, pre_save
 from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from urllib.parse import urlparse
+from src.media_file_cleaning import auto_delete_file_on_delete, auto_delete_file_on_change
 
 
-DOCUMENT_SOURCE_TYPE = {
-    "TXF":  "Fichier .txt",
+SOURCE_TYPE = {
+    "TXT":  "Fichier .txt",
+    "MD":   "Fichier .md",
     "PDF":  "Fichier .pdf",
-    "MDF":  "Fichier .md",
-    "TXP":  "Chemin vers fichier .txt",
-    "PDP":  "Chemin vers fichier .pdf",
-    "MDP":  "Chemin vers fichier .md",
-    "YTU":  "URL Video Youtube",
-    "OTH":  "other format"
+    "YT":   "Video youtube"
 } 
-
-LOGOS = {
-    "TXF":  "TXT.svg",
+SOURCE_LOGOS = {
+    "TXT":  "TXT.svg",
+    "MD":   "MD.svg",
     "PDF":  "PDF.svg",
-    "MDF":  "MD.svg",
-    "TXP":  "TXT.svg",
-    "PDP":  "PDF.svg",
-    "MDP":  "MD.svg",
-    "YTU":  "youtube.svg",
-    "OTH":  "blank.svg"
+    "YT":   "youtube.svg",
+    "OTH":  "blank.svg",
+
 } 
 
 
@@ -84,32 +80,54 @@ class DocumentRef(models.Model):
     collection  = models.ForeignKey("Collection", on_delete=models.CASCADE, related_name="document")
     titre       = models.CharField(max_length=500)
     is_active   = models.BooleanField(default=True)
-    type_source = models.CharField(max_length=20, choices=DOCUMENT_SOURCE_TYPE)
-    source_uri  = models.CharField(max_length=1000, validators=[valider_uri], blank=True, null=True) # uri = URL ou path
+    source_type = models.CharField(max_length=20, choices=SOURCE_TYPE)
+    source_origin = models.CharField(max_length=1000)   # uri d'origin entré par l'utilisateur, ou "download"
     source_file = models.FileField(upload_to="ingest/file/", blank=True, null=True)  
+    video_id =  models.CharField(max_length=500, blank=True, null=True)
+    timestamp = models.JSONField(default=dict, blank=True, null=True)
+    
     nb_chunks   = models.IntegerField(blank=True, null=True)
     nb_words    = models.IntegerField(blank=True, null=True)
     nb_chars    = models.IntegerField(blank=True, null=True)
      
     created_at  = models.DateTimeField(auto_now_add=True)
-
+    
+   
     def __str__(self):
         return f"{self.titre} ({self.id})"
     
+    def get_file(self):
+        """ liste des fichiers media, pour gérer leur mise à jour et suppression """
+        return [self.source_file]
+    
+
     @property
-    def logo_url(self):
+    def source_logo(self):
         # On définit le dictionnaire de correspondance "source -> nom de l'image"
                
         # On récupère le bon logo. Si la source est inconnue, on fournit un logo par défaut.
-        nom_logo = LOGOS.get(self.type_source, "OTH")
+        nom_logo = SOURCE_LOGOS.get(self.source_type, "OTH")
         
         # On retourne le chemin complet vers le dossier static
         return f"img/{nom_logo}"
     
     @property
     def source_link(self):
-        if self.type_source[-1] == "F" and self.source_file:
+        if self.source_type == "YT":
+            return self.source_origin
+        elif self.source_file:
             return self.source_file.url
-        elif self.type_source[-1] in ["P", "U"] and self.source_uri.startswith(('http://', 'https://')):
-            return self.source_uri
         return "#"
+    
+    
+# Suppression des fichiers MEDIAROOT inutiles lors de la mise à jour ou suppression
+@receiver(post_delete, sender=DocumentRef)
+def auto_delete_document_on_delete(sender, instance, **kwargs):
+    auto_delete_file_on_delete(sender, instance) 
+
+@receiver(pre_save, sender=DocumentRef)
+def auto_delete_document_on_change(sender, instance, **kwargs):
+    auto_delete_file_on_change(sender, instance) 
+
+
+
