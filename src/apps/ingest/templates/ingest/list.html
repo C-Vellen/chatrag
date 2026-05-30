@@ -40,16 +40,16 @@
                                 <span class="hover:font-bold">{{doc.titre}}</span>
                             </a>
                         </div>
-                        <div  class="w-24 flex justify-between gap-2">
+                        <div  class=" flex justify-end gap-4">
                             
                             <a href="{% url 'ingest:read_chunks' doc.id %}" class="">
-                                <span class="w-8 text-blue-500 hover:font-bold">{{doc.nb_chunks}}</span>
+                                <span class="w-10 text-blue-500 hover:font-bold">{{doc.nb_chunks}}</span>
                             </a>
-                            <a href="{{ doc.source_link }}" target="_blank" class="" >
-                                <img class="w-4" src="{% static doc.source_logo %}" alt="Logo pour {{ doc.source_type }}">
+                            <a href="{{ doc.source_url }}" target="_blank" class="" >
+                                <img class="w-6" src="{% static doc.source_logo %}" alt="Logo pour {{ doc.source_type }}">
                             </a>
                             <a href="{% url 'ingest:remove_document' doc.id %}" class="">
-                                <img class="h-3" src="{% static 'img/cross_round_black.svg' %}" />
+                                <img class="w-4" src="{% static 'img/cross_round_black.svg' %}" />
                             </a>
                         </div>
                 </li>

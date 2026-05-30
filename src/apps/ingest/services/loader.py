@@ -14,6 +14,7 @@ def load_documents(documentref: DocumentRef) -> list[Document]:
         - source :          titre du document
         - source_type:      type du document (TXT, PDF, MD, YT)
         - source_origin:    origine du document : download ou https:// ou src/documents/...
+        - source_url:       accès au lien https:// de la source (media ou externe)
         - source_file:      fichier PDF ou TXT (contenu du document)
         - creattiondate
         [champs facultatives]
@@ -39,6 +40,7 @@ def load_documents(documentref: DocumentRef) -> list[Document]:
         doc.metadata["source"] = documentref.titre
         doc.metadata["source_type"] = documentref.source_type
         doc.metadata["source_origin"] = documentref.source_origin
+        doc.metadata["source_url"] = documentref.source_url
         doc.metadata["video_id"] = documentref.video_id
         
     return docs        

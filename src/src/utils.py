@@ -4,7 +4,6 @@ import requests
 from pathlib import Path
 from urllib.parse import urlparse
 from django.core.files.uploadedfile import InMemoryUploadedFile, SimpleUploadedFile
-from simple_yt_api import YouTubeAPI
 from youtube_transcript_api import YouTubeTranscriptApi
 import yt_dlp
 
