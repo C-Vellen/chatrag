@@ -112,7 +112,7 @@ class DocumentRef(models.Model):
         return f"img/{nom_logo}"
     
     @property
-    def source_link(self):
+    def source_url(self):
         if self.source_type == "YT":
             return self.source_origin
         elif self.source_file:

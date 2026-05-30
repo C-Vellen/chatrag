@@ -19,6 +19,7 @@ def split_documents(docs: list[Document]) -> list[Document]:
         - source :        titre du document
         - source_type:    type du document (TXT, PDF, MD, YT)
         - source_origin:  origine du document : download ou https:// ou src/documents/...
+        - source_url:     accès au lien https:// de la source (media ou externe)
         - creattiondate
         - start_index:    index du 1er caractère du chunk
         - end_index:      index du dernier caractère du chunk
