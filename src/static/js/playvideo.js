@@ -1,6 +1,6 @@
 // YouTube IFrame API 
 
-let currentVideo = null;
+var currentVideo = null;
 let ytPlayer = null;
 let endTimer = null;
 
@@ -14,12 +14,10 @@ function formatTime(seconds) {
 }
 
 function selectVideo(btn) {
+  closePdf();
+  closeTxt()
   stopAndReset();
   btn.closest('.chunk-title').classList.add('bg-blue-100');
-  document.querySelectorAll('#video-list button').forEach(b => {
-    b.classList.remove('bg-white', 'shadow-sm', 'text-indigo-600', 'border-gray-200', 'font-medium');
-    b.classList.add('border-transparent');
-  });
   btn.classList.add('bg-white', 'shadow-sm', 'text-indigo-600', 'border-gray-200', 'font-medium');
   btn.classList.remove('border-transparent');
   currentVideo = {
@@ -37,6 +35,7 @@ function selectVideo(btn) {
   };
   window.scrollTo({top: 0, behavior: "smooth"});
   document.getElementById('thumb-titre-horodate').classList.remove('hidden');
+  document.getElementById('thumb-titre-horodate').classList.add('flex');
   document.getElementById('thumb-titre').textContent = currentVideo.titre;
   document.getElementById('ts-start').textContent = formatTime(currentVideo.start);
   document.getElementById('ts-end').textContent = formatTime(currentVideo.end);
@@ -123,11 +122,8 @@ function closePlayer() {
     container.insertBefore(target, container.firstChild);
   }
   document.getElementById('thumb-titre-horodate').classList.add('hidden');
+  // document.getElementById('thumb-titre-horodate').classList.remove('flex');
   document.getElementById('player-iframe').classList.add('hidden');
   document.getElementById('player-thumb').classList.add('hidden');
-  document.querySelectorAll('#video-list button').forEach(b => {
-    b.classList.remove('bg-white', 'shadow-sm', 'text-indigo-600', 'border-gray-200', 'font-medium');
-    b.classList.add('border-transparent');
-  });
   currentVideo = null;
 }
