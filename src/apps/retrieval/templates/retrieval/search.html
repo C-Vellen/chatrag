@@ -15,13 +15,13 @@
     </div>
 
 
-    <div class="w-full mb-8 flex flex-col md:flex-row md:justify-between md:gap-24">
+    <div class="w-full mb-8 flex flex-col md:flex-row md:justify-between md:gap-12">
         
-        {% comment %} Demi-écran de gauche {% endcomment %}
+      {% comment %} Demi-écran de gauche {% endcomment %}
         <div class="mb-16 md:w-1/2 md:justify-around">
 
             <div class="mb-8">
-                <h1 class="text-titre">Prompt: </h1>
+                <h1 class="text-titre mb-2">Prompt: </h1>
                 <form class="w-full flex flex-col gap-2" method="post" action=".">
                 {% csrf_token %}
                 <textarea id="input" class="w-full text-xs px-4 py-1 h-24 " rows='6' placeholder="Ecrivez ici..." name="prompt">{{prompt}}</textarea>
@@ -32,13 +32,11 @@
             <div class="flex flex-col justify-between">
                 <h1 class="text-titre mb-2">Liste des chunks sélectionnés: </h1>
             
-                <ul id="video-list" class="w-full mb-8 text-xs flex flex-col gap-2">
+                <ul class="w-full mb-8 text-xs flex flex-col gap-2">
 
                     {% for result in results %}
                     <div class="chunk-card">
-                      
                       <div class="chunk-title font-bold flex justify-between">
-
                         <div class="flex flex-start gap-4">
                             <span>{{ forloop.counter }}.</span>
                             <a href="{{ result.chunk.metadata.source_url }}" target="_blank">
@@ -53,47 +51,55 @@
                                         onclick="selectVideo(this)">
                                     <img class="w-4" src="{% static "img/youtube.svg" %}" alt="urlvideo">
                                 </button>
-
                                 <span>{{ result.chunk.metadata.start_time }}s > {{ result.chunk.metadata.end_time }}s</span>
-                            {% elif result.chunk.metadata.page_label %}
-                                <span>Page {{ result.chunk.metadata.page_label }}</span>
-                        
-                            {% else %}
-                                <span> [index: {{ result.chunk.metadata.start_index }}]</span>
+                            {% elif result.chunk.metadata.source_type == "PDF" %}
+                                <button 
+                                        data-titre="{{ result.chunk.metadata.source }}"
+                                        data-file="{{ result.chunk.metadata.source_url }}"
+                                        data-page="{{ result.chunk.metadata.page_label }}" 
+                                        onclick="selectPdf(this)">
+                                    <img class="w-4" src="{% static "img/PDF.svg" %}" alt="pdf">
+                                </button>
+                                <span>page: {{ result.chunk.metadata.page_label }}</span>
+                            {% elif result.chunk.metadata.source_type == "TXT" %}
+                                <button 
+                                        data-titre="{{ result.chunk.metadata.source }}"
+                                        data-file="{{ result.chunk.metadata.source_url }}"
+                                        data-start="{{ result.chunk.metadata.start_index }}" 
+                                        data-end="{{ result.chunk.metadata.end_index }}" 
+                                        onclick="selectText(this)">
+                                    <img class="w-4" src="{% static "img/TXT.svg" %}" alt="txt">
+                                </button>
+                                <span>index: [{{ result.chunk.metadata.start_index }}-{{ result.chunk.metadata.end_index }}]</span>
+
                             {% endif %}
                         </div>
-
                         <div><span> [similarité : {{ result.similarity }}]</span></div>
-                        
                       </div>
-                  
                       <div class="chunk-content">
                           {{ result.chunk.page_content }}
                       </div>
-                    
                     </div>
                     {% endfor %} 
                 </ul>
              </div>
-        
         </div>
 
-
-
-        {% comment %} demi-écran de droite {% endcomment %}
+      {% comment %} demi-écran de droite {% endcomment %}
 
         <div class="flex flex-col md:w-1/2">
 
-        <!-- Fenêtre de visualisation -->
+        <!-- Fenêtre de visualisation video -->
         <div class="">
 
           <!-- titre et horodatage -->  
-          <div id="thumb-titre-horodate" class="hidden flex justify-between gap-4" >
+          <div id="thumb-titre-horodate" class="hidden mb-2 justify-between gap-4" >
             <p id="thumb-titre" class="text-black text-sm font-medium drop-shadow truncate"></p>
             <div class="flex gap-1">
               <span id="ts-start" class="text-sm  text-black font-mono"></span>
               <span class="text-sm text-black">→</span>
               <span id="ts-end" class="text-sm  text-black font-mono"></span>
+              <button onclick="closePlayer()" class="ml-4 text-sm">✕</button>
             </div>
           </div>
 
@@ -102,11 +108,8 @@
             <img id="thumb-img" src="" alt="" class="w-full h-full object-cover" />
             <div class="absolute inset-0 bg-black/30"></div>
             
-            <button onclick="closePlayer()" class="absolute top-3 right-3 w-9 h-9 rounded-full bg-black/50 hover:bg-black/70 flex items-center justify-center transition-colors" aria-label="Fermer">
-              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
+            
+            <!-- Bouton Logo YT (play video) -->
             <button id="btn-play" onclick="playVideo()" class="absolute inset-0 flex items-center justify-center group" aria-label="Lire la vidéo">
               <div class="flex items-center justify-center shadow-xl transition-all duration-150 group-hover:scale-110">
                 <img class="w-14" src="{% static "img/youtube.svg" %}" alt="bouton youtube"> 
@@ -117,14 +120,55 @@
           <!-- Conteneur iframe YT API -->
           <div id="player-iframe" class="hidden overflow-hidden shadow-lg" style="position:relative; width:100%; padding-top:56.25%;">
             <div id="yt-player" style="position:absolute; top:0; left:0; width:100%; height:100%;"></div>
-            <button onclick="closePlayer()" class="absolute top-3 right-3 w-9 h-9 rounded-full bg-black/50 hover:bg-black/70 flex items-center justify-center transition-colors z-10" aria-label="Fermer">
-              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
           </div>     
         </div>       
-        <!-- Fin fenêtre de visualisation-->
+        <!-- Fin fenêtre de visualisation video -->
+
+
+        <!-- Fenêtre de visualisation pdf -->
+        <div>
+    
+          <!-- Titre et pagination -->
+          <div id="pdf-titre-pagination" class="hidden mb-2 justify-between gap-4" >
+            <p id="pdf-titre" class="text-black text-sm font-medium drop-shadow truncate"></p>
+            <div class="flex gap-1 text-sm">
+              <button onclick="changePage(-1)" class="">◄</button>
+              <span>Page <span id="pdf-page-current">1</span> / <span id="pdf-page-total">?</span></span>
+              <button onclick="changePage(1)" class="">►</button>
+              <button onclick="closePdf()" class="ml-4 text-sm">✕</button>
+            </div>
+          </div>
+          <!-- Zone scrollable -->
+          <div id="pdf-viewer" class="hidden flex-col border border-gray-300 overflow-hidden bg-gray-100">
+        
+            <div id="pdf-container" class="flex-1 overflow-y-auto bg-slate-300 flex flex-col justify-between items-center gap-4 p-2 min-h-0" >
+              <!-- Les canvas des pages s'insèrent ici -->
+            </div>
+          </div>
+        </div>
+        <!-- Fin fenêtre de visualisation pdf -->
+
+       <!-- Fenêtre de visualisation txt -->
+        <div>   
+    
+          <!-- Titre et pagination -->
+          <div id="txt-titre-index" class="hidden mb-2 justify-between gap-4" >
+            <p id="txt-titre" class="text-black text-sm font-medium drop-shadow truncate"></p>
+            <div class="flex gap-1 text-sm">
+              <span>Index: </span>
+              <span id="start-index" class="text-sm  text-black font-mono"></span>
+              <span class="text-sm text-black">→</span>
+              <span id="end-index" class="text-sm  text-black font-mono"></span>
+              <button onclick="closeTxt()" class="ml-4 text-sm">✕</button>
+            </div>
+          </div>
+          <!-- Zone scrollable -->
+          <div id="txt-viewer" class="hidden flex-col border border-gray-300 rounded-lg overflow-hidden bg-white">
+            <div id="txt-container" class="flex-1 overflow-y-auto p-6 min-h-0 font-mono text-xs text-gray-800 whitespace-pre-wrap leading-relaxed">
+            </div>
+          </div>
+        </div>
+        <!-- Fin fenêtre de visualisation txt -->
 
             <div class="hidden w-full mt-12 mb-4 flex flex-col gap-4 md:flex-row">
                 <div class="w-3/4  mb-4 flex flex-col gap-4 justify-start md:flex-row">    
@@ -149,10 +193,15 @@
 
 </section>
 
-<script src="{% static 'js/playvideo.js' %}"></script>
-
+<script src="{% static 'js/pdf.min.js' %}"></script>
+<script>
+  var PDF_WORKER_URL = "{% static 'js/pdf.worker.min.js' %}";
+</script>
 <script src="https://www.youtube.com/iframe_api"></script>
-  <script>
+{% comment %} <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script> {% endcomment %}
+<script src="{% static 'js/playvideo.js' %}"></script>
+<script src="{% static 'js/readPDF.js' %}"></script>
+<script src="{% static 'js/readTXT.js' %}"></script>
 
 
 
