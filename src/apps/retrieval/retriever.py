@@ -1,37 +1,129 @@
 from dataclasses import dataclass
 from langchain_core.documents import Document
 from ingest.services.embedder import get_vectorstore
+from ingest.models import Collection
+from retrieval.models import RetrivConfig
 
 
 @dataclass
 class ChunkResult:
     """Un chunk avec sa métrique de similarité."""
     chunk:       Document
-    distance:    float      # distance L2 (plus proche de 0 = plus similaire)
-    similarity:  float      # similarité normalisée entre 0 et 1
+    distance:    float      
+    similarity:  float      
 
 
-def retrieve_chunks(question: str, k: int = 4) -> list[ChunkResult]:
+
+
+
+
+def _compute_similarity(distance: float, metric: str) -> float:
+    match metric:
+        case "COSINE":
+            return 1 - distance
+        case "EUCLIDEAN":
+            return 1 / (1 + distance)
+        case "DOT_PRODUCT":
+            return -distance
+        case _:
+            return 1 - distance
+
+
+def _to_chunk_results(
+    docs_with_scores: list[tuple[Document, float]],
+    metric: str,
+) -> list[ChunkResult]:
+    results = [
+        ChunkResult(
+            chunk=doc,
+            distance=round(float(score), 4),
+            similarity=round(_compute_similarity(float(score), metric), 4),
+        )
+        for doc, score in docs_with_scores
+    ]
+    results.sort(key=lambda r: r.distance)
+    return results
+
+
+def retrieve_chunks(question: str) -> list[ChunkResult]:
     """
-    Retourne les k chunks les plus pertinents pour une question,
-    avec leur métrique de distance.
+    Retourne les chunks les plus pertinents pour une question.
+    Les paramètres (k, search_type, etc.) sont lus depuis RetrivConfig.
     """
+    collection = Collection.get_active()
     vectorstore = get_vectorstore()
+    cfg = RetrivConfig.get_solo()
 
-    # Retourne une liste de tuples (Document, distance L2)
-    docs_with_scores = vectorstore.similarity_search_with_score(question, k=k)
+    match cfg.search_type:
 
-    results = []
-    for doc, distance in docs_with_scores:
-        # Normalisation : convertit la distance L2 en similarité [0, 1]
-        # Plus la distance est faible, plus la similarité est haute
-        similarity = 1 / (1 + distance)
+        case "similarity":
+            docs_with_scores = vectorstore.similarity_search_with_score(
+                question,
+                k=cfg.k,
+            )
 
-        results.append(ChunkResult(
-            chunk      = doc,
-            distance   = round(float(distance), 4),
-            similarity = round(float(similarity), 4),
-        ))
+        case "mmr":
+            # MMR ne retourne pas de scores → on affecte distance=0 / similarity=1
+            docs = vectorstore.max_marginal_relevance_search(
+                question,
+                k=cfg.k,
+                fetch_k=cfg.fetch_k,
+                lambda_mult=cfg.lambda_mult,
+            )
+            docs_with_scores = [(doc, 0.0) for doc in docs]
+
+        case "similarity_score_threshold":
+            docs_with_scores = vectorstore.similarity_search_with_relevance_scores(
+                question,
+                k=cfg.k,
+                score_threshold=cfg.score_threshold,
+            )
+
+        case _:
+            raise ValueError(f"search_type inconnu : {cfg.search_type!r}")
+
+    return _to_chunk_results(docs_with_scores, collection.metrics)
+
+
+
+
+
+
+
+
+
+
+
+
+
+# ========================================
+# def retrieve_chunks(question: str, k: int = 4) -> list[ChunkResult]:
+#     """
+#     Retourne les k chunks les plus pertinents pour une question,
+#     avec leur métrique de distance.
+#     """
+#     collection = Collection.get_active()
+#     vectorstore = get_vectorstore()
+
+#     # Retourne une liste de tuples (Document, distance L2)
+#     docs_with_scores = vectorstore.similarity_search_with_score(question, k=k)
+
+#     results = []
+#     for doc, distance in docs_with_scores:
+#         # Calcul de la similarité selon la métrique configurée
+#         match collection.metrics:
+#             case "COSINE":
+#                 similarity = 1 - distance
+#             case "EUCLIDEAN":
+#                 similarity = 1 / (1 + distance)
+#             case "DOT_PRODUCT":
+#                 similarity = -distance
+        
+#         results.append(ChunkResult(
+#             chunk      = doc,
+#             distance   = round(float(distance), 4),
+#             similarity = round(float(similarity), 4),
+#         ))
 
     # Tri par distance croissante (meilleurs en premier)
     results.sort(key=lambda r: r.distance)

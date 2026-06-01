@@ -27,6 +27,7 @@ INSTALLED_APPS = [
     "ingest",
     "retrieval",
     "chat",
+    "solo",
     "tailwind",
     "theme",
 ]

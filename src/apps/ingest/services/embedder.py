@@ -3,6 +3,7 @@ from langchain_core.documents import Document
 from langchain_openai import OpenAIEmbeddings
 from langchain_huggingface import HuggingFaceEndpointEmbeddings
 from langchain_postgres import PGVector
+from langchain_postgres.vectorstores import DistanceStrategy
 from ingest.models import Collection
 from src.config import settings
 from src.settings import DEBUG
@@ -40,6 +41,7 @@ def get_vectorstore_explicit(chunks):
         embeddings=get-hf-embeddings()
     """
     collection = Collection.get_active()
+    distance_strategy = getattr(DistanceStrategy, collection.metrics)
     embeddings = get_hf_embeddings()
     texts = [doc.page_content for doc in chunks]
     metadatas=[d.metadata for d in chunks]
@@ -57,6 +59,7 @@ def get_vectorstore_explicit(chunks):
         connection=settings.ragdb_url,
         # Crée la table + l'extension pgvector si elle n'existe pas
         create_extension=True,
+        distance_strategy=distance_strategy,
     )
     # Enregistre les données dans la table:
     vectorstore.add_embeddings(
@@ -70,14 +73,15 @@ def get_vectorstore_explicit(chunks):
 
 def get_vectorstore() -> PGVector:
     """Retourne le vectorstore connecté à PostgreSQL."""
-  
     collection = Collection.get_active()
+    distance_strategy = getattr(DistanceStrategy, collection.metrics)
     return PGVector(
         embeddings=get_hf_embeddings(),
         collection_name=collection.collection_name,
         connection=settings.ragdb_url,
         # Crée la table + l'extension pgvector si elle n'existe pas
         create_extension=True,
+        distance_strategy=distance_strategy,
     )
 
 def embed_and_store(chunks: list[Document]) -> PGVector:
@@ -93,10 +97,3 @@ def embed_and_store(chunks: list[Document]) -> PGVector:
     
     print(f"  → {len(chunks)} chunks et vecteurs stockés dans PostgreSQL {settings.ragdb_name}/{settings.ragdb_user}@localhost:{settings.ragdb_port} ✓")
     return vectorstore
-
-def embed_dryrun(chunks: list[Document]):
-    """Dryrun embeddings """
-    print(f"  → Calcul des embeddings pour {len(chunks)} chunks...")
-    print(repr(settings.ragdb_url))
-    print("  → Chunks non stockés dans PostgreSQL ✓")
-    

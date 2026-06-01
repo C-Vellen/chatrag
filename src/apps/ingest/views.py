@@ -1,4 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
+from django.db.models import Sum
 from home.context import usercontext
 from .models import Collection, DocumentRef
 from .forms import DocumentForm
@@ -11,7 +12,6 @@ def documents_list(request):
     ''' Liste des documents ingérés + interface pour ingérer un nouveau document'''
     
     
-    modeform = True     #affiche le formulaire dans le html
     modechunks = False  #n'affiche pas la liste de chunks dans le formulaire
     
     collection = Collection.get_active()
@@ -45,8 +45,8 @@ def documents_list(request):
         "collection":collection,
         "docs":docs,
         "n_docs":len(docs),
+        "n_chunks": DocumentRef.objects.aggregate(total=Sum('nb_chunks'))["total"],
         "form":form,
-        "modeform": modeform,
         "modechunks":modechunks,
     })
     
@@ -68,7 +68,6 @@ def read_chunks(request, document_id):
     ''' Liste des documents ingérés + affichage des chunks du document sélectionné'''
 
     
-    modeform = False     # n'affiche pas le formulaire dans le html
     modechunks = True  # affiche la liste de chunks dans le formulaire
    
     collection = Collection.get_active()  
@@ -80,10 +79,12 @@ def read_chunks(request, document_id):
     
     docs = DocumentRef.objects.filter(collection=collection, is_active=True)
     context.update({
-        
+        "collection":collection,
+        "form": DocumentForm(),
         "docs":docs,
         "n_docs":len(docs),
-        "modeform": modeform,
+        "n_chunks": DocumentRef.objects.aggregate(total=Sum('nb_chunks'))["total"],
+        
         "modechunks":modechunks,
         "doc":doc,
         "chunks":[c["content"] for c in chunks]
