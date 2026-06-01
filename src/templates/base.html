@@ -18,7 +18,7 @@
         
         <div class="w-full min-w-screen-xs min-h-screen flex flex-col justify-start items-center">
             
-            <header class="fixed z-10 pl-8 pr-12 h-12 w-full flex flex-row justify-between items-center bg-slate-100 text-black">
+            <header class="fixed z-10 pl-8 pr-12 h-12 w-full flex flex-row justify-between items-center bg-header text-black">
                 <div id="logo">
                     <a href="{% url 'home:index' %}#accueil">
                         <img class="h-12 sm:h-8" src="{{ Bandeau_logo|find_file }}" alt="{{ Bandeau_logo|find_content:1 }}" />
@@ -31,13 +31,13 @@
                     <div id="navbar" class="flex flex-row justify-between items-center gap-4 sm:gap-4">
                 
                         <a href="{% url 'home:index' %}" class="">
-                                <img class="h-6" src="{% static 'img/home_black.svg' %}" />
+                                <img class="h-6" src="{% static 'img/home_white.svg' %}" />
                         </a>
                         
-                        <a href="{% url 'user:connexion' %}" title="connectez-vous !" class="text-xs m-0 p-0 w-6 h-6 border-black border-2 bg-transparent rounded-full text-center flex justify-center items-center" style="color:transparent; text-shadow: 0 0 0 #000;">{{user|initiales}}</a>
+                        <a href="{% url 'user:connexion' %}" title="connectez-vous !" class="text-xs text-white m-0 p-0 w-6 h-6 border-white border-2 bg-transparent rounded-full text-center flex justify-center items-center" style="color:transparent; text-shadow: 0 0 0 #fff;">{{user|initiales}}</a>
                         
                         <a id="deconnect-button" class="group hover:cursor-pointer" >
-                            <img class="h-6 group-hover:hidden" src="{% static 'img/deconnexion_black.svg' %}" />  
+                            <img class="h-6 group-hover:hidden" src="{% static 'img/deconnexion_white.svg' %}" />  
                             <img class="h-6 hidden group-hover:inline" src="{% static 'img/deconnexion_red.svg' %}" />
                         </a>
                     </div>
