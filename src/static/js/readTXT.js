@@ -7,8 +7,8 @@ async function selectText(btn) {
   const endIndex = parseInt(btn.dataset.end);
   closePlayer()
   closePdf()
-  document.querySelectorAll('.chunk-title').forEach(d => d.classList.remove('bg-blue-100')); 
-  btn.closest('.chunk-title').classList.add('bg-blue-100');
+  document.querySelectorAll('.chunk-title').forEach(d => d.classList.remove('bg-header', 'text-white')); 
+  btn.closest('.chunk-title').classList.add('bg-header', 'text-white');
 
   document.getElementById('txt-titre').textContent = titre;
 
@@ -52,6 +52,7 @@ function renderText(text, startIndex, endIndex) {
 
   // Scroll jusqu'à la surbrillance
   scrollToHighlight();
+  window.scrollTo({top: 0, behavior: "smooth"});
 }
 
 function scrollToHighlight() {
@@ -83,4 +84,6 @@ function closeTxt() {
   viewer.classList.add('hidden');
   viewer.classList.remove('flex');
   document.getElementById('txt-container').innerHTML = '';
+  document.querySelectorAll('.chunk-title').forEach(d => d.classList.remove('bg-header', 'text-white'));
+
 }

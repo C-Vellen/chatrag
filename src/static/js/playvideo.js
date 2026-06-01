@@ -17,9 +17,7 @@ function selectVideo(btn) {
   closePdf();
   closeTxt()
   stopAndReset();
-  btn.closest('.chunk-title').classList.add('bg-blue-100');
-  btn.classList.add('bg-white', 'shadow-sm', 'text-indigo-600', 'border-gray-200', 'font-medium');
-  btn.classList.remove('border-transparent');
+  btn.closest('.chunk-title').classList.add('bg-header', 'text-white');
   currentVideo = {
     id: btn.dataset.videoId,
     start: parseInt(btn.dataset.start),
@@ -99,7 +97,7 @@ function scheduleEnd(seconds) {
 
 function stopAndReset() {
   clearTimeout(endTimer);
-  document.querySelectorAll('.chunk-title').forEach(d => d.classList.remove('bg-blue-100'));
+  document.querySelectorAll('.chunk-title').forEach(d => d.classList.remove('bg-header', 'text-white'));
   if (ytPlayer) {
     try { ytPlayer.stopVideo(); } catch(e) {}
   }

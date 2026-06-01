@@ -19,7 +19,7 @@
             <form class="w-full mb-8" method="post" action="." enctype="multipart/form-data" >       
                 {% csrf_token %}
                 <div class="mb-2 w-full flex justify-between">
-                    <h1 class="text-titre">Ajouter un nouveau document:</h1>
+                    <h1 class="text-titre">Ajouter un nouveau document: fichier txt, md, pdf ou video youtube</h1>
                     <button type="submit" name="submit_file" class="" title="Ajouter un fichier ou un lien">
                         <img class="w-4 h-4" src="{% static 'img/plus_round.svg' %}" alt="Ajouter">     
                     </button>
