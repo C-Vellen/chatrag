@@ -83,6 +83,12 @@
                     {% endfor %} 
                 </ul>
              </div>
+             <div class="mt-8 mb-4 flex gap-2 justify-start">
+                <p class="text-xs text-slate-500 italic"> Configuration retriever:</p>
+                <a href="{% url 'admin:retrieval_retrivconfig_change' 1 %}" class="">   
+                    <img class="w-4 h-4" src="{% static 'img/crayon.svg' %}" alt="Modifier">     
+                </a>
+            </div>
         </div>
 
       {% comment %} demi-écran de droite {% endcomment %}

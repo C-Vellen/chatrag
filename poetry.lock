@@ -606,6 +606,21 @@ django = ">=4.2.9"
 sqlparse = ">=0.2"
 
 [[package]]
+name = "django-solo"
+version = "2.5.1"
+description = "Django Solo helps working with singletons"
+optional = false
+python-versions = ">=3.10"
+groups = ["main"]
+files = [
+    {file = "django_solo-2.5.1-py3-none-any.whl", hash = "sha256:23bfe48950587b409ec4b4ef95e5e62c1c6c590dd958d8d8b99d37d5ccb53ca8"},
+    {file = "django_solo-2.5.1.tar.gz", hash = "sha256:ca3b2e44dbb4726446941ca8d765c247123f709f051d07e62eacf97330ffde01"},
+]
+
+[package.dependencies]
+django = ">=4.2"
+
+[[package]]
 name = "django-tailwind"
 version = "4.4.2"
 description = "Tailwind CSS Framework for Django projects"
@@ -4010,4 +4025,4 @@ cffi = ["cffi (>=1.17,<2.0) ; platform_python_implementation != \"PyPy\" and pyt
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12, <3.14"
-content-hash = "5a5f4d4dc22a74f6557ea452aa6a84b88064155a2f6deb00ae41fc8ad2bfa4d9"
+content-hash = "82ec0db846ebed74e6dc7e96ce037afd88aed9715895f284a5ab79c58c298404"

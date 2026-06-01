@@ -20,8 +20,12 @@ SOURCE_LOGOS = {
     "PDF":  "PDF.svg",
     "YT":   "youtube.svg",
     "OTH":  "blank.svg",
-
 } 
+METRICS = {
+    "COSINE": "Distance Cosinus",
+    "EUCLIDEAN": "Distance Euclidienne L2",
+    "DOT_PRODUCT": "Produit scalaire",
+}
 
 
 def valider_uri(valeur):
@@ -45,13 +49,20 @@ class Collection(models.Model):
     collection_name = models.CharField(max_length=100, default="documents", help_text="exemple: documents_chunk1000_bge-m3")
     collection_id   = models.CharField(max_length=50, blank=False)
     is_active       = models.BooleanField(default=True)
-    embedding_model = models.CharField(max_length=100, default="BAAI/bge-m3", help_text="relancer l'embedding si modificaiton")
+    embedding_model = models.CharField(max_length=100, default="BAAI/bge-m3", help_text="relancer l'embedding si modification")
     
     # chunk config
-    chunk_size      = models.IntegerField(default=1000, help_text="taille maxi des cunks (en caractères), relancer l'embedding si modificaiton")
-    chunk_overlap   = models.IntegerField(default=200, help_text="max chunk overlap (en caractères), relancer l'embedding si modificaiton")
+    chunk_size      = models.IntegerField(default=1000, help_text="taille maxi des chunks (en caractères), relancer l'embedding si modification")
+    chunk_overlap   = models.IntegerField(default=200, help_text="max chunk overlap (en caractères), relancer l'embedding si modification")
     chunk_number    = models.IntegerField(default=32, help_text="nombre maxi de chunks par batch, à réduire si cpu-only")
     
+    # metrics
+    metrics          = models.CharField(
+        max_length=20, 
+        choices=METRICS, 
+        default="COSINE",
+        help_text="distance entre vecteurs, relancer l'embedding si modification",
+        )
   
     class Meta:
         verbose_name = "Collection"

@@ -1,9 +1,6 @@
-import sys
-from pathlib import Path
-from src.config import settings
 from django.shortcuts import render
 from home.context import usercontext
-from .retriever import retrieve_chunks, ChunkResult, print_chunks_results
+from .retriever import retrieve_chunks, print_chunks_results
 
 
 def search(request):
@@ -18,7 +15,7 @@ def search(request):
         prompt = request.POST["prompt"]
         
         # Récupérer les k meilleurs chunks avec leurs métriques
-        results = retrieve_chunks(prompt, k=settings.retriever_k)
+        results = retrieve_chunks(prompt)
 
         # Affichage console debug
         print_chunks_results(prompt, results)
