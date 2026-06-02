@@ -13,7 +13,7 @@
         <h1 class="text-grostitre mb-4">Gestion des documents ingérés dans la base de donnée vectorielle</h1>
         <a href="{% url 'retrieval:search' %}" class="text-xs px-2 py-1 h-6 bg-slate-200"> Recherche >> </a>
     </div>
-    <div class="w-full mb-8 flex flex-col md:flex-row md:justify-between md:gap-24">
+    <div class="w-full mb-8 flex flex-col md:flex-row md:justify-between md:gap-12">
         <div class="mb-16 md:w-1/2 md:justify-around">
             <!-- formulaire nouveau document-->
             <form class="w-full mb-8" method="post" action="." enctype="multipart/form-data" >       
@@ -31,50 +31,82 @@
 
 
 
-
-
-
-
             <div class="flex justify-between mb-2">
                 <h1 class="text-titre">Documents ingérés: {{n_docs}} </h1>
                 <span class="text-xs text-blue-500">Total chunks: {{n_chunks}}</span>
             </div>
             <ul class="text-xs flex flex-col">
                  
-
-
-
-                <li class="w-full flex justify-between">
-                    <div class="w-full flex justify-startfont-bold mb-2">
-                        <span class="w-16">Date</span>
+                {% comment %} <li class="w-full flex justify-between"> {% endcomment %}
+                <li class="mb-2 grid grid-cols-[40px_1fr_40px_20px_20px] gap-4 items-start">
+                    
+                        <span class="">Date</span>
                         <span>Titre document</span>
-                    </div>
-                    <div  class="w-24 flex justify-between gap-2">
-                        <span class="w-8  text-blue-500">chunks</span>
-                        <span class="w-6 ml-3">source</span>
-                        <span class="w-6"></span>
-                    </div>
+                   
+                        <span class="">source</span>
+                        <span class=" text-blue-500">chunks</span>
+                        <span class=""></span>
+                
                 </li>
                 {% for doc in docs %}
-                <li id="{{doc.id}}" class="w-full flex justify-between">
-                        <div class="w-full flex justify-start">
-                            <span class="w-16">{{doc.created_at|date:"d/m/y"}}</span>
-                            <a href="{% url 'admin:ingest_documentref_change' doc.id %}" class="">
-                                <span class="hover:font-bold">{{doc.titre}}</span>
+                {% comment %} <li id="{{doc.id}}" class="headline-title w-full flex justify-between"> {% endcomment %}
+
+                {%if doc.id == select_doc %}
+                <li id="{{doc.id}}" class="headline-title bg-header grid grid-cols-[40px_1fr_40px_20px_20px] gap-4 items-start ">
+                {% else %}
+                <li id="{{doc.id}}" class="headline-title grid grid-cols-[40px_1fr_40px_20px_20px] gap-4 items-start ">
+                {% endif %}
+                        
+                            <span class="w-16 text-left">{{doc.created_at|date:"d/m/y"}}</span>
+                            <a href="{% url 'admin:ingest_documentref_change' doc.id %}" class="text-left">
+                                <span class=" hover:font-bold">{{doc.titre}}</span>
                             </a>
-                        </div>
-                        <div  class=" flex justify-end gap-4">
-                            
-                            <a href="{% url 'ingest:read_chunks' doc.id %}" class="">
-                                <span class="w-10 text-blue-500 hover:font-bold">{{doc.nb_chunks}}</span>
-                            </a>
-                            <a href="{{ doc.source_url }}" target="_blank" class="" >
-                                <img class="w-6" src="{% static doc.source_logo %}" alt="Logo pour {{ doc.source_type }}">
+                            {% if modechunks %}
+                                <div class="flex justify-center">
+                                <img class="w-4 " src="{% static doc.source_logo %}" alt="urlvideo">
+                                </div>
+                            {% else %}
+                            {% if doc.source_type == "YT" %}
+                                <button class="flex justify-center"
+                                        data-video-id="{{ doc.video_id }}" 
+                                        data-start="0" 
+                                        data-end=none
+                                        data-titre="{{ doc.titre }}"
+                                        onclick="selectVideo(this)">
+                                    <img class="w-4 " src="{% static doc.source_logo %}" alt="urlvideo">
+                                </button>
+                                
+                            {% elif doc.source_type == "PDF" %}
+                                <button class="flex justify-center"
+                                        data-titre="{{ doc.titre }}"
+                                        data-file="{{ doc.source_url }}"
+                                        data-page="1" 
+                                        onclick="selectPdf(this)">
+                                    <img class="w-4" src="{% static doc.source_logo %}" alt="pdf">
+                                </button>
+                                
+                            {% elif doc.source_type == "TXT" %}
+                                <button class="flex justify-center"
+                                        data-titre="{{ doc.titre }}"
+                                        data-file="{{ doc.source_url }}"
+                                        data-start="0" 
+                                        data-end="0" 
+                                        onclick="selectText(this)">
+                                    <img class="w-4" src="{% static doc.source_logo %}" alt="txt">
+                                </button>
+                                
+
+                            {% endif %}
+                            {% endif %}
+                            <a 
+                                class="flex items-end"
+                                href="{% url 'ingest:read_chunks' doc.id %}" >
+                                <span class="w-12 text-right text-blue-500 hover:font-bold">{{doc.nb_chunks}}</span>
                             </a>
                             <a href="{% url 'ingest:remove_document' doc.id %}" class="">
                                 <img class="w-4" src="{% static 'img/cross_round_black.svg' %}" />
                             </a>
-                        </div>
+                        
                 </li>
                 {% empty %}
                 <li><span>Aucun document trouvé</span><li>
@@ -92,40 +124,32 @@
 
         
         <div class="flex flex-col md:w-1/2">
+
+            {% include 'retrieval/document_viewer.html' %}
+            {% if modechunks %}
+            {% include 'retrieval/chunks_list.html' %}
+            {% endif %}
+            
             
             
 
             
-            {% if modechunks %}
-            <div class="w-full mb-4 flex justify-between">
-                <div class="w-full text-titre flex justify-start">
-                    <span class="w-20">{{doc.created_at|date:"d/m/y"}}</span>
-                    <span class="hover:font-bold">{{doc.titre}}</span>
-                </div>
-                <div  class="flex justify-between gap-2">
-                    <span class="w-20 pt-1 text-xs text-blue-500">{{doc.nb_chunks}} chunks </span>
-                     <a href="{{ doc.source_link }}" target="_blank" class="" >
-                        <img class="w-6" src="{% static doc.source_logo %}" alt="Logo pour {{ doc.source_type }}">
-                    </a>
-                    <a href="{% url 'ingest:documents_list' %}" class="">
-                    <span class="w-8 mb-2 text-sm text-slate-500 hover:text-black">✕</span>
-                    </a>
-                </div>
-            </div>
-            <ul class="w-full text-xs flex flex-col gap-2">
-                {% for chunk in chunks %}
-                <li class="">
-                    {{chunk}}
-                    <span class="font-bold">[{{chunk|length}} car., {{chunk|wordcount}} mots]</span>
-                </li>
-                {% empty %}
-                <p> Aucun chunk trouvé </p>
-                {% endfor %}
-            </ul>
-            {% endif %}
+            
             
         </div>
     </div>
 </section>
+
+
+<script src="{% static 'js/pdf.min.js' %}"></script>
+<script>
+  var PDF_WORKER_URL = "{% static 'js/pdf.worker.min.js' %}";
+</script>
+<script src="https://www.youtube.com/iframe_api"></script>
+{% comment %} <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script> {% endcomment %}
+<script src="{% static 'js/playvideo.js' %}"></script>
+<script src="{% static 'js/readPDF.js' %}"></script>
+<script src="{% static 'js/readTXT.js' %}"></script>
+
 
 {% endblock %}
