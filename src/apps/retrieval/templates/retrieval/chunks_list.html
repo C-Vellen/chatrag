@@ -1,0 +1,26 @@
+{% load static %}
+
+<div class="">
+<div class="w-full mb-4 flex justify-between">
+    <div class="w-full text-titre flex justify-start">
+        <span class="w-20">{{doc.created_at|date:"d/m/y"}}</span>
+        <span class="hover:font-bold">{{doc.titre}}</span>
+    </div>
+    <div  class="flex justify-between gap-2">
+        <span class="w-20 pt-1 text-xs text-blue-500">{{doc.nb_chunks}} chunks </span>
+        <a href="{% url 'ingest:documents_list' %}" onclick="closeChunkList(this)" class="">
+        <span class="w-8 mb-2 text-sm text-slate-500 hover:text-black">✕</span>
+        </a>
+    </div>
+</div>
+<ul class="w-full text-xs flex flex-col gap-2">
+    {% for chunk in chunks %}
+    <li class="">
+        {{chunk}}
+        <span class="font-bold">[{{chunk|length}} car., {{chunk|wordcount}} mots]</span>
+    </li>
+    {% empty %}
+    <p> Aucun chunk trouvé </p>
+    {% endfor %}
+</ul>
+</div>

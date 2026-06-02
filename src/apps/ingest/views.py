@@ -12,7 +12,6 @@ def documents_list(request):
     ''' Liste des documents ingérés + interface pour ingérer un nouveau document'''
     
     
-    modechunks = False  #n'affiche pas la liste de chunks dans le formulaire
     
     collection = Collection.get_active()
     context = usercontext(request)
@@ -47,7 +46,7 @@ def documents_list(request):
         "n_docs":len(docs),
         "n_chunks": DocumentRef.objects.aggregate(total=Sum('nb_chunks'))["total"],
         "form":form,
-        "modechunks":modechunks,
+        "modechunks":False,
     })
     
     return render(request, "ingest/list.html", context)
@@ -82,10 +81,11 @@ def read_chunks(request, document_id):
         "collection":collection,
         "form": DocumentForm(),
         "docs":docs,
+        "select_doc":document_id,
         "n_docs":len(docs),
         "n_chunks": DocumentRef.objects.aggregate(total=Sum('nb_chunks'))["total"],
         
-        "modechunks":modechunks,
+        "modechunks":True,
         "doc":doc,
         "chunks":[c["content"] for c in chunks]
         

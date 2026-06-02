@@ -26,3 +26,10 @@ def search(request):
         })
             
     return render(request, "retrieval/search.html", context)
+
+
+def read_chunks(request, document_id, chunk_id):
+    ''' Affichage des chunks du document sélectionné + surbrillance du chunk sléectionné'''
+
+    
+    pass

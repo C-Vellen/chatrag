@@ -1,0 +1,80 @@
+{% load static %}
+
+ <!-- Fenêtre de visualisation video -->
+        <div class="">
+
+          <!-- titre et horodatage -->  
+          <div id="thumb-titre-horodate" class="hidden mb-2 justify-between gap-4" >
+            <p id="thumb-titre" class="text-black text-sm font-medium drop-shadow truncate"></p>
+            <div class="flex gap-1">
+              <span id="timestamp" class="text-sm  text-black font-mono"></span>
+              <button onclick="closePlayer()" class="ml-4 text-sm">✕</button>
+            </div>
+          </div>
+
+          <!-- Miniature + contrôles -->
+          <div id="player-thumb" class="hidden aspect-video overflow-hidden relative bg-black shadow-lg">
+            <img id="thumb-img" src="" alt="" class="w-full h-full object-cover" />
+            <div class="absolute inset-0 bg-black/30"></div>
+            
+            
+            <!-- Bouton Logo YT (play video) -->
+            <button id="btn-play" onclick="playVideo()" class="absolute inset-0 flex items-center justify-center group" aria-label="Lire la vidéo">
+              <div class="flex items-center justify-center shadow-xl transition-all duration-150 group-hover:scale-110">
+                <img class="w-14" src="{% static "img/youtube.svg" %}" alt="bouton youtube"> 
+              </div>
+            </button>
+            
+          </div>   
+          <!-- Conteneur iframe YT API -->
+          <div id="player-iframe" class="hidden overflow-hidden shadow-lg" style="position:relative; width:100%; padding-top:56.25%;">
+            <div id="yt-player" style="position:absolute; top:0; left:0; width:100%; height:100%;"></div>
+          </div>     
+        </div>       
+        <!-- Fin fenêtre de visualisation video -->
+
+
+        <!-- Fenêtre de visualisation pdf -->
+        <div>
+    
+          <!-- Titre et pagination -->
+          <div id="pdf-titre-pagination" class="hidden mb-2 justify-between gap-4" >
+            <p id="pdf-titre" class="text-black text-sm font-medium drop-shadow truncate"></p>
+            <div class="flex gap-1 text-sm">
+              <button onclick="changePage(-1)" class="">◄</button>
+              <span>Page <span id="pdf-page-current">1</span> / <span id="pdf-page-total">?</span></span>
+              <button onclick="changePage(1)" class="">►</button>
+              <button onclick="closePdf()" class="ml-4 text-sm">✕</button>
+            </div>
+          </div>
+          <!-- Zone scrollable -->
+          <div id="pdf-viewer" class="hidden flex-col border border-gray-300 overflow-hidden bg-gray-100">
+        
+            <div id="pdf-container" class="flex-1 overflow-y-auto bg-slate-300 flex flex-col justify-between items-center gap-4 p-2 min-h-0" >
+              <!-- Les canvas des pages s'insèrent ici -->
+            </div>
+          </div>
+        </div>
+        <!-- Fin fenêtre de visualisation pdf -->
+
+       <!-- Fenêtre de visualisation txt -->
+        <div>   
+    
+          <!-- Titre et pagination -->
+          <div id="txt-titre-index" class="hidden mb-2 justify-between gap-4" >
+            <p id="txt-titre" class="text-black text-sm font-medium drop-shadow truncate"></p>
+            <div class="flex gap-1 text-sm">
+              <span>Index: </span>
+              <span id="indexing" class="text-sm  text-black font-mono"></span>
+              <button onclick="closeTxt()" class="ml-4 text-sm">✕</button>
+            </div>
+          </div>
+          <!-- Zone scrollable -->
+          <div id="txt-viewer" class="hidden flex-col border border-gray-300 rounded-lg overflow-hidden bg-white">
+            <div id="txt-container" class="flex-1 overflow-y-auto p-6 min-h-0 font-mono text-xs text-gray-800 whitespace-pre-wrap leading-relaxed">
+            </div>
+          </div>
+        </div>
+        <!-- Fin fenêtre de visualisation txt -->
+
+     

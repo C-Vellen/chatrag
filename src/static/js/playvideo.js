@@ -15,9 +15,9 @@ function formatTime(seconds) {
 
 function selectVideo(btn) {
   closePdf();
-  closeTxt()
+  closeTxt();
   stopAndReset();
-  btn.closest('.chunk-title').classList.add('bg-header', 'text-white');
+  btn.closest('.headline-title').classList.add('bg-header', 'text-white');
   currentVideo = {
     id: btn.dataset.videoId,
     start: parseInt(btn.dataset.start),
@@ -35,8 +35,9 @@ function selectVideo(btn) {
   document.getElementById('thumb-titre-horodate').classList.remove('hidden');
   document.getElementById('thumb-titre-horodate').classList.add('flex');
   document.getElementById('thumb-titre').textContent = currentVideo.titre;
-  document.getElementById('ts-start').textContent = formatTime(currentVideo.start);
-  document.getElementById('ts-end').textContent = formatTime(currentVideo.end);
+  if (currentVideo.end) {
+    document.getElementById('timestamp').textContent = `${formatTime(currentVideo.start)} → ${formatTime(currentVideo.end)}`;
+  }
 }
 
 function playVideo() {
@@ -72,7 +73,9 @@ function playVideo() {
     events: {
       onReady: function(e) {
         e.target.playVideo();
-        scheduleEnd(end - start);
+        if (end) {
+          scheduleEnd(end - start);
+        }
       },
       onStateChange: function(e) {
         // Relance le timer si l'utilisateur repart depuis le début
@@ -97,7 +100,7 @@ function scheduleEnd(seconds) {
 
 function stopAndReset() {
   clearTimeout(endTimer);
-  document.querySelectorAll('.chunk-title').forEach(d => d.classList.remove('bg-header', 'text-white'));
+  document.querySelectorAll('.headline-title').forEach(d => d.classList.remove('bg-header', 'text-white'));
   if (ytPlayer) {
     try { ytPlayer.stopVideo(); } catch(e) {}
   }
@@ -120,7 +123,6 @@ function closePlayer() {
     container.insertBefore(target, container.firstChild);
   }
   document.getElementById('thumb-titre-horodate').classList.add('hidden');
-  // document.getElementById('thumb-titre-horodate').classList.remove('flex');
   document.getElementById('player-iframe').classList.add('hidden');
   document.getElementById('player-thumb').classList.add('hidden');
   currentVideo = null;
