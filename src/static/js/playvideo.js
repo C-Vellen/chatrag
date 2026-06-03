@@ -17,7 +17,7 @@ function selectVideo(btn) {
   closePdf();
   closeTxt();
   stopAndReset();
-  btn.closest('.headline-title').classList.add('bg-header', 'text-white');
+  btn.closest('.headline-title').classList.add('bg-headline', 'text-white');
   currentVideo = {
     id: btn.dataset.videoId,
     start: parseInt(btn.dataset.start),
@@ -100,7 +100,7 @@ function scheduleEnd(seconds) {
 
 function stopAndReset() {
   clearTimeout(endTimer);
-  document.querySelectorAll('.headline-title').forEach(d => d.classList.remove('bg-header', 'text-white'));
+  document.querySelectorAll('.headline-title').forEach(d => d.classList.remove('bg-headline', 'text-white'));
   if (ytPlayer) {
     try { ytPlayer.stopVideo(); } catch(e) {}
   }
