@@ -52,7 +52,7 @@
                 {% comment %} <li id="{{doc.id}}" class="headline-title w-full flex justify-between"> {% endcomment %}
 
                 {%if doc.id == select_doc %}
-                <li id="{{doc.id}}" class="headline-title bg-header grid grid-cols-[40px_1fr_40px_20px_20px] gap-4 items-start ">
+                <li id="{{doc.id}}" class="headline-title text-white bg-headline grid grid-cols-[40px_1fr_40px_20px_20px] gap-4 items-start ">
                 {% else %}
                 <li id="{{doc.id}}" class="headline-title grid grid-cols-[40px_1fr_40px_20px_20px] gap-4 items-start ">
                 {% endif %}
@@ -103,9 +103,9 @@
                                 href="{% url 'ingest:read_chunks' doc.id %}" >
                                 <span class="w-12 text-right text-blue-500 hover:font-bold">{{doc.nb_chunks}}</span>
                             </a>
-                            <a href="{% url 'ingest:remove_document' doc.id %}" class="">
+                            <button class="delete-doc" data-id="{{ doc.id }}" data-titre="{{ doc.titre }}" >
                                 <img class="w-4" src="{% static 'img/cross_round_black.svg' %}" />
-                            </a>
+                            </button>
                         
                 </li>
                 {% empty %}
@@ -139,7 +139,9 @@
         </div>
     </div>
 </section>
+{% include "alert_box.html" with alert="alert-delete-doc" message="" act_button="hidden" act_link="" link="" back_text="Annuler" act_text="Supprimer" %}
 
+<script src="{% static 'js/deletedoc.js' %}"></script>
 
 <script src="{% static 'js/pdf.min.js' %}"></script>
 <script>
@@ -150,6 +152,8 @@
 <script src="{% static 'js/playvideo.js' %}"></script>
 <script src="{% static 'js/readPDF.js' %}"></script>
 <script src="{% static 'js/readTXT.js' %}"></script>
+
+
 
 
 {% endblock %}

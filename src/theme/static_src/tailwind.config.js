@@ -20,7 +20,8 @@ module.exports = {
             access:  boutons pour les droits d'accès */
             colors: {
                 page: colors.slate[50],
-                header: colors.slate[400],
+                header: colors.slate[500],
+                headline: colors.orange[600],
                 action: colors.slate[600],
                 actionHover: colors.slate[500],
                 action2: '#86a',
@@ -38,5 +39,5 @@ module.exports = {
         require('@tailwindcss/typography'),
         require('@tailwindcss/aspect-ratio'),
     ],
-    safelist: ['bg-header'],
+    safelist: ['bg-header', 'bg-headline'],
 }
