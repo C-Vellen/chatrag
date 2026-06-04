@@ -230,11 +230,9 @@ def get_closest_smaller_index(n: int, liste: list[str]) -> int:
         n= 8
         liste = [0, 5, 12, 20]
         retourne 5
-
     Args:
         n (int): integer
         liste (list[int]): list of str
-
     Returns:
         int:    if n >= liste[0] return closest smaller item of the list
                 if n < liste[0] return 0
@@ -250,11 +248,9 @@ def get_closest_bigger_index(n: int, liste: list[str]) -> int | None:
         n= 8
         liste = [0, 5, 12, 20]
         retourne 12
-
     Args:
         n (int): integer
         liste (list[int]): list of str
-
     Returns:
         int:    if n <= liste[-1] return closest bigger item of the list
                 if n > liste[-1] return None

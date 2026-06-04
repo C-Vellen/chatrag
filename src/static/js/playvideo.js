@@ -16,12 +16,13 @@ function formatTime(seconds) {
 function selectVideo(btn) {
   closePdf();
   closeTxt();
+  closeChunksList();
   stopAndReset();
-  btn.closest('.headline-title').classList.add('bg-headline', 'text-white');
+  btn.closest('.headline-title').classList.add('bg-headline');
   currentVideo = {
     id: btn.dataset.videoId,
-    start: parseInt(btn.dataset.start),
-    end: parseInt(btn.dataset.end),
+    start: parseInt(btn.dataset.starttime),
+    end: parseInt(btn.dataset.endtime),
     titre: btn.dataset.titre,
   };
   document.getElementById('player-iframe').classList.add('hidden');
@@ -100,7 +101,7 @@ function scheduleEnd(seconds) {
 
 function stopAndReset() {
   clearTimeout(endTimer);
-  document.querySelectorAll('.headline-title').forEach(d => d.classList.remove('bg-headline', 'text-white'));
+  document.querySelectorAll('.headline-title').forEach(d => d.classList.remove('bg-headline'));
   if (ytPlayer) {
     try { ytPlayer.stopVideo(); } catch(e) {}
   }

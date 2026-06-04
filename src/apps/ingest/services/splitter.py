@@ -21,6 +21,8 @@ def split_documents(docs: list[Document]) -> list[Document]:
         - source_origin:  origine du document : download ou https:// ou src/documents/...
         - source_url:     accès au lien https:// de la source (media ou externe)
         - creattiondate
+        - index:          index (numéro d'ordre) du chunk
+        - total_index:    nombre total de chunks du document
         - start_index:    index du 1er caractère du chunk
         - end_index:      index du dernier caractère du chunk
 
@@ -57,12 +59,22 @@ def split_documents(docs: list[Document]) -> list[Document]:
     documentref.nb_chunks = len(chunks)
     documentref.save()
     
-    for chunk in chunks:
+     # Tri par (page, start_index) pour reconstituer l'ordre naturel
+    # page peut être int ou string selon le loader → on force int
+    chunks.sort(key=lambda c: (
+        int(c.metadata.get("page", 0)),
+        int(c.metadata.get("start_index", 0)),
+    ))
+    
+    for index, chunk in enumerate(chunks, start=1):
+        
+        chunk.metadata["index"] = index
+        chunk.metadata["total_index"] = len(chunks)  
+        
         if "start_index" in chunk.metadata:
             chunk.metadata["end_index"] = (
                 chunk.metadata["start_index"] + len(chunk.page_content)
             )
-            # timestamp = chunk.metadata.pop("timestamp", None)
             timestamp = documentref.timestamp
             if timestamp:
                 first_index = get_closest_smaller_index(chunk.metadata["start_index"], timestamp.keys())
@@ -71,7 +83,10 @@ def split_documents(docs: list[Document]) -> list[Document]:
                 chunk.metadata["start_time"] = timestamp[str(first_index)]
                 if last_index:
                     chunk.metadata["end_time"] = timestamp[str(last_index)]
-            
+    
+   
+    # Ajout de l'index après tri
+    
         
     
     # affichage chunk en console:

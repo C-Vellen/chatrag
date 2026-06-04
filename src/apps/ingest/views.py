@@ -63,33 +63,31 @@ def remove_document(request, document_id):
     return redirect("ingest:documents_list")
    
 
-def read_chunks(request, document_id):
-    ''' Liste des documents ingérés + affichage des chunks du document sélectionné'''
 
+  
+def read_chunks(request, document_id: str): 
+    '''Renvoie un html de tous les chunks du document sélectionné + surbrillance du chunk sélectionné'''
     
-    modechunks = True  # affiche la liste de chunks dans le formulaire
-   
-    collection = Collection.get_active()  
-    context = usercontext(request)
+    
+    try:
+        chunk_index = int(request.GET.get("chunk", None))
+    except ValueError:
+        chunk_index = None
+        
     doc = get_object_or_404(DocumentRef, id=document_id)
     
     chunks = list_chunks(str(document_id))
+    
+    print(">>>>> ", chunk_index, " / ", [c["index"] for c in chunks])
         
     
-    docs = DocumentRef.objects.filter(collection=collection, is_active=True)
-    context.update({
-        "collection":collection,
-        "form": DocumentForm(),
-        "docs":docs,
-        "select_doc":document_id,
-        "n_docs":len(docs),
-        "n_chunks": DocumentRef.objects.aggregate(total=Sum('nb_chunks'))["total"],
-        
-        "modechunks":True,
-        "doc":doc,
-        "chunks":[c["content"] for c in chunks]
-        
-    })
+    
+    context = {
+        "doc":          doc,
+        "chunks":       [c["content"] for c in chunks],
+        "chunk_index":  chunk_index
+    } 
 
-    return render(request, "ingest/list.html", context)
+    return render(request, "viewer/chunks_viewer.html", context)
   
+   

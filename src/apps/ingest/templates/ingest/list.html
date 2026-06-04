@@ -35,7 +35,7 @@
                 <h1 class="text-titre">Documents ingérés: {{n_docs}} </h1>
                 <span class="text-xs text-blue-500">Total chunks: {{n_chunks}}</span>
             </div>
-            <ul class="text-xs flex flex-col">
+            <ul id="list-documents" class="text-xs flex flex-col">
                  
                 {% comment %} <li class="w-full flex justify-between"> {% endcomment %}
                 <li class="mb-2 grid grid-cols-[40px_1fr_40px_20px_20px] gap-4 items-start">
@@ -49,67 +49,37 @@
                 
                 </li>
                 {% for doc in docs %}
-                {% comment %} <li id="{{doc.id}}" class="headline-title w-full flex justify-between"> {% endcomment %}
+                    <li id="{{doc.id}}" class="headline-title grid grid-cols-[40px_1fr_40px_20px_20px] gap-4 items-start ">
 
-                {%if doc.id == select_doc %}
-                <li id="{{doc.id}}" class="headline-title text-white bg-headline grid grid-cols-[40px_1fr_40px_20px_20px] gap-4 items-start ">
-                {% else %}
-                <li id="{{doc.id}}" class="headline-title grid grid-cols-[40px_1fr_40px_20px_20px] gap-4 items-start ">
-                {% endif %}
-                        
-                            <span class="w-16 text-left">{{doc.created_at|date:"d/m/y"}}</span>
-                            <a href="{% url 'admin:ingest_documentref_change' doc.id %}" class="text-left">
-                                <span class=" hover:font-bold">{{doc.titre}}</span>
-                            </a>
-                            {% if modechunks %}
-                                <div class="flex justify-center">
-                                <img class="w-4 " src="{% static doc.source_logo %}" alt="urlvideo">
-                                </div>
-                            {% else %}
-                            {% if doc.source_type == "YT" %}
-                                <button class="flex justify-center"
-                                        data-video-id="{{ doc.video_id }}" 
-                                        data-start="0" 
-                                        data-end=none
-                                        data-titre="{{ doc.titre }}"
-                                        onclick="selectVideo(this)">
-                                    <img class="w-4 " src="{% static doc.source_logo %}" alt="urlvideo">
-                                </button>
-                                
-                            {% elif doc.source_type == "PDF" %}
-                                <button class="flex justify-center"
-                                        data-titre="{{ doc.titre }}"
-                                        data-file="{{ doc.source_url }}"
-                                        data-page="1" 
-                                        onclick="selectPdf(this)">
-                                    <img class="w-4" src="{% static doc.source_logo %}" alt="pdf">
-                                </button>
-                                
-                            {% elif doc.source_type == "TXT" %}
-                                <button class="flex justify-center"
-                                        data-titre="{{ doc.titre }}"
-                                        data-file="{{ doc.source_url }}"
-                                        data-start="0" 
-                                        data-end="0" 
-                                        onclick="selectText(this)">
-                                    <img class="w-4" src="{% static doc.source_logo %}" alt="txt">
-                                </button>
-                                
-
-                            {% endif %}
-                            {% endif %}
-                            <a 
-                                class="flex items-end"
-                                href="{% url 'ingest:read_chunks' doc.id %}" >
-                                <span class="w-12 text-right text-blue-500 hover:font-bold">{{doc.nb_chunks}}</span>
-                            </a>
-                            <button class="delete-doc" data-id="{{ doc.id }}" data-titre="{{ doc.titre }}" >
-                                <img class="w-4" src="{% static 'img/cross_round_black.svg' %}" />
-                            </button>
-                        
-                </li>
+                        <span class="w-16 text-left">{{doc.created_at|date:"d/m/y"}}</span>
+                        <a href="{% url 'admin:ingest_documentref_change' doc.id %}" class="text-left">
+                            <span class=" hover:font-bold">{{doc.titre}}</span>
+                        </a>
+                        <button class="view-doc flex justify-center"
+                                data-source="{{doc.source_type}}"
+                                data-titre="{{ doc.titre }}"
+                                data-video-id="{{ doc.video_id }}" 
+                                data-file="{{ doc.source_url }}"
+                                data-page="1"
+                                data-starttime="0" 
+                                data-endtime="0"  
+                                data-start="0" 
+                                data-end="0" >
+                            <img class="w-4 " src="{% static doc.source_logo %}" alt="urlvideo">
+                        </button>
+                        <button class="view-chunks" 
+                                data-id="{{doc.id}}"
+                                data-url="{% url 'ingest:read_chunks' doc.id %}" >
+                            <span class="w-12 text-right text-blue-500 hover:font-bold">{{doc.nb_chunks}}</span>
+                        </button>
+                        <button class="delete-doc" 
+                                data-id="{{ doc.id }}" 
+                                data-titre="{{ doc.titre }}">
+                            <img class="w-4" src="{% static 'img/cross_round_black.svg' %}" />
+                        </button>
+                    </li>
                 {% empty %}
-                <li><span>Aucun document trouvé</span><li>
+                    <li><span>Aucun document trouvé</span><li>
                 {% endfor %}
 
             </ul>
@@ -125,11 +95,10 @@
         
         <div class="flex flex-col md:w-1/2">
 
-            {% include 'retrieval/document_viewer.html' %}
-            {% if modechunks %}
-            {% include 'retrieval/chunks_list.html' %}
-            {% endif %}
+            {% include 'viewer/document_viewer.html' %}
             
+            <div id="chunks-list" class="hidden">
+            </div>
             
             
 
@@ -141,7 +110,6 @@
 </section>
 {% include "alert_box.html" with alert="alert-delete-doc" message="" act_button="hidden" act_link="" link="" back_text="Annuler" act_text="Supprimer" %}
 
-<script src="{% static 'js/deletedoc.js' %}"></script>
 
 <script src="{% static 'js/pdf.min.js' %}"></script>
 <script>
@@ -152,6 +120,12 @@
 <script src="{% static 'js/playvideo.js' %}"></script>
 <script src="{% static 'js/readPDF.js' %}"></script>
 <script src="{% static 'js/readTXT.js' %}"></script>
+
+<script src="{% static 'js/deletedoc.js' %}"></script>
+<script src="{% static 'js/chunkslist.js' %}"></script>
+
+<script src="{% static 'js/documentlistener.js' %}"></script>
+
 
 
 
