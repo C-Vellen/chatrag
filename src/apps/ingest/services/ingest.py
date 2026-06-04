@@ -102,7 +102,8 @@ def ingest_video(source_origin: str) -> None:
         source_type=    "YT",
         source_origin=  source_origin,
         video_id=       videoscript["video_id"],
-        timestamp=      videoscript["timestamp"]
+        timestamp=      videoscript["timestamp"],
+        duration =      videoscript["duration"]
         )    
     
     # enregistrement du script dans un fichier:

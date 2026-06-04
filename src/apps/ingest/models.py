@@ -94,8 +94,9 @@ class DocumentRef(models.Model):
     source_type = models.CharField(max_length=20, choices=SOURCE_TYPE)
     source_origin = models.CharField(max_length=1000)   # uri d'origin entré par l'utilisateur, ou "download"
     source_file = models.FileField(upload_to="ingest/file/", blank=True, null=True)  
-    video_id =  models.CharField(max_length=500, blank=True, null=True)
-    timestamp = models.JSONField(default=dict, blank=True, null=True)
+    video_id    = models.CharField(max_length=500, blank=True, null=True)
+    timestamp   = models.JSONField(default=dict, blank=True, null=True)
+    duration    = models.IntegerField(blank=True, null=True) # durée totale d'une video youtube
     
     nb_chunks   = models.IntegerField(blank=True, null=True)
     nb_words    = models.IntegerField(blank=True, null=True)

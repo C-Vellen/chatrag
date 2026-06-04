@@ -71,6 +71,7 @@ def split_documents(docs: list[Document]) -> list[Document]:
         chunk.metadata["index"] = index
         chunk.metadata["total_index"] = len(chunks)  
         
+        # traitement pour videos (timestamps, duration)
         if "start_index" in chunk.metadata:
             chunk.metadata["end_index"] = (
                 chunk.metadata["start_index"] + len(chunk.page_content)
@@ -83,12 +84,10 @@ def split_documents(docs: list[Document]) -> list[Document]:
                 chunk.metadata["start_time"] = timestamp[str(first_index)]
                 if last_index:
                     chunk.metadata["end_time"] = timestamp[str(last_index)]
-    
+                else:
+                    chunk.metadata["end_time"] = chunk.metadata["duration"]
    
-    # Ajout de l'index après tri
-    
         
-    
     # affichage chunk en console:
     if DEBUG:
         if chunks:
