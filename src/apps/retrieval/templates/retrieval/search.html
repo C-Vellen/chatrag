@@ -70,7 +70,7 @@
                         data-end="{{ result.chunk.metadata.end_index }}" >
                     {% if result.chunk.metadata.source_type == "YT" %}
                         <img class="flex w-4" src="{% static "img/youtube.svg" %}" alt="urlvideo">
-                        <span>{{ result.chunk.metadata.start_time }}s </span>
+                        <span>à {{ result.chunk.metadata.start_time | format_time }} </span>
                     {% elif result.chunk.metadata.source_type == "PDF" %}
                         <img class="w-4" src="{% static "img/PDF.svg" %}" alt="pdf">
                         <span>page: {{ result.chunk.metadata.page_label }}</span>
