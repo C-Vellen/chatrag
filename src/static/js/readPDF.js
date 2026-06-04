@@ -9,8 +9,9 @@ async function selectPdf(btn) {
   const titre = btn.dataset.titre;
   closePlayer()
   closeTxt()
-  document.querySelectorAll('.headline-title').forEach(d => d.classList.remove('bg-headline', 'text-white')); 
-  btn.closest('.headline-title').classList.add('bg-headline', 'text-white');
+  closeChunksList()
+  document.querySelectorAll('.headline-title').forEach(d => d.classList.remove('bg-headline')); 
+  btn.closest('.headline-title').classList.add('bg-headline');
  
   document.getElementById('pdf-titre').textContent = titre;
 
@@ -104,7 +105,7 @@ async function renderAllPages() {
     document.getElementById('pdf-viewer').classList.add("hidden");
     document.getElementById('pdf-container').innerHTML = '';
     pdfDoc = null;
-    document.querySelectorAll('.headline-title').forEach(d => d.classList.remove('bg-headline', 'text-white'));
+    document.querySelectorAll('.headline-title').forEach(d => d.classList.remove('bg-headline'));
 
   }
 

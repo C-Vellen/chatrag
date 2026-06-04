@@ -7,8 +7,9 @@ async function selectText(btn) {
   const endIndex = parseInt(btn.dataset.end);
   closePlayer()
   closePdf()
-  document.querySelectorAll('.headline-title').forEach(d => d.classList.remove('bg-headline', 'text-white')); 
-  btn.closest('.headline-title').classList.add('bg-headline', 'text-white');
+  closeChunksList()
+  document.querySelectorAll('.headline-title').forEach(d => d.classList.remove('bg-headline')); 
+  btn.closest('.headline-title').classList.add('bg-headline');
 
   document.getElementById('txt-titre').textContent = titre;
 
@@ -25,8 +26,9 @@ async function selectText(btn) {
   const text = await response.text();
 
   renderText(text, startIndex, endIndex);
-  document.getElementById('indexing').textContent = `${startIndex} → ${endIndex}`;
-
+  if (endIndex) {
+      document.getElementById('indexing').textContent = `Index: ${startIndex} → ${endIndex}`;
+  }
 }
 
 function renderText(text, startIndex, endIndex) {
@@ -83,6 +85,6 @@ function closeTxt() {
   viewer.classList.add('hidden');
   viewer.classList.remove('flex');
   document.getElementById('txt-container').innerHTML = '';
-  document.querySelectorAll('.headline-title').forEach(d => d.classList.remove('bg-headline', 'text-white'));
+  document.querySelectorAll('.headline-title').forEach(d => d.classList.remove('bg-headline'));
 
 }

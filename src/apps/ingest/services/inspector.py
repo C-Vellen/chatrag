@@ -83,10 +83,19 @@ def list_chunks(document_id: str) -> list[dict]:
             document                            AS content,
             cmetadata->>'source'                AS source,
             cmetadata->>'page'                  AS page,
-            (cmetadata->>'start_index')::int    AS start_index
+            (cmetadata->>'index')::int          AS index,
+            (cmetadata->>'start_index')::int    AS start_index,
+            (cmetadata->>'end_index')::int      AS end_index
         FROM langchain_pg_embedding
         WHERE cmetadata->>'document_id' = :document_id
-        ORDER BY (cmetadata->>'start_index')::int ASC NULLS LAST
+        ORDER BY 
+             CASE
+                WHEN cmetadata->>'index' IS NOT NULL
+                    THEN (cmetadata->>'index')::int
+                WHEN cmetadata->>'start_index' IS NOT NULL
+                    THEN (cmetadata->>'start_index')::int
+                ELSE NULL
+            END ASC NULLS LAST
     """)
     with engine.connect() as conn:
         rows = conn.execute(query, {"document_id": document_id}).mappings().all()

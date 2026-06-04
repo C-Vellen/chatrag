@@ -9,121 +9,114 @@
 
 
 <section id="accueil" class="reachable w-full">
-    <div class="flex flex-row justify-between">
-        <h1 class="text-grostitre mb-4">{{title}}</h1>
-        <a href="{% url 'ingest:documents_list' %}" class="text-xs px-2 py-1 h-6 bg-slate-200"> << Ingestion </a>
-    </div>
+  <div class="flex flex-row justify-between">
+      <h1 class="text-grostitre mb-4">{{title}}</h1>
+      <a href="{% url 'ingest:documents_list' %}" class="text-xs px-2 py-1 h-6 bg-slate-200"> << Ingestion </a>
+  </div>
 
 
-    <div class="w-full mb-8 flex flex-col md:flex-row md:justify-between md:gap-12">
-        
-      {% comment %} Demi-écran de gauche {% endcomment %}
-        <div class="mb-16 md:w-1/2 md:justify-around">
+  <div class="w-full mb-8 flex flex-col md:flex-row md:justify-between md:gap-12">
+      
+    {% comment %} Demi-écran de gauche {% endcomment %}
+    <div class="mb-16 md:w-1/2 md:justify-around">
 
-            <div class="mb-8">
-                <h1 class="text-titre mb-2">Prompt: </h1>
-                <form class="w-full flex flex-col gap-2" method="post" action=".">
-                {% csrf_token %}
-                <textarea id="input" class="w-full text-xs px-4 py-1 h-24 " rows='6' placeholder="Ecrivez ici..." name="prompt">{{prompt}}</textarea>
-                <button id="send_prompt" class="text-xs px-2 py-1 h-6 w-24 bg-slate-200" data-url=" {% url 'retrieval:search' %} " >Envoyer</button>
-                </form>
-            </div>
+      <div class="mb-8">
+        <h1 class="text-titre mb-2">Prompt: </h1>
+        <form class="w-full flex flex-col gap-2" method="post" action=".">
+          {% csrf_token %}
+          <textarea id="input" class="w-full text-xs px-4 py-1 h-24 " rows='6' placeholder="Ecrivez ici..." name="prompt">{{prompt}}</textarea>
+          <button id="send_prompt" class="text-xs px-2 py-1 h-6 w-24 bg-slate-200" data-url=" {% url 'retrieval:search' %} " >Envoyer</button>
+        </form>
+      </div>
 
-            <div class="flex flex-col justify-between">
-                <h1 class="text-titre mb-2">Liste des chunks sélectionnés: </h1>
+      <div class="flex flex-col justify-between">
+        <h1 class="text-titre mb-2">Liste des chunks sélectionnés: </h1>
             
-                <ul class="w-full mb-8 text-xs flex flex-col gap-2">
-                   <li class="w-full flex justify-between">
-                    <div class="w-full flex justify-startfont-bold mb-2">
-                        <span class="w-16">Rang</span>
-                        <span>Titre document</span>
-                    </div>
-                    <div  class="w-60 flex justify-end">
-                        <span class="w-40 ml-3">source</span>
-                        <span class="w-40 flex justify-end  text-blue-500">chunk</span>
-                        <span class="w-40 flex justify-end">similarité</span>
-                    </div>
-                  </li>
-
-                    {% for result in results %}
-                    <li class="chunk-card">
-                      <div class="headline-title flex justify-between">
-                        <div class="font-bold flex flex-start gap-4">
-                            <span>{{ forloop.counter }}.</span>
-                            <a href="{{ result.chunk.metadata.source_url }}" target="_blank">
-                                <span>{{ result.chunk.metadata.source }}</span>
-                            </a>
-                        </div>
-
-                        <div  class="w-60 flex items-start justify-end">
-                          <div class="w-full flex items-start gap-2">
-                            {% if result.chunk.metadata.source_type == "YT" %}
-                                <button 
-                                        data-video-id="{{ result.chunk.metadata.video_id }}" 
-                                        data-start="{{ result.chunk.metadata.start_time }}" 
-                                        data-end="{{ result.chunk.metadata.end_time }}"
-                                        data-titre="{{ result.chunk.metadata.source }}"
-                                        onclick="selectVideo(this)">
-                                    <img class="flex w-4" src="{% static "img/youtube.svg" %}" alt="urlvideo">
-                                </button>
-                                <span>{{ result.chunk.metadata.start_time }}s </span>
-                            {% elif result.chunk.metadata.source_type == "PDF" %}
-                                <button 
-                                        data-titre="{{ result.chunk.metadata.source }}"
-                                        data-file="{{ result.chunk.metadata.source_url }}"
-                                        data-page="{{ result.chunk.metadata.page_label }}" 
-                                        onclick="selectPdf(this)">
-                                    <img class="w-4" src="{% static "img/PDF.svg" %}" alt="pdf">
-                                </button>
-                                <span>page: {{ result.chunk.metadata.page_label }}</span>
-                            {% elif result.chunk.metadata.source_type == "TXT" %}
-                                <button 
-                                        data-titre="{{ result.chunk.metadata.source }}"
-                                        data-file="{{ result.chunk.metadata.source_url }}"
-                                        data-start="{{ result.chunk.metadata.start_index }}" 
-                                        data-end="{{ result.chunk.metadata.end_index }}" 
-                                        onclick="selectText(this)">
-                                    <img class="w-4" src="{% static "img/TXT.svg" %}" alt="txt">
-                                </button>
-                                <span>index:{{ result.chunk.metadata.start_index }}</span>
-
-                            {% endif %}
-                          </div>
-                          <span class="w-40 flex justify-end items-start text-blue-500">10/165</span>
-                          <span class="w-40 flex justify-end"> {{ result.similarity }}</span>
-                        </div>
-                      </div>
-                      <div class="chunk-content">
-                          {{ result.chunk.page_content }}
-                      </div>
-                    </li>
-                    {% endfor %} 
-                </ul>
-             </div>
-             <div class="mt-8 mb-4 flex gap-2 justify-start">
-                <p class="text-xs text-slate-500 italic"> Configuration retriever:</p>
-                <a href="{% url 'admin:retrieval_retrivconfig_change' 1 %}" class="">   
-                    <img class="w-4 h-4" src="{% static 'img/crayon.svg' %}" alt="Modifier">     
-                </a>
+        <ul id="list-documents" class="w-full mb-8 text-xs flex flex-col gap-2">
+          <li class="w-full flex justify-between">
+            <div class="w-full flex justify-startfont-bold mb-2">
+              <span class="w-16">Rang</span>
+              <span>Titre document</span>
             </div>
-        </div>
-
-      {% comment %} demi-écran de droite {% endcomment %}
-
-        <div class="flex flex-col md:w-1/2">
-
-          {% include 'retrieval/document_viewer.html' %}
+            <div  class="w-60 flex justify-end">
+              <span class="w-40 ml-3">source</span>
+              <span class="w-40 flex justify-end items-start text-blue-500">chunk</span>
 
 
+              <span class="w-40 flex justify-end">similarité</span>
+            </div>
+          </li>
 
-        </div>
+          {% for result in results %}
+          <li class="chunk-card">
+            <div class="headline-title flex justify-between">
+              <div class="font-bold flex flex-start gap-4">
+                  <span>{{ forloop.counter }}.</span>
+                  <a href="{{ result.chunk.metadata.source_url }}" target="_blank">
+                      <span>{{ result.chunk.metadata.source }}</span>
+                  </a>
+              </div>
+
+              <div  class="w-60 flex items-start justify-end">
+                <button class="view-doc w-full flex gap-2"
+                        data-source="{{ result.chunk.metadata.source_type }}" 
+                        data-titre="{{ result.chunk.metadata.source }}"
+                        data-file="{{ result.chunk.metadata.source_url }}"
+                        data-page="{{ result.chunk.metadata.page_label }}" 
+                        data-video-id="{{ result.chunk.metadata.video_id }}" 
+                        data-starttime="{{ result.chunk.metadata.start_time }}" 
+                        data-endtime="{{ result.chunk.metadata.end_time }}"
+                        data-start="{{ result.chunk.metadata.start_index }}" 
+                        data-end="{{ result.chunk.metadata.end_index }}" >
+                    {% if result.chunk.metadata.source_type == "YT" %}
+                        <img class="flex w-4" src="{% static "img/youtube.svg" %}" alt="urlvideo">
+                        <span>{{ result.chunk.metadata.start_time }}s </span>
+                    {% elif result.chunk.metadata.source_type == "PDF" %}
+                        <img class="w-4" src="{% static "img/PDF.svg" %}" alt="pdf">
+                        <span>page: {{ result.chunk.metadata.page_label }}</span>
+                    {% elif result.chunk.metadata.source_type == "TXT" %}        
+                        <img class="w-4" src="{% static "img/TXT.svg" %}" alt="txt">
+                        <span>index:{{ result.chunk.metadata.start_index }}</span>
+                    {% endif %}
+                </button>
+
+                <button class="view-chunks w-40 flex justify-end items-start" 
+                        data-id="{{result.chunk.metadata.document_id}}"
+                        data-index="{{result.chunk.metadata.index}}"
+                        data-url="{% url 'ingest:read_chunks' result.chunk.metadata.document_id %}" >
+                  <span class=" text-blue-500">
+                      {{ result.chunk.metadata.index }} / {{ result.chunk.metadata.total_index }}
+                  </span>
+                </button>
+                <span class="w-40 flex justify-end"> {{ result.similarity }}</span>
+              </div>
+            </div>
+            <div class="chunk-content">
+                {{ result.chunk.page_content }}
+            </div>
+          </li>
+          {% endfor %} 
+        </ul>
+      </div>
+      <div class="mt-8 mb-4 flex gap-2 justify-start">
+        <p class="text-xs text-slate-500 italic"> Configuration retriever:</p>
+        <a href="{% url 'admin:retrieval_retrivconfig_change' 1 %}" class="">   
+            <img class="w-4 h-4" src="{% static 'img/crayon.svg' %}" alt="Modifier">     
+        </a>
+      </div>
     </div>
 
-
-
-
+    {% comment %} demi-écran de droite {% endcomment %}
+    <div class="flex flex-col md:w-1/2">
+      {% include 'viewer/document_viewer.html' %}
+      <div id="chunks-list" class="hidden">
+      </div>
+    </div>
+  </div>
 
 </section>
+
+
 
 <script src="{% static 'js/pdf.min.js' %}"></script>
 <script>
@@ -134,6 +127,10 @@
 <script src="{% static 'js/playvideo.js' %}"></script>
 <script src="{% static 'js/readPDF.js' %}"></script>
 <script src="{% static 'js/readTXT.js' %}"></script>
+
+<script src="{% static 'js/chunkslist.js' %}"></script>
+
+<script src="{% static 'js/documentlistener.js' %}"></script>
 
 
 

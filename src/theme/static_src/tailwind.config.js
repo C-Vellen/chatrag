@@ -21,7 +21,7 @@ module.exports = {
             colors: {
                 page: colors.slate[50],
                 header: colors.slate[500],
-                headline: colors.orange[600],
+                headline: colors.orange[100],
                 action: colors.slate[600],
                 actionHover: colors.slate[500],
                 action2: '#86a',

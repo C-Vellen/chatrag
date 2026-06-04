@@ -1,6 +1,6 @@
 {% load static %}
 
-<div class="">
+
 <div class="w-full mb-4 flex justify-between">
     <div class="w-full text-titre flex justify-start">
         <span class="w-20">{{doc.created_at|date:"d/m/y"}}</span>
@@ -14,8 +14,10 @@
     </div>
 </div>
 <ul class="w-full text-xs flex flex-col gap-2">
+    <li> chunk: {{chunk_index}} </li>
     {% for chunk in chunks %}
-    <li class="">
+    <li class="{% if forloop.counter == chunk_index %}bg-yellow-200{% endif %}">
+        <span class="font-bold">{{forloop.counter}}/</span>
         {{chunk}}
         <span class="font-bold">[{{chunk|length}} car., {{chunk|wordcount}} mots]</span>
     </li>
@@ -23,4 +25,4 @@
     <p> Aucun chunk trouvé </p>
     {% endfor %}
 </ul>
-</div>
+
