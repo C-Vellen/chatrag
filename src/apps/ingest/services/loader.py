@@ -42,6 +42,7 @@ def load_documents(documentref: DocumentRef) -> list[Document]:
         doc.metadata["source_origin"] = documentref.source_origin
         doc.metadata["source_url"] = documentref.source_url
         doc.metadata["video_id"] = documentref.video_id
+        doc.metadata["duration"] = documentref.duration
         
     return docs        
     

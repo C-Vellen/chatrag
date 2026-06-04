@@ -68,19 +68,13 @@ def remove_document(request, document_id):
 def read_chunks(request, document_id: str): 
     '''Renvoie un html de tous les chunks du document sélectionné + surbrillance du chunk sélectionné'''
     
-    
     try:
         chunk_index = int(request.GET.get("chunk", None))
     except ValueError:
         chunk_index = None
         
     doc = get_object_or_404(DocumentRef, id=document_id)
-    
     chunks = list_chunks(str(document_id))
-    
-    print(">>>>> ", chunk_index, " / ", [c["index"] for c in chunks])
-        
-    
     
     context = {
         "doc":          doc,

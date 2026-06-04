@@ -109,19 +109,33 @@ def extract_video_id(url):
     match = re.search(pattern, url)
     return match.group(1) if match else None
 
+import yt_dlp
 
-def get_video_title(url):
-    """Récupère le titre de la vidéo de manière légère avec yt-dlp."""
+def get_video_info(url:str) -> dict :
+    """
+    Récupère le titre et la durée d'une vidéo YouTube 
+    Retourne un dictionnaire {"titre": ..., "duration": ...}
+    """
     ydl_opts = {
-        "quiet": True,
-        "skip_download": True,
+        "quiet": True,          # N'affiche rien dans la console Django
+        "skip_download": True,  # Sécurité : ne télécharge pas le fichier vidéo
+        "extract_flat": True,   # Extraction rapide et superficielle des métadonnées
     }
+    
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         try:
             info = ydl.extract_info(url, download=False)
-            return info.get("title", "Titre inconnu")
+            
+            return {
+                "title": info.get("title", "Titre inconnu"),
+                "duration": info.get("duration", 0) # durée en format secondes
+            }
         except Exception:
-            return "Titre inconnu (Erreur d'extraction)"
+            # En cas d'erreur (URL invalide, vidéo privée, etc.)
+            return {
+                "title": "Titre inconnu (Erreur d'extraction)",
+                "duration": 0
+            }
 
 
 def get_youtube_script_with_timestamp(video_url: str) -> dict:
@@ -146,8 +160,11 @@ def get_youtube_script_with_timestamp(video_url: str) -> dict:
     if not video_id:
         raise ValueError("L'URL de la vidéo YouTube est invalide.")
 
-    # Récupération du titre
-    title = get_video_title(video_url)
+    # Récupération du titre et de la durée   
+    video_info = get_video_info(video_url)
+    title = video_info["title"]
+    duration = video_info["duration"]
+    
 
     # Récupération des sous-titres
     try:
@@ -183,7 +200,7 @@ def get_youtube_script_with_timestamp(video_url: str) -> dict:
     # On fusionne tous les morceaux avec un espace
     full_content = " ".join(full_content)
 
-    return {"titre": title, "content": full_content, "timestamp": timestamp, "video_id": video_id}
+    return {"titre": title, "content": full_content, "timestamp": timestamp, "video_id": video_id, "duration": duration}
 
 
 def is_youtube_url(url: str) -> bool:

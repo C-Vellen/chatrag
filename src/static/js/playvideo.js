@@ -24,6 +24,7 @@ function selectVideo(btn) {
     start: parseInt(btn.dataset.starttime),
     end: parseInt(btn.dataset.endtime),
     titre: btn.dataset.titre,
+    duration: parseInt(btn.dataset.duration),
   };
   document.getElementById('player-iframe').classList.add('hidden');
   document.getElementById('player-thumb').classList.remove('hidden');
@@ -38,6 +39,8 @@ function selectVideo(btn) {
   document.getElementById('thumb-titre').textContent = currentVideo.titre;
   if (currentVideo.end) {
     document.getElementById('timestamp').textContent = `${formatTime(currentVideo.start)} → ${formatTime(currentVideo.end)}`;
+  } else if (currentVideo.duration) {
+    document.getElementById('timestamp').textContent = `durée: ${formatTime(currentVideo.duration)}`; 
   }
 }
 
@@ -102,6 +105,8 @@ function scheduleEnd(seconds) {
 function stopAndReset() {
   clearTimeout(endTimer);
   document.querySelectorAll('.headline-title').forEach(d => d.classList.remove('bg-headline'));
+  document.getElementById('thumb-titre').textContent = "";
+  document.getElementById('timestamp').textContent = "";
   if (ytPlayer) {
     try { ytPlayer.stopVideo(); } catch(e) {}
   }
@@ -124,6 +129,10 @@ function closePlayer() {
     container.insertBefore(target, container.firstChild);
   }
   document.getElementById('thumb-titre-horodate').classList.add('hidden');
+  document.getElementById('thumb-titre').textContent = "xxx";
+  document.getElementById('timestamp').textContent = "xxx";
+
+
   document.getElementById('player-iframe').classList.add('hidden');
   document.getElementById('player-thumb').classList.add('hidden');
   currentVideo = null;
