@@ -12,6 +12,7 @@ media/
 staticfiles/
 src/theme/static/css/dist/
 src/documents/
+src/apps/special/
 
 node_modules/
 
@@ -20,6 +21,7 @@ node_modules/
 
 src/src/settings/develop.py
 src/src/settings/production.py
+src/src/utils2.py
 
 
 

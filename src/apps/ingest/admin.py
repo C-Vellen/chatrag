@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Collection, DocumentRef
+from .models import Collection, DocumentRef, WaitingList
 
     
 @admin.register(Collection)
@@ -14,3 +14,10 @@ class DocumentAdmin(admin.ModelAdmin):
     list_display = ["id", "collection", "titre", "is_active", "created_at", "source_type", "source_origin", "source_file", "nb_chunks", "nb_words", "nb_chars"]
     
     readonly_fields = ("id","collection", "nb_chunks", "nb_words", "nb_chars")
+    
+    
+@admin.register(WaitingList)
+class WaitingListAdmin(admin.ModelAdmin):
+    list_display = ["id", "titre", "source_type", "source_origin", "video_id", "status"]
+    
+    readonly_fields = ("id",)

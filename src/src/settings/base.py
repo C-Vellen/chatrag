@@ -140,3 +140,10 @@ AUTH_USER_MODEL = "user.User"
 
 # nom de l'app tailwindcss :
 TAILWIND_APP_NAME = "theme"
+
+# app spécifique 
+try:
+    import apps.special
+    HAS_SPECIAL_APP = True
+except ImportError:
+    HAS_SPECIAL_APP = False

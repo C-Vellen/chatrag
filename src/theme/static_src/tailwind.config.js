@@ -39,5 +39,11 @@ module.exports = {
         require('@tailwindcss/typography'),
         require('@tailwindcss/aspect-ratio'),
     ],
-    safelist: ['bg-header', 'bg-headline'],
+    safelist: [
+        'bg-header', 
+        'bg-headline', 
+        'bg-blue-100',
+        'bg-red-100',
+        'bg-green-100',
+    ],
 }
