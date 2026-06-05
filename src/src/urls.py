@@ -17,6 +17,11 @@ urlpatterns = [
     ),  # positionner toujours en dernier !
 ]
 
+if settings.HAS_SPECIAL_APP:
+    urlpatterns += [
+        re_path(r"^special/", include("special.urls", namespace="special")),
+    ]
+
 if settings.DEBUG:
     import debug_toolbar
 

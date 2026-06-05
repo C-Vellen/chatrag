@@ -4,6 +4,7 @@ from django.dispatch import receiver
 from django.db.models.signals import post_delete, pre_save
 from django.core.cache import cache
 from django.core.exceptions import ValidationError
+from django.utils.translation import gettext_lazy as _
 from urllib.parse import urlparse
 from src.media_file_cleaning import auto_delete_file_on_delete, auto_delete_file_on_change
 
@@ -12,7 +13,8 @@ SOURCE_TYPE = {
     "TXT":  "Fichier .txt",
     "MD":   "Fichier .md",
     "PDF":  "Fichier .pdf",
-    "YT":   "Video youtube"
+    "YT":   "Video youtube",
+    "OTH":  "Other"
 } 
 SOURCE_LOGOS = {
     "TXT":  "TXT.svg",
@@ -106,7 +108,7 @@ class DocumentRef(models.Model):
     
    
     def __str__(self):
-        return f"{self.titre} ({self.id})"
+        return f"{self.titre} [{self.id}]"
     
     def get_file(self):
         """ liste des fichiers media, pour gérer leur mise à jour et suppression """
@@ -131,7 +133,49 @@ class DocumentRef(models.Model):
             return self.source_file.url
         return "#"
     
+
+class WaitingList(models.Model):
+    """ Documents alimentés par API pour sélection groupée et ingestion """
     
+    class Status(models.TextChoices):
+        NEW =           'NEW', _('Nouveau document')
+        REGISTERED =    'REG', _('Document ingéré')
+        ERROR =         'ERR', _('Introuvable')
+        
+        
+    titre       = models.CharField(max_length=500)
+    source_type = models.CharField(max_length=20, choices=SOURCE_TYPE, default="OTH")
+    source_origin = models.CharField(max_length=1000, blank=True, null=True)   # uri d'origin entré par l'utilisateur, ou "download"
+    video_id    = models.CharField(max_length=500, blank=True, null=True)
+    status = models.CharField(
+        max_length=3,
+        choices=Status.choices,
+        default=Status.NEW,
+    )
+    date  = models.DateTimeField(blank=True, null=True)
+    
+    def __str__(self):
+        return f"{self.titre} [{self.id}]"
+    
+    @property
+    def color(self):
+        """Retourne les classes de couleur selon le status """
+        colors = {
+            self.Status.NEW: "bg-blue-100",
+            self.Status.REGISTERED: "bg-green-100",
+            self.Status.ERROR: "bg-red-100",
+        }
+        # Retourne une couleur par défaut si le statut est inconnu
+        return colors.get(self.status, "bg-gray-100 text-gray-800")
+    
+    @property
+    def datef(self):
+        """Retourne la date sous forme de chaîne au format jj/mm/aaaa."""
+        if self.date:
+            return self.date.strftime("%d/%m/%Y")
+        return ""
+    
+
 # Suppression des fichiers MEDIAROOT inutiles lors de la mise à jour ou suppression
 @receiver(post_delete, sender=DocumentRef)
 def auto_delete_document_on_delete(sender, instance, **kwargs):

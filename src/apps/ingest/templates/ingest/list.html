@@ -16,7 +16,7 @@
     <div class="w-full mb-8 flex flex-col md:flex-row md:justify-between md:gap-12">
         <div class="mb-16 md:w-1/2 md:justify-around">
             <!-- formulaire nouveau document-->
-            <form class="w-full mb-8" method="post" action="." enctype="multipart/form-data" >       
+            <form class="w-full mb-2" method="post" action="." enctype="multipart/form-data" >       
                 {% csrf_token %}
                 <div class="mb-2 w-full flex justify-between">
                     <h1 class="text-titre">Ajouter un nouveau document: fichier txt, md, pdf ou video youtube</h1>
@@ -28,6 +28,13 @@
                     {{ form }}
                 </div>
             </form>
+
+            <div class="w-16 p-1 flex justify-center border-slate-300 border-2 rounded text-xs text-slate-400 font-bold bg-slate-100 mb-6 hover:bg-yellow-100">
+            {% if has_special %}
+            <a href="{% url 'ingest:waiting_list' %}">special</a>
+            {% endif %}
+            </div>
+
 
 
 

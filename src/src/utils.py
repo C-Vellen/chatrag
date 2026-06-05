@@ -175,6 +175,10 @@ def get_youtube_script_with_timestamp(video_url: str) -> dict:
         fetched_transcript = ytt_api.fetch(video_id, languages=["fr", "en"])
         raw_transcript = fetched_transcript.to_raw_data()
         
+        print("#"*30)
+        print(raw_transcript)
+        print("#"*30)
+        
     except Exception as e:
         raise RuntimeError(f"Impossible de récupérer les sous-titres : {str(e)}")
 

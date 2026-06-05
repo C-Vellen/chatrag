@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+
+{% load static template_tags%}
+
+{% block header %}
+{% endblock %}
+
+{% block content %}
+
+
+<section id="special" class="reachable w-full">
+    <form class="w-full mb-2" method="post" action="." enctype="multipart/form-data" >       
+            
+    <div class="flex justify-between mb-6">
+        <h1 class="text-titre">Liste des videos: {{n_docs}} </h1>
+        <div class="flex justify-end gap-12">
+        <a href="{% url 'ingest:update_waiting_list' %}" class="text-xs px-2 py-1 h-6 bg-yellow-200" >
+            Mettre à jour la liste
+        </a>
+        <button type="submit" class="text-xs px-2 py-1 h-6 bg-blue-200" title="">
+            Ingérer la sélection
+        </button>
+        <a href="{% url 'ingest:documents_list' %}" class="text-xs px-2 py-1 h-6 bg-slate-200" >
+            Ingestion >>
+        </a>
+        </div>
+    </div>
+    <ul id="list-documents" class="text-xs max-w-5xl flex flex-col ">
+            
+        {% comment %} <li class="w-full flex justify-between"> {% endcomment %}
+        <li class="mb-2 font-bold grid grid-cols-[160px_1fr_200px_40px] gap-4 items-start">
+        
+                <span class="">Video_id</span>
+                <span>Titre document</span>
+                <span class="">date</span>
+        
+        </li>
+        {% for doc in docList %}
+            <li id="{{doc.id}}" class="headline-title {{ doc.color }}
+                grid grid-cols-[160px_1fr_200px_40px] gap-4 items-start hover:font-bold">
+
+                <span class="w-16 text-left whitespace-nowrap">{{ doc.video_id}}</span>
+                <span class="">{{doc.titre}}</span>
+                <span class="">{{doc.datef}}</span>
+                {% if doc.status == doc.Status.NEW %}
+                 <input type="checkbox" name="{{doc.video_id}}" />
+                
+                {%endif%}
+                
+            </li>
+        {% empty %}
+            <li><span>Aucun document trouvé</span><li>
+        {% endfor %}
+
+    </ul>
+</form>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</secion>
+
+
+
+
+{% endblock %}
