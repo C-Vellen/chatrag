@@ -10,40 +10,56 @@
 
 <section id="special" class="reachable w-full">
     <form class="w-full mb-2" method="post" action="." enctype="multipart/form-data" >       
-            
-    <div class="flex justify-between mb-6">
-        <h1 class="text-titre">Liste des videos: {{n_docs}} </h1>
-        <div class="flex justify-end gap-12">
-        <a href="{% url 'ingest:update_waiting_list' %}" class="text-xs px-2 py-1 h-6 bg-yellow-200" >
-            Mettre à jour la liste
-        </a>
-        <button type="submit" class="text-xs px-2 py-1 h-6 bg-blue-200" title="">
-            Ingérer la sélection
-        </button>
-        <a href="{% url 'ingest:documents_list' %}" class="text-xs px-2 py-1 h-6 bg-slate-200" >
-            Ingestion >>
-        </a>
+        {% csrf_token %}
+    <div class="flex justify-between mb-6 gap-4">
+        <div class="flex justify-start gap-4">
+            <h1 class="text-titre">Liste des videos: {{n_docs}} </h1>
+            <button type="button" data-status="NEW" class="display-doc text-xs px-2 py-1 h-6 bg-blue-100" title="">
+                Nouveaux
+            </button>
+            <button type="button" data-status="REG" class="display-doc text-xs px-2 py-1 h-6 bg-green-100" title="">
+                Ingérés
+            </button>
+            <button type="button" data-status="ERR" class="display-doc text-xs px-2 py-1 h-6 bg-red-100" title="">
+                Introuvables
+            </button>
+        
+        </div>
+        <div class="flex justify-end gap-4">
+            <a href="{% url 'ingest:update_waiting_list' %}" class="text-xs px-2 py-1 h-6 bg-yellow-200" >
+                Mettre à jour la liste
+            </a>
+            <button type="submit" class="text-xs px-2 py-1 h-6 bg-blue-200" title="">
+                Ingérer la sélection
+            </button>
+            <a href="{% url 'ingest:documents_list' %}" class="text-xs px-2 py-1 h-6 bg-slate-200" >
+                Ingestion >>
+            </a>
         </div>
     </div>
     <ul id="list-documents" class="text-xs max-w-5xl flex flex-col ">
             
         {% comment %} <li class="w-full flex justify-between"> {% endcomment %}
-        <li class="mb-2 font-bold grid grid-cols-[160px_1fr_200px_40px] gap-4 items-start">
+        <li class="mb-2 font-bold grid grid-cols-[100px_1fr_80px_100px] gap-4 items-start">
         
                 <span class="">Video_id</span>
                 <span>Titre document</span>
                 <span class="">date</span>
+                <label class="flex items-start space-x-2 cursor-pointer font-semibold">
+                    <input type="checkbox" id="check-all" />
+                    <span>Tout cocher / décocher</span>
+                </label>
         
         </li>
         {% for doc in docList %}
-            <li id="{{doc.id}}" class="headline-title {{ doc.color }}
-                grid grid-cols-[160px_1fr_200px_40px] gap-4 items-start hover:font-bold">
+            <li id="{{doc.id}}" class="headline-title status-{{doc.status}} {{ doc.color }}
+                grid grid-cols-[100px_1fr_80px_100px] gap-4 items-start hover:font-bold">
 
                 <span class="w-16 text-left whitespace-nowrap">{{ doc.video_id}}</span>
                 <span class="">{{doc.titre}}</span>
                 <span class="">{{doc.datef}}</span>
                 {% if doc.status == doc.Status.NEW %}
-                 <input type="checkbox" name="{{doc.video_id}}" />
+                 <input type="checkbox" class="doc-checkbox" name="doc" value="{{doc.video_id}}"/>
                 
                 {%endif%}
                 
@@ -55,22 +71,7 @@
     </ul>
 </form>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 </secion>
-
-
-
+<script src="{% static 'js/selectcheckbox.js' %}"></script>
 
 {% endblock %}

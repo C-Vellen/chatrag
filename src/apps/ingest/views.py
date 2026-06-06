@@ -92,6 +92,11 @@ def waiting_list(request):
         "text": "Liste des videos",
         "docList": docList,
     }
+    
+    if request.method == "POST":
+        print(request.POST)
+        print(request.POST.getlist("doc"))
+        
     return render(request, "ingest/waiting_list.html", context)
 
 
