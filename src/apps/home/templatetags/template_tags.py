@@ -65,9 +65,10 @@ def find_name(user):
 @register.filter
 def format_time(seconds):
     """Transforme des secondes (ex: 75.5) en chaîne lisible (ex: '01:15')"""
-    hours = int(seconds // 3600)
-    minutes = int((seconds % 3600) // 60)
-    secs = int(seconds % 60)
+    s = int(seconds)
+    hours = int(s // 3600)
+    minutes = int((s % 3600) // 60)
+    secs = int(s % 60)
 
     if hours > 0:
         return f"{hours:02d}:{minutes:02d}:{secs:02d}"

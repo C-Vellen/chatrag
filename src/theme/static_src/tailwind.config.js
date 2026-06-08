@@ -45,5 +45,16 @@ module.exports = {
         'bg-blue-100',
         'bg-red-100',
         'bg-green-100',
+        'w-80', 'mr-4', 'py-1', 'px-2',
+        'rounded', 'border', 'border-gray-300',
+        'text-xs', 'file:font-medium',
+        'bg-gray-50', 'text-gray-700',
+        'hover:bg-gray-100', 'cursor-pointer',
+        'file:mr-4', 'file:py-1', 'file:px-2',
+        'file:rounded', 'file:border', 'file:border-gray-300',
+        'file:text-xs', 'file:font-medium',
+        'file:bg-gray-50', 'file:text-gray-700',
+        'hover:file:bg-gray-100', 'file:cursor-pointer'
+
     ],
 }

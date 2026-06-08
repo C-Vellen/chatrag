@@ -114,10 +114,35 @@ def ingest_video(source_origin: str) -> None:
     ingest(documentref)
     
         
-def ingest(documentref: DocumentRef) -> None:
+def ingest(doc: DocumentRef | list[DocumentRef]) -> None:
+    """Traite l'ingestion d'un document ou d'une liste de documents"""
+    
+    if isinstance(doc, DocumentRef):
+        print(f"\n============= Ingestion du document {doc.titre}==================")
+        ingest_pipeline(doc)
+        
+    elif isinstance(doc, (list, tuple)):
+        # Optionnel mais professionnel : on valide que la liste n'est pas vide 
+        # et que ses éléments sont bien des instances de Document
+        print(f"\n============= Ingestion des {len(doc) } documents ==================")
+        for i, item in enumerate(doc):
+            
+            if not isinstance(item, DocumentRef):
+                print(f"DOcument {i} ne peut pas être ingéré. Type invalide: ({type(item).__name__})")
+            
+            print(f"\n------------ Ingestion du document {i} :  {doc.titre}  ------------")
+            ingest_pipeline(item)
+            
+    # Cas 3 : Type inconnu, on lève une exception propre
+    else:
+        raise TypeError(
+            f"Argument invalide. Type reçu : '{type(doc).__name__}'. "
+            f"Attendu : 'Document' ou 'List[Document]'."
+        )
+    
+    
+def ingest_pipeline(documentref: DocumentRef) -> None:
     """Pipeline complète d'ingestion : load -> split → embed → store."""
-
-    print("\n============= Ingestion ==================")
     
     print(f"\n📂 Chargement des documents depuis : {documentref}")
     documents = load_documents(documentref)  
@@ -125,12 +150,15 @@ def ingest(documentref: DocumentRef) -> None:
         
     print("\n✂️  Découpage en chunks...")
     chunks = split_documents(documents)  
+    
+    print("==========================================")
+    for c in chunks:
+        print(c.metadata)
    
     print("\n🔢 Embedding et stockage dans pgvector...")
     embed_and_store(chunks)
 
     print("\n✅ Ingestion terminée !\n")
     
-        
     
         

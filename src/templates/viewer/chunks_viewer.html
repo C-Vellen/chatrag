@@ -14,7 +14,6 @@
     </div>
 </div>
 <ul class="w-full text-xs flex flex-col gap-2">
-    <li> chunk: {{chunk_index}} </li>
     {% for chunk in chunks %}
     <li class="{% if forloop.counter == chunk_index %}bg-yellow-200{% endif %}">
         <span class="font-bold">{{forloop.counter}}/</span>

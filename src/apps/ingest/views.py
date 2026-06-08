@@ -86,16 +86,22 @@ def read_chunks(request, document_id: str):
 def waiting_list(request):
     """ Affiche la liste d'attente des documents """
     
+    
+    
+    if request.method == "POST":
+        print(request.POST)
+        print(request.POST.getlist("doc"))
+        if HAS_SPECIAL_APP:
+            from special.service import ingest_waitingList
+            ingest_waitingList(request.POST.getlist("doc"))
+            
     context = usercontext(request)
     docList = WaitingList.objects.all()
     context={
         "text": "Liste des videos",
         "docList": docList,
     }
-    
-    if request.method == "POST":
-        print(request.POST)
-        print(request.POST.getlist("doc"))
+            
         
     return render(request, "ingest/waiting_list.html", context)
 
