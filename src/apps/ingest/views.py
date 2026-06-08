@@ -4,7 +4,7 @@ from home.context import usercontext
 from .models import Collection, DocumentRef, WaitingList
 from .forms import DocumentForm
 from .services.ingest import ingest_file, ingest_uri
-from .services.inspector import delete_document, list_chunks
+from .services.inspector import delete_document, list_chunks, get_ragdb_size
 from src.settings import HAS_SPECIAL_APP
 from src.config import settings
 
@@ -45,7 +45,7 @@ def documents_list(request):
         "n_docs":len(docs),
         "n_chunks": DocumentRef.objects.aggregate(total=Sum('nb_chunks'))["total"],
         "form":form,
-        "modechunks":False,
+        "db_size": get_ragdb_size(),
         "has_special":HAS_SPECIAL_APP
     })
     
@@ -57,8 +57,18 @@ def remove_document(request, document_id):
     - au niveau de la ragdb : supprime tous les chunks de ce document
     - au niveau de la db : supprime l'instance de DocumentRef
     """
+    doc = DocumentRef.objects.filter(id=document_id).first()
+    video_id = doc.video_id if doc else None
+    
+    if doc:
+        if video_id:
+            wdoc = WaitingList.objects.filter(video_id=video_id).first()
+            if wdoc:
+                wdoc.status = "NEW"
+                wdoc.save()
+        doc.delete()
     delete_document(document_id)
-    DocumentRef.objects.filter(id=document_id).delete()   
+
     return redirect("ingest:documents_list")
    
   
@@ -96,10 +106,14 @@ def waiting_list(request):
             ingest_waitingList(request.POST.getlist("doc"))
             
     context = usercontext(request)
-    docList = WaitingList.objects.all()
+    docList = WaitingList.objects.all().order_by("-date")
     context={
         "text": "Liste des videos",
         "docList": docList,
+        "n_docs": len(docList),
+        "n_new": len(WaitingList.objects.filter(status="NEW")),
+        "n_reg": len(WaitingList.objects.filter(status="REG")),
+        "n_err": len(WaitingList.objects.filter(status="ERR")),
     }
             
         
