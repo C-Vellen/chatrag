@@ -13,15 +13,15 @@
         {% csrf_token %}
     <div class="flex justify-between mb-6 gap-4">
         <div class="flex justify-start gap-4">
-            <h1 class="text-titre">Liste des videos: {{n_docs}} </h1>
+            <h1 class="text-titre">{{n_docs}} videos: </h1>
             <button type="button" data-status="NEW" class="display-doc text-xs px-2 py-1 h-6 bg-blue-100" title="">
-                Nouveaux
+                Nouveaux: {{n_new}}
             </button>
             <button type="button" data-status="REG" class="display-doc text-xs px-2 py-1 h-6 bg-green-100" title="">
-                Ingérés
+                Ingérés: {{n_reg}}
             </button>
             <button type="button" data-status="ERR" class="display-doc text-xs px-2 py-1 h-6 bg-red-100" title="">
-                Introuvables
+                Introuvables: {{n_err}}
             </button>
         
         </div>

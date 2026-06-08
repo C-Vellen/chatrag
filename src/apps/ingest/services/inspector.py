@@ -140,3 +140,27 @@ def delete_document(document_id: str) -> int:
 
     print(f"🗑️  {nb} chunk(s) supprimé(s) pour le document '{document_id}'.")
     return nb
+
+
+def get_ragdb_size() -> str:
+    """Retourne la taille de la base ragdb en unité lisible (Ko, Mo, Go)."""
+    engine = create_engine(settings.ragdb_url)
+
+    query = text("SELECT pg_database_size(current_database()) AS size_bytes")
+
+    with engine.connect() as conn:
+        size_bytes = conn.execute(query).scalar()
+
+    return _format_size(size_bytes)
+
+
+def _format_size(size_bytes: int) -> str:
+    """Convertit des octets en unité lisible."""
+    if size_bytes >= 1024 ** 3:
+        return f"{size_bytes / 1024 ** 3:.2f} Go"
+    elif size_bytes >= 1024 ** 2:
+        return f"{size_bytes / 1024 ** 2:.2f} Mo"
+    elif size_bytes >= 1024:
+        return f"{size_bytes / 1024:.2f} Ko"
+    else:
+        return f"{size_bytes} octets"
