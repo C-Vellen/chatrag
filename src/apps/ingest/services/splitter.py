@@ -78,15 +78,17 @@ def split_documents(docs: list[Document]) -> list[Document]:
             )
             timestamp = documentref.timestamp
             if timestamp:
+                
                 first_index = get_closest_smaller_index(chunk.metadata["start_index"], timestamp.keys())
                 last_index = get_closest_bigger_index(chunk.metadata["end_index"], timestamp.keys())
+                
+                chunk.metadata["start_time"] = 0 if first_index == 0 else timestamp.get(str(first_index), 0)
+                chunk.metadata["end_time"] = chunk.metadata["duration"] if last_index is None else timestamp.get(str(last_index), chunk.metadata["duration"])
+                    
+                print(f"{first_index}:{chunk.metadata["start_time"]}  ->  {last_index}:{chunk.metadata["end_time"]}")
 
-                chunk.metadata["start_time"] = timestamp[str(first_index)]
-                if last_index:
-                    chunk.metadata["end_time"] = timestamp[str(last_index)]
-                else:
-                    chunk.metadata["end_time"] = chunk.metadata["duration"]
-   
+               
+
         
     # affichage chunk en console:
     if DEBUG:
