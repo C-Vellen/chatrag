@@ -1,0 +1,138 @@
+{% extends 'base.html' %}
+
+{% load static template_tags%}
+
+{% block header %}
+{% endblock %}
+
+{% block content %}
+
+<section class="bg-gray-100 h-full w-full flex overflow-hidden">
+
+<!-- Sidebar -->
+<aside class="w-64 bg-slate-200 text-slate-800 flex flex-col shrink-0">
+
+    <div class="p-4 border-b border-gray-700">
+        <a href="{% url 'chat:chat' %}"
+           class="flex justify-center items-center gap-2 w-full bg-header hover:bg-opacity-80 text-white text-sm font-medium px-4 py-2 rounded-lg transition">
+            +  Nouvelle conversation
+        </a>
+    </div>
+
+    <div class="flex-1 overflow-y-auto p-2">
+        {% for conv in conversations %}
+            <a href="?conversation_id={{ conv.id }}"
+               class="block px-3 py-2 rounded-lg text-sm mb-1 truncate transition
+                      {% if conv.id == conversation.id %}
+                          bg-slate-50 text-slate-600 font-semibold
+                      {% else %}
+                          text-slate-600 hover:bg-slate-100
+                      {% endif %}">
+                {{ conv.updated_at|date:"d/m H:i" }}
+                {% if conv.title %} — {{ conv.title }}{% endif %}
+            </a>
+        {% empty %}
+            <p class="text-slate-600 text-xs px-3 py-2">Aucune conversation</p>
+        {% endfor %}
+    </div>
+
+</aside>
+
+<!-- Zone principale -->
+<div class="flex-1 flex flex-col min-w-0">
+
+    <!-- Header -->
+    <header class="bg-white border-b border-gray-200 px-6 py-3 shrink-0">
+        <h1 class="text-lg font-semibold text-header">💬 Chat</h1>
+    </header>
+
+    <!-- Messages -->
+    <div id="messages" class="flex-1 overflow-y-auto px-6 py-4 space-y-4">
+
+        {% for msg in messages %}
+
+            {% if msg.role == "user" %}
+                <div class="flex justify-end">
+                    <div class="bg-header text-white px-4 py-3 rounded-2xl rounded-tr-sm max-w-xl text-sm shadow">
+                        {{ msg.content }}
+                    </div>
+                </div>
+
+            {% else %}
+                <div class="flex flex-col gap-1 w-full">
+                    <div class="bg-white text-gray-800 px-4 py-3 rounded-2xl rounded-tl-sm text-sm shadow">
+                        {{ msg.content }}
+                    </div>
+                    {% if msg.chunks_used %}
+                        <div class="text-xs text-gray-400 px-2">
+                            
+                            {% for chunk in msg.chunks_used %}
+                                <span class="inline-block bg-gray-100 text-gray-500 rounded px-1 py-0.5 mr-1">
+                                    {{ chunk.source }}{% if chunk.page %} p.{{ chunk.page }}{% endif %}
+                                    ({{ chunk.similarity }})
+                                </span>
+                            <!-- -->
+
+                            <!-- -->
+
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            {% endif %}
+
+        {% empty %}
+            <div class="flex items-center justify-center h-full">
+                <p class="text-gray-400 text-sm">Posez votre première question...</p>
+            </div>
+        {% endfor %}
+
+        <!-- Réponse en cours de streaming -->
+        <div id="streaming-msg"
+             class="hidden flex flex-col max-w-xl">
+            <div id="streaming-content"
+                 class="bg-white text-gray-800 px-4 py-3 rounded-2xl rounded-tl-sm text-sm shadow">
+            </div>
+            <div class="flex gap-1 px-2 mt-1">
+                <span class="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:0ms]"></span>
+                <span class="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:150ms]"></span>
+                <span class="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:300ms]"></span>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Zone de saisie -->
+    <div class="bg-white border-t border-gray-200 px-6 py-4 shrink-0">
+        <div class="flex gap-3 items-end">
+            {% csrf_token %}
+            <textarea
+                id="question"
+                rows="2"
+                placeholder="Votre question... (Ctrl+Entrée pour envoyer)"
+                class="flex-1 resize-none border border-gray-300 rounded-xl px-4 py-3 text-sm
+                       focus:outline-none focus:ring-2 focus:ring-header focus:border-transparent
+                       placeholder-gray-400">
+            </textarea>
+            <button
+                id="send-btn"
+                data-url="{% url 'chat:chat-stream' %}"
+                class="bg-header hover:bg-opacity-80 disabled:bg-gray-300 disabled:cursor-not-allowed
+                       text-white font-medium px-5 py-3 rounded-xl transition shrink-0">
+                Envoyer
+            </button>
+        </div>
+    </div>
+
+</div>
+
+<script> const conversationId = "{{ conversation.id }}";</script>
+<script type="module" src ="{% static 'chat/js/chat.js' %}"></script>
+
+
+
+</section>
+
+
+
+{% endblock %}

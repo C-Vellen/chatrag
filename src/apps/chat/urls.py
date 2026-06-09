@@ -1,4 +1,4 @@
-from django.urls import re_path
+from django.urls import path
 from . import views
 from . import apps
 
@@ -6,6 +6,6 @@ from . import apps
 app_name = apps.ChatConfig.name
 
 urlpatterns = [
-    re_path(r"^talk/$", views.talk, name="talk"),
-    
+    path("",        views.chat_view,   name="chat"),
+    path("stream/", views.stream_view, name="chat-stream"),
 ]
