@@ -1,6 +1,7 @@
 import os
 import sys
 import socket
+import importlib.util
 from pathlib import Path
 from dotenv import load_dotenv
 
@@ -60,6 +61,7 @@ TEMPLATES = [
 		"django.template.context_processors.request",
 		"django.contrib.auth.context_processors.auth",
 		"django.contrib.messages.context_processors.messages",
+        "home.context_processors.inject_style",
 	    ],
 	},
     },
@@ -142,8 +144,12 @@ AUTH_USER_MODEL = "user.User"
 TAILWIND_APP_NAME = "theme"
 
 # app spécifique 
-try:
-    import apps.special
-    HAS_SPECIAL_APP = True
-except ImportError:
-    HAS_SPECIAL_APP = False
+def _app_is_ready(app_path) -> bool:
+    """Vérifie qu'une apps est présente ET contient du vrai code."""
+    sentinel = BASE_DIR / "src" / "apps" / app_path / "apps.py" 
+    return sentinel.is_file()
+
+HAS_SPECIAL_APP = _app_is_ready("special")
+
+if HAS_SPECIAL_APP:
+    INSTALLED_APPS.append("special")

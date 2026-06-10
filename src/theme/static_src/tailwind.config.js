@@ -19,6 +19,14 @@ module.exports = {
             action2: actions secondaires
             access:  boutons pour les droits d'accès */
             colors: {
+                'color-bg':        'var(--color-bg)',
+                'color-header':    'var(--color-header)',
+                'lightcolor-text': 'var(--lightcolor-text)',
+                'darkcolor-text':  'var(--darkcolor-text)',
+                'color-btn':       'var(--color-btn)',
+                'hovercolor-btn':  'var(--hovercolor-btn )',
+                'focuscolor-line': 'var(--focuscolor-line)',
+                'hovercolor-line': 'var(--hovercolor-line)',
                 page: colors.slate[50],
                 header: colors.slate[500],
                 headline: colors.orange[100],
@@ -40,6 +48,7 @@ module.exports = {
         require('@tailwindcss/aspect-ratio'),
     ],
     safelist: [
+        'bg-color-header',
         'bg-header', 
         'bg-headline', 
         'bg-blue-100',

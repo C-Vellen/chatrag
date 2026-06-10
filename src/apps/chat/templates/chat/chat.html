@@ -14,7 +14,7 @@
 
     <div class="p-4 border-b border-gray-700">
         <a href="{% url 'chat:chat' %}"
-           class="flex justify-center items-center gap-2 w-full bg-header hover:bg-opacity-80 text-white text-sm font-medium px-4 py-2 rounded-lg transition">
+           class="flex justify-center items-center gap-2 w-full text-lightcolor-text bg-color-btn hover:bg-hovercolor-btn text-sm font-medium px-4 py-2 rounded-lg transition">
             +  Nouvelle conversation
         </a>
     </div>
@@ -43,7 +43,7 @@
 
     <!-- Header -->
     <header class="bg-white border-b border-gray-200 px-6 py-3 shrink-0">
-        <h1 class="text-lg font-semibold text-header">💬 Chat</h1>
+        <h1 class="text-lg font-semibold text-color-header">💬 Chat</h1>
     </header>
 
     <!-- Messages -->
@@ -117,8 +117,8 @@
             <button
                 id="send-btn"
                 data-url="{% url 'chat:chat-stream' %}"
-                class="bg-header hover:bg-opacity-80 disabled:bg-gray-300 disabled:cursor-not-allowed
-                       text-white font-medium px-5 py-3 rounded-xl transition shrink-0">
+                class="text-lightcolor-text bg-color-btn hover:bg-hovercolor-btn disabled:bg-gray-300 disabled:cursor-not-allowed
+                    font-medium px-5 py-3 rounded-xl transition shrink-0">
                 Envoyer
             </button>
         </div>

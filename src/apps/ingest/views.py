@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.db.models import Sum
+from apps.special_bridge import ingest_waitingList, get_documents_from_api
 from home.context import usercontext
 from .models import Collection, DocumentRef, WaitingList
 from .forms import DocumentForm
@@ -46,7 +47,7 @@ def documents_list(request):
         "n_chunks": DocumentRef.objects.aggregate(total=Sum('nb_chunks'))["total"],
         "form":form,
         "db_size": get_ragdb_size(),
-        "has_special":HAS_SPECIAL_APP
+        "has_special": HAS_SPECIAL_APP,
     })
     
     return render(request, "ingest/list.html", context)
@@ -96,14 +97,8 @@ def read_chunks(request, document_id: str):
 def waiting_list(request):
     """ Affiche la liste d'attente des documents """
     
-    
-    
     if request.method == "POST":
-        print(request.POST)
-        print(request.POST.getlist("doc"))
-        if HAS_SPECIAL_APP:
-            from special.service import ingest_waitingList
-            ingest_waitingList(request.POST.getlist("doc"))
+        ingest_waitingList(request.POST.getlist("doc"))
             
     context = usercontext(request)
     docList = WaitingList.objects.all().order_by("-date")
@@ -115,21 +110,13 @@ def waiting_list(request):
         "n_reg": len(WaitingList.objects.filter(status="REG")),
         "n_err": len(WaitingList.objects.filter(status="ERR")),
     }
-            
         
     return render(request, "ingest/waiting_list.html", context)
 
 
 def update_waiting_list(request):
-    """ Met à jour la liste d'attente à partir d'une API externe
-
-    Args:
-        request (_type_): _description_
-    """
+    """ Met à jour la liste d'attente à partir d'une API externe"""
     
-    if HAS_SPECIAL_APP:
-        from special.service import get_documents_from_api
-        get_documents_from_api()
-
+    get_documents_from_api()
     return redirect("ingest:waiting_list")
   
