@@ -10,15 +10,27 @@
         <link rel="apple-touch-icon" sizes="180x180" href="{{ Favicon|find_img }}" />
         <title>{{titre_onglet}}</title>
         <meta name="robots" content="index,follow">
+        <style>
+            :root {
+                --color-bg:         {{ style.color_bg        }};
+                --color-header:     {{ style.color_header    }};
+                --lightcolor-text:  {{ style.lightcolor_text }};
+                --darkcolor-text:   {{ style.darkcolor_text  }};
+                --color-btn:        {{ style.color_btn       }};
+                --hovercolor-btn:   {{ style.hovercolor_btn  }};
+                --focuscolor-line:  {{ style.focuscolor_line }};
+                --hovercolor-line:  {{ style.hovercolor_line }};
+            }
+        </style>
         <script type="module" src="{% static 'js/deconnect.js' %}"></script>
         {% block header %}
         {% endblock %}
     </head>
-    <body class="m-0 p-0 font-sans text-slate-700 bg-page">
+    <body class="m-0 p-0 font-sans text-slate-700 bg-color-bg">
         
         <div class="w-full min-w-screen-xs min-h-screen flex flex-col justify-start items-center">
             
-            <header class="fixed z-10 pl-8 pr-12 h-12 w-full flex flex-row justify-between items-center bg-header text-black">
+            <header class="fixed z-10 pl-8 pr-12 h-12 w-full flex flex-row justify-between items-center bg-color-header text-black">
                 <div id="logo">
                     <a href="{% url 'home:index' %}#accueil">
                         <img class="h-12 sm:h-8" src="{{ Bandeau_logo|find_file }}" alt="{{ Bandeau_logo|find_content:1 }}" />
