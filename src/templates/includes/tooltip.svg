@@ -1,0 +1,19 @@
+<svg id="tooltip" xmlns="http://www.w3.org/2000/svg" viewBox="-5 -5 110 110">
+
+<!-- <path d="M0 10 H100" stroke-width="1" stroke="#00d" fill-opacity="0.0"></path>
+<path d="M0 50 H100" stroke-width="1" stroke="#00d" fill-opacity="0.0"></path>
+<path d="M0 90 H100" stroke-width="1" stroke="#00d" fill-opacity="0.0"></path>
+<path d="M10 0 V100" stroke-width="1" stroke="#00d" fill-opacity="0.0"></path>
+<path d="M50 0 V100" stroke-width="1" stroke="#00d" fill-opacity="0.0"></path>
+<path d="M90 0 V100" stroke-width="1" stroke="#00d" fill-opacity="0.0"></path> -->
+
+<g transform="translate(-10,-5)">
+<path d="M31 66 A 38 25 1 1 1 45 73" stroke-width="4" stroke=currentColor fill-opacity="0.0"></path>
+<path d="M30 65 A 35 25 1 0 1 24 86" stroke-width="4" stroke=currentColor fill-opacity="0.0"></path>
+<path d="M47 72 A 35 25 1 0 1 25 85" stroke-width="4" stroke=currentColor fill-opacity="0.0"></path>
+</g>
+<circle cx='33' cy='45' r='4' stroke-width="3" stroke=currentColor fill-opacity="0.0"></circle>
+<circle cx='50' cy='45' r='4' stroke-width="3" stroke=currentColor fill-opacity="0.0"></circle>
+<circle cx='67' cy='45' r='4' stroke-width="3" stroke=currentColor fill-opacity="0.0"></circle>
+
+</svg>

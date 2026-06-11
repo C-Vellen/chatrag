@@ -44,9 +44,9 @@
                     <div class="font-semibold text-gray-700 whitespace-nowrap">
                         Liste API :
                     </div>  
-                    <div class="text-xs text-gray-500 w-80 mr-4 py-1 px-2 rounded border border-gray-300 bg-gray-50 text-gray-700 hover:bg-gray-100 cursor-pointer">
-                        <a href="{% url 'ingest:waiting_list' %}">Sélectionner dans la liste >></a>
-                    </div>
+                    <a href="{% url 'ingest:waiting_list' %}" class="text-xs w-80 mr-4 py-1 px-2 rounded border border-gray-300 bg-gray-50 text-gray-700 hover:bg-gray-100 cursor-pointer">
+                        <span >Sélectionner dans la liste >></span>
+                    </a>
                     {% endif %}
         
                 </div>
