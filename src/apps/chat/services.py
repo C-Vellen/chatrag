@@ -60,6 +60,12 @@ def stream_response(conversation_id: str, question: str):
     - sauvegarde en base à la fin
     """
     conversation = Conversation.objects.get(id=conversation_id)
+    
+    # if not conversation.messages.exists():
+    #     conversation.title = generate_title_with_llm(question)
+    #     conversation.save()
+        
+
 
     # 1. Retrieval
     context, chunks_meta = build_context(question)
@@ -104,3 +110,31 @@ def stream_response(conversation_id: str, question: str):
             )
         # Signal de fin au client
         yield "data: [DONE]\n\n"
+        
+        
+        
+def generate_title(question: str) -> str:
+    """génère un titre court."""
+    return question[:60]
+    
+    # tentative de générer le titre avec un LLM :
+    # llm = LLMModel.get_active_model()
+    # try: 
+    #     response = client.chat.completions.create(
+    #         model      = llm.LLM,
+    #         max_completion_tokens = 100,
+    #         messages              = [
+    #             {
+    #                 "role":    "user",
+    #                 "content": f"Génère un titre de 5 mots maximum pour cette question : {question}\nRéponds uniquement avec le titre, rien d'autre."
+    #             }
+    #         ]
+    #     )
+    #     title = response.choices[0].message.content.strip()
+    #     print(f"DEBUG repr : {repr(title)}")
+    #     print(f"DEBUG finish_reason : {response.choices[0].finish_reason}")
+    #     return title if title else question[:60]   # fallback si vide
+    # except Exception as e:
+    #     print(f"DEBUG erreur generate_title : {e}")
+    #     return question[:60]   # fallback
+    
