@@ -5,9 +5,6 @@ from django.http import Http404
 from django.contrib.auth import authenticate, login, logout
 from django.core import management
 from django.core.exceptions import PermissionDenied
-
-from src.settings import DEBUG
-from home.models import Libelles
 from .forms import ConnexionForm
 
 
@@ -24,13 +21,10 @@ def connexion(request):
     # suppression des sessions expirées :
     management.call_command("clearsessions")
 
-    context = {lib.description: lib for lib in Libelles.objects.all()}
-    context.update(
-        {
+    context = {
             "titre_onglet": "connexion",
             "authentication_fail": False,
         }
-    )
     if request.method == "POST":
         form = ConnexionForm(request.POST)
         if form.is_valid():

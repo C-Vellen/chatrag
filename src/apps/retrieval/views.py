@@ -1,5 +1,4 @@
 from django.shortcuts import render
-from home.context import usercontext
 from .retriever import retrieve_chunks, print_chunks_results
 
 
@@ -7,10 +6,9 @@ def search(request):
     '''
     get closest chunks from DB pg_vector
     '''
-    context = usercontext(request)
-    context.update({
+    context = {
         "title": "Entrer une question et chercher les extraits les plus pertinents",        
-    })
+    }
     if request.method == "POST":
         prompt = request.POST["prompt"]
         
