@@ -9,8 +9,14 @@
 
 <section class="bg-gray-100 h-full w-full flex overflow-hidden">
 
+<div id="chat-app"
+     data-conversation-id="{% if conversation %}{{ conversation.id }}{% endif %}"
+     data-stream-url="{% url 'chat:chat-stream' %}"
+     data-csrf-token="{{ csrf_token }}">
+</div>
+
 <!-- Sidebar -->
-<aside class="w-64 bg-slate-200 text-slate-800 flex flex-col shrink-0">
+<aside class="w-96 bg-slate-200 text-slate-800 flex flex-col shrink-0">
 
     <div class="p-4 border-b border-gray-700">
         <a href="{% url 'chat:chat' %}"
@@ -19,7 +25,7 @@
         </a>
     </div>
 
-    <div class="flex-1 overflow-y-auto p-2">
+    <div id="conversations-list" class="flex-1 overflow-y-auto p-2">
         {% for conv in conversations %}
             <a href="?conversation_id={{ conv.id }}"
                class="block px-3 py-2 rounded-lg text-sm mb-1 truncate transition
@@ -48,9 +54,10 @@
     </header>
 
     <!-- Messages -->
+
     <div id="messages" class="flex-1 overflow-y-auto px-6 py-4 space-y-4">
 
-        {% for msg in messages %}
+        {% for msg in chat_messages %}
 
             {% if msg.role == "user" %}
                 <div class="flex justify-end">
@@ -90,14 +97,14 @@
 
         <!-- Réponse en cours de streaming -->
         <div id="streaming-msg"
-             class="hidden flex flex-col max-w-xl">
+             class="hidden flex flex-col w-full">
             <div id="streaming-content"
-                 class="bg-white text-gray-800 px-4 py-3 rounded-2xl rounded-tl-sm text-sm shadow">
+                 class="min-h-12 w-full bg-white text-gray-800 px-4 py-3 rounded-2xl rounded-tl-sm text-sm shadow">
             </div>
-            <div class="flex gap-1 px-2 mt-1">
-                <span class="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:0ms]"></span>
-                <span class="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:150ms]"></span>
-                <span class="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:300ms]"></span>
+            <div class="flex gap-1 px-2 mt-2">
+                <span class="w-2 h-2 bg-color-header rounded-full animate-bounce [animation-delay:0ms]"></span>
+                <span class="w-2 h-2 bg-color-header rounded-full animate-bounce [animation-delay:150ms]"></span>
+                <span class="w-2 h-2 bg-color-header rounded-full animate-bounce [animation-delay:300ms]"></span>
             </div>
         </div>
 
@@ -106,15 +113,13 @@
     <!-- Zone de saisie -->
     <div class="bg-white border-t border-gray-200 px-6 py-4 shrink-0">
         <div class="flex gap-3 items-end">
-            {% csrf_token %}
             <textarea
                 id="question"
                 rows="2"
                 placeholder="Votre question... (Ctrl+Entrée pour envoyer)"
                 class="flex-1 resize-none border border-gray-300 rounded-xl px-4 py-3 text-sm
-                       focus:outline-none focus:ring-2 focus:ring-header focus:border-transparent
-                       placeholder-gray-400">
-            </textarea>
+                       focus:outline-none focus:ring-2 focus:ring-color-header focus:border-transparent
+                       placeholder-gray-400"></textarea>
             <button
                 id="send-btn"
                 data-url="{% url 'chat:chat-stream' %}"
