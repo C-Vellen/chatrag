@@ -1,6 +1,5 @@
 from django.shortcuts import render, get_object_or_404
 from django.http import StreamingHttpResponse
-from home.context import usercontext
 
 from .models import Conversation
 from .services import stream_response
@@ -18,13 +17,11 @@ def chat_view(request):
 
     conversations = Conversation.objects.all()[:20]
     
-    context = usercontext(request)
-    context.update({
+    context = {
         "conversation":  conversation,
         "conversations": conversations,
         "messages":      conversation.messages.all(),
-    })
-
+    }
 
     return render(request, "chat/chat.html", context)
 

@@ -89,7 +89,7 @@ class Libelles(models.Model):
         print('   Libelles {} : ok - {}'.format( kwargs["description"], newinstance))           
 
 
-class Styles(models.Model):
+class Style(models.Model):
     """
     Style qui sera appliqué aux templates via le context-processor
     """
@@ -108,7 +108,7 @@ class Styles(models.Model):
         return self.name
 
     @classmethod
-    def get_active(cls) -> "Styles":
+    def get_active(cls) -> "Style":
         """Retourne le style actif en cache infini, un style par défaut sinon"""
         style = cache.get("style_active")
         if style is None:
@@ -127,7 +127,7 @@ def auto_delete_content_on_change(sender, instance, **kwargs):
     auto_delete_file_on_change(sender, instance) 
 
 # Libère le cache pour forcer la mise à jour des styles
-@receiver([post_save, post_delete], sender=Styles)
+@receiver([post_save, post_delete], sender=Style)
 def clear_style_cache(sender, instance, **kwargs):
     cache.delete("style_active") 
 

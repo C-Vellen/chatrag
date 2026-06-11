@@ -1,7 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.db.models import Sum
 from apps.special_bridge import ingest_waitingList, get_documents_from_api
-from home.context import usercontext
 from .models import Collection, DocumentRef, WaitingList
 from .forms import DocumentForm
 from .services.ingest import ingest_file, ingest_uri
@@ -14,14 +13,6 @@ def documents_list(request):
     """ Liste des documents ingérés + interface pour ingérer un nouveau document"""
     
     collection = Collection.get_active()
-    context = usercontext(request)
-    context.update({
-        "title": "Liste des documents ingérés:",    
-        "collection_name": collection.collection_name,
-        "embedding_model": collection.embedding_model,
-        "chunk_size": collection.chunk_size,
-        "chunk_overlap": collection.chunk_overlap
-    })
     form = DocumentForm()
     
     if request.method == "POST":
@@ -40,7 +31,8 @@ def documents_list(request):
             return redirect("ingest:documents_list")
     
     docs = DocumentRef.objects.filter(collection=collection, is_active=True)
-    context.update({
+    context = {
+        "title": "Liste des documents ingérés:",     
         "collection":collection,
         "docs":docs,
         "n_docs":len(docs),
@@ -48,7 +40,7 @@ def documents_list(request):
         "form":form,
         "db_size": get_ragdb_size(),
         "has_special": HAS_SPECIAL_APP,
-    })
+    }
     
     return render(request, "ingest/list.html", context)
     
@@ -100,7 +92,6 @@ def waiting_list(request):
     if request.method == "POST":
         ingest_waitingList(request.POST.getlist("doc"))
             
-    context = usercontext(request)
     docList = WaitingList.objects.all().order_by("-date")
     context={
         "text": "Liste des videos",

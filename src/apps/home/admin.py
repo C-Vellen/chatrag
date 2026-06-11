@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Libelles, DefaultContent, Styles
+from .models import Libelles, DefaultContent, Style
 
 @admin.register(Libelles)
 class LibellesAdmin(admin.ModelAdmin):
@@ -27,8 +27,8 @@ class DefaultContentAdmin(admin.ModelAdmin):
     ]
       
       
-@admin.register(Styles)
-class StylesAdmin(admin.ModelAdmin):
+@admin.register(Style)
+class StyleAdmin(admin.ModelAdmin):
     
     # affichage des contenus par défaut
     list_display = [
