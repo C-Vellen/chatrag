@@ -25,7 +25,7 @@
         <form class="w-full flex flex-col gap-2" method="post" action=".">
           {% csrf_token %}
           <textarea id="input" class="w-full text-xs px-4 py-1 h-24 " rows='6' placeholder="Ecrivez ici..." name="prompt">{{prompt}}</textarea>
-          <button id="send_prompt" class="text-xs px-2 py-1 h-6 w-24 bg-slate-200" data-url=" {% url 'retrieval:search' %} " >Envoyer</button>
+          <button id="send_prompt" class="text-xs px-2 py-1 h-6 w-24 text-lightcolor-text bg-color-btn hover:bg-hovercolor-btn" data-url=" {% url 'retrieval:search' %} " >Envoyer</button>
         </form>
       </div>
 

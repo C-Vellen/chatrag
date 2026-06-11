@@ -18,7 +18,7 @@ function selectVideo(btn) {
   closeTxt();
   closeChunksList();
   stopAndReset();
-  btn.closest('.headline-title').classList.add('bg-headline');
+  btn.closest('.headline-title').classList.add('bg-focuscolor-line');
   currentVideo = {
     id: btn.dataset.videoId,
     start: parseInt(btn.dataset.starttime),
@@ -104,7 +104,7 @@ function scheduleEnd(seconds) {
 
 function stopAndReset() {
   clearTimeout(endTimer);
-  document.querySelectorAll('.headline-title').forEach(d => d.classList.remove('bg-headline'));
+  document.querySelectorAll('.headline-title').forEach(d => d.classList.remove('bg-focuscolor-line'));
   document.getElementById('thumb-titre').textContent = "";
   document.getElementById('timestamp').textContent = "";
   if (ytPlayer) {

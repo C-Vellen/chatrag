@@ -1,3 +1,8 @@
+// Gestion de la page d'affichage de la waitinglist:
+// - coche / décoche des documents à ingérer
+// - afficher / masquer (toggle) les documents ingérés / nouveaux / introuvables
+
+
 document.addEventListener('DOMContentLoaded', function () {
     const checkAll = document.getElementById('check-all');
     const checkboxes = Array.from(document.querySelectorAll('.doc-checkbox'));

@@ -8,8 +8,8 @@ async function selectText(btn) {
   closePlayer()
   closePdf()
   closeChunksList()
-  document.querySelectorAll('.headline-title').forEach(d => d.classList.remove('bg-headline')); 
-  btn.closest('.headline-title').classList.add('bg-headline');
+  document.querySelectorAll('.headline-title').forEach(d => d.classList.remove('bg-focuscolor-line')); 
+  btn.closest('.headline-title').classList.add('bg-focuscolor-line');
 
   document.getElementById('txt-titre').textContent = titre;
 
@@ -85,6 +85,6 @@ function closeTxt() {
   viewer.classList.add('hidden');
   viewer.classList.remove('flex');
   document.getElementById('txt-container').innerHTML = '';
-  document.querySelectorAll('.headline-title').forEach(d => d.classList.remove('bg-headline'));
+  document.querySelectorAll('.headline-title').forEach(d => d.classList.remove('bg-focuscolor-line'));
 
 }

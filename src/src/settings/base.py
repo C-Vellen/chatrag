@@ -146,7 +146,7 @@ TAILWIND_APP_NAME = "theme"
 # app spécifique 
 def _app_is_ready(app_path) -> bool:
     """Vérifie qu'une apps est présente ET contient du vrai code."""
-    sentinel = BASE_DIR / "src" / "apps" / app_path / "apps.py" 
+    sentinel = Path(f"/app/src/apps/{app_path}/apps.py" )
     return sentinel.is_file()
 
 HAS_SPECIAL_APP = _app_is_ready("special")

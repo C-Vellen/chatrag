@@ -76,7 +76,7 @@
                 
                 </li>
                 {% for doc in docs %}
-                    <li id="{{doc.id}}" class="headline-title grid grid-cols-[40px_1fr_40px_20px_20px] gap-4 items-start ">
+                    <li id="{{doc.id}}" class="headline-title grid grid-cols-[40px_1fr_40px_20px_20px] gap-4 items-start hover:bg-hovercolor-line">
 
                         <span class="w-16 text-left">{{doc.created_at|date:"d/m/y"}}</span>
                         <a href="{% url 'admin:ingest_documentref_change' doc.id %}" class="text-left">

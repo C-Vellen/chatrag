@@ -10,8 +10,8 @@ async function selectPdf(btn) {
   closePlayer()
   closeTxt()
   closeChunksList()
-  document.querySelectorAll('.headline-title').forEach(d => d.classList.remove('bg-headline')); 
-  btn.closest('.headline-title').classList.add('bg-headline');
+  document.querySelectorAll('.headline-title').forEach(d => d.classList.remove('bg-focuscolor-line')); 
+  btn.closest('.headline-title').classList.add('bg-focuscolor-line');
  
   document.getElementById('pdf-titre').textContent = titre;
 
@@ -105,7 +105,7 @@ async function renderAllPages() {
     document.getElementById('pdf-viewer').classList.add("hidden");
     document.getElementById('pdf-container').innerHTML = '';
     pdfDoc = null;
-    document.querySelectorAll('.headline-title').forEach(d => d.classList.remove('bg-headline'));
+    document.querySelectorAll('.headline-title').forEach(d => d.classList.remove('bg-focuscolor-line'));
 
   }
 
