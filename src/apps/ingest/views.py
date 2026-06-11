@@ -1,11 +1,10 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.db.models import Sum
-from apps.special_bridge import ingest_waitingList, get_documents_from_api
+from apps.special_bridge import has_special, ingest_waitingList, get_documents_from_api
 from .models import Collection, DocumentRef, WaitingList
 from .forms import DocumentForm
 from .services.ingest import ingest_file, ingest_uri
 from .services.inspector import delete_document, list_chunks, get_ragdb_size
-from src.settings import HAS_SPECIAL_APP
 from src.config import settings
 
     
@@ -39,7 +38,7 @@ def documents_list(request):
         "n_chunks": DocumentRef.objects.aggregate(total=Sum('nb_chunks'))["total"],
         "form":form,
         "db_size": get_ragdb_size(),
-        "has_special": HAS_SPECIAL_APP,
+        "has_special": has_special,
     }
     
     return render(request, "ingest/list.html", context)
