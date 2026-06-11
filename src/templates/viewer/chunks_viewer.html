@@ -15,7 +15,7 @@
 </div>
 <ul class="w-full text-xs flex flex-col gap-2">
     {% for chunk in chunks %}
-    <li class="{% if forloop.counter == chunk_index %}bg-yellow-200{% endif %}">
+    <li class="{% if forloop.counter == chunk_index %}bg-focuscolor-line{% endif %}">
         <span class="font-bold">{{forloop.counter}}/</span>
         {{chunk}}
         <span class="font-bold">[{{chunk|length}} car., {{chunk|wordcount}} mots]</span>
