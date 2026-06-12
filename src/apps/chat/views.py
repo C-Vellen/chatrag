@@ -19,7 +19,7 @@ def chat_view(request):
         conversation = get_object_or_404(Conversation, id=conversation_id)
         messages     = conversation.messages.all()
     
-    conversations = Conversation.objects.all()[:20]
+    conversations = Conversation.objects.filter(user=request.user)[:20]
     
     context = {
         "conversation":  conversation,
@@ -44,13 +44,11 @@ def stream_view(request):
     if conversation_id:
         conversation = get_object_or_404(Conversation, id=conversation_id)
     else:
-        conversation = Conversation.objects.create()
+        conversation = Conversation.objects.create(user=request.user)
+        # conversation.user = request.user
         conversation.title = generate_title(question)
         conversation.save()
     
-    # collection = Collection.get_active()
-
-
     response = StreamingHttpResponse(
         stream_response(conversation.id, question),
         content_type="text/event-stream",

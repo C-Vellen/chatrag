@@ -1,12 +1,8 @@
 from openai import OpenAI
 from retrieval.retriever import retrieve_chunks
-from .models import Conversation, Message, LLMModel
+from .models import SystemPrompt, Conversation, Message, LLMModel
 
 client = OpenAI()
-
-SYSTEM_PROMPT = """Tu es un assistant expert. Réponds à la question en te basant
-uniquement sur le contexte fourni. Si la réponse ne s'y trouve pas, dis-le clairement.
-Réponds en français."""
 
 
 def build_context(question: str) -> tuple[str, list]:
@@ -38,7 +34,9 @@ def build_context(question: str) -> tuple[str, list]:
 
 def build_messages(conversation: Conversation, question: str, context: str) -> list:
     """Construit la liste de messages pour l'API OpenAI avec historique."""
-    messages = [{"role": "system", "content": SYSTEM_PROMPT}]
+    
+    system_prompt = SystemPrompt.get_active()
+    messages = [{"role": "system", "content": system_prompt.prompt}]
 
     # Historique de la conversation
     for msg in conversation.messages.all():
