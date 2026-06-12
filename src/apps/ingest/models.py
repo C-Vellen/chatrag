@@ -1,7 +1,7 @@
 import uuid
 from django.db import models
 from django.dispatch import receiver
-from django.db.models.signals import post_delete, pre_save
+from django.db.models.signals import post_delete, pre_save, post_save
 from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
@@ -74,11 +74,11 @@ class Collection(models.Model):
 
     @classmethod
     def get_active(cls) -> "Collection":
-        """Returns active config with 5 minutes cache."""
+        """Retourne la configuration RAG active en cache infini, la config par défaut sinon"""
         config = cache.get("rag_config_active")
         if config is None:
-            config = cls.objects.filter(is_active=True).first()
-            cache.set("rag_config_active", config, timeout=300)
+            config = cls.objects.filter(is_active=True).first() or cls()
+            cache.set("rag_config_active", config, timeout=None)
         return config
 
     def save(self, *args, **kwargs):
@@ -185,5 +185,8 @@ def auto_delete_document_on_delete(sender, instance, **kwargs):
 def auto_delete_document_on_change(sender, instance, **kwargs):
     auto_delete_file_on_change(sender, instance) 
 
-
+# Libère le cache pour forcer la mise à jour de la configuration rag (collection)
+@receiver([post_save, post_delete], sender=Collection)
+def clear_config_cache(sender, instance, **kwargs):
+    cache.delete("rag_config_active") 
 

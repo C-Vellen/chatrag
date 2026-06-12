@@ -29,7 +29,7 @@ def documents_list(request):
     
             return redirect("ingest:documents_list")
     
-    docs = DocumentRef.objects.filter(collection=collection, is_active=True)
+    docs = DocumentRef.objects.filter(collection=collection, is_active=True).order_by("-created_at")
     context = {
         "title": "Liste des documents ingérés:",     
         "collection":collection,
@@ -40,6 +40,12 @@ def documents_list(request):
         "db_size": get_ragdb_size(),
         "has_special": has_special,
     }
+    
+    print("############################")
+    print(docs.filter(video_id="4EDJfvUzcXE"))
+
+
+    print("############################")
     
     return render(request, "ingest/list.html", context)
     
