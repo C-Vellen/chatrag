@@ -3,6 +3,89 @@ let conversationId   = app.dataset.conversationId;   // "" si nouvelle conversat
 const streamUrl      = app.dataset.streamUrl;
 const csrfToken      = app.dataset.csrfToken;
 
+// ------------------------------
+
+
+// URL passée via data-attribute dans le template
+const chunksBaseUrl = app.dataset.chunksUrl;  // "/chat/chunks/"
+
+// async function fetchAndDisplayChunks() {
+//     if (!conversationId) return;
+
+//     const url = `${chunksBaseUrl}${conversationId}/`;
+//     console.log("Fetch chunks URL:", url);
+
+//     try {
+//         const response = await fetch(url);
+//         console.log("Fetch chunks status:", response.status);
+
+//         if (!response.ok) {
+//             console.error("Erreur HTTP:", response.status, await response.text());
+//             return;
+//         }
+
+//         const data = await response.json();
+//         console.log("Chunks reçus:", data);
+
+//         if (data.chunks && data.chunks.length > 0) {
+//             renderChunks(data.chunks);
+//         }
+//     } catch(e) {
+//         console.error("Erreur fetch chunks :", e);
+//     }
+// }
+
+
+
+
+
+
+
+
+async function fetchAndDisplayChunks() {
+    if (!conversationId) return;
+
+    try {
+        const response = await fetch(`${chunksBaseUrl}${conversationId}/`);
+        const data     = await response.json();
+
+        if (data.chunks && data.chunks.length > 0) {
+            renderChunks(data.chunks);
+        }
+    } catch(e) {
+        console.error("Erreur fetch chunks :", e);
+    }
+}
+
+function renderChunks(chunks) {
+    const container = document.getElementById("chunks-container");
+    container.innerHTML = "";   // reset
+
+    const title = document.createElement("p");
+    title.className   = "text-xs text-gray-400 mb-1 mt-2";
+    title.textContent = "📚 Sources utilisées :";
+    container.appendChild(title);
+
+    const tagsWrapper = document.createElement("div");
+    tagsWrapper.className = "flex flex-wrap gap-1";
+
+    chunks.forEach(chunk => {
+        const tag      = document.createElement("span");
+        tag.className  = "inline-block bg-gray-100 text-gray-500 text-xs rounded px-2 py-0.5";
+        const page       = chunk.page       ? ` p.${chunk.page}`       : "";
+        const similarity = chunk.similarity ? ` — ${chunk.similarity}` : "";
+        tag.textContent  = `${chunk.source}${page}${similarity}`;
+        tagsWrapper.appendChild(tag);
+    });
+
+    container.appendChild(tagsWrapper);
+}
+
+
+
+
+
+// ------------------------------
 
 // Formatter la date
 function formatDate(dateStr) {
@@ -53,7 +136,7 @@ function escapeHtml(text) {
 function sendMessage() {
     const input    = document.getElementById("question");
     const btn      = document.getElementById("send-btn");
-    const url = btn.dataset.url;
+    // const url = btn.dataset.url;                                         ---
     const question = input.value.trim();
     if (!question) return;
 
@@ -68,6 +151,7 @@ function sendMessage() {
     
     messagesContainer.appendChild(streamingMsg);   // ← déplace à la fin du DOM
     streamingContent.textContent = "";
+    streamingContent.dataset.raw    = "";   // reset du texte brut accumulé     +++
     streamingMsg.classList.remove("hidden");
     scrollToBottom();
 
@@ -105,27 +189,117 @@ function sendMessage() {
         function read() {
             reader.read().then(({ done, value }) => {
                 if (done) {
-                    const finalContent = streamingContent.textContent;
                     streamingMsg.classList.add("hidden");
                     streamingContent.textContent = "";
-                    addAssistantMessage(finalContent);
                     btn.disabled = false;
                     return;
                 }
 
                 const text = decoder.decode(value);
                 text.split("\n").forEach(line => {
-                    if (line.startsWith("data: ")) {
-                        const token = line.slice(6);
-                        if (token !== "[DONE]") {
-                            streamingContent.textContent += token;
+                    if (!line) return;   
+
+                    if (!line.startsWith("data: ")) return;
+
+                    const data = line.slice(6).trim();
+
+                    if (!data) return;
+                    console.log("RAW DATA:", data);
+
+                    try {
+                        const msg = JSON.parse(data);
+
+                        if (msg.type === "token") {
+                            streamingContent.textContent += msg.value.replace(/\n/g, " ");
+                            scrollToBottom();
+
+                        } else if (msg.type === "done") {
+                            const finalContent = streamingContent.textContent;
+                            streamingMsg.classList.add("hidden");
+                            streamingContent.textContent = "";
+                            addAssistantMessage(finalContent);
+                            btn.disabled = false;
+                            fetchAndDisplayChunks();
+                        }
+
+                    } catch(e) {
+                        // Fallback texte brut
+                        if (data !== "[DONE]") {
+                            streamingContent.textContent += data;
                             scrollToBottom();
                         }
                     }
                 });
+
                 read();
             });
         }
+        // function read() {
+        //     reader.read().then(({ done, value }) => {
+        //         if (done) {
+        //             // const finalContent = streamingContent.textContent;           ---
+        //             streamingMsg.classList.add("hidden");
+        //             streamingContent.dataset.raw = "";                          //  +++
+        //             streamingContent.innerHTML   = "";                          //  +++
+        //             // streamingContent.textContent = "";                           ---
+        //             // addAssistantMessage(finalContent);                           ---
+        //             btn.disabled = false;
+        //             return;
+        //         }
+                
+
+        //         const text = decoder.decode(value);
+        //         text.split("\n").forEach(line => {
+
+
+        //             // if (line.startsWith("data: ")) {
+        //             //     const token = line.slice(6);
+        //             //     if (token !== "[DONE]") {
+        //             //         streamingContent.textContent += token;
+        //             //         scrollToBottom();
+        //             //     }
+        //             // }
+
+
+        //             if (!line.startsWith("data: ")) return;
+
+        //             const data = line.slice(6).trim();
+        //             if (!data) return;
+
+        //             try {
+        //                 const msg = JSON.parse(data);
+
+        //                 if (msg.type === "token") {
+        //                     // Accumule le texte brut et formate
+        //                     const raw = (streamingContent.dataset.raw || "") + msg.value;
+        //                     streamingContent.dataset.raw = raw;
+        //                     streamingContent.innerHTML   = formatContent(raw);
+        //                     scrollToBottom();
+
+        //                 } else if (msg.type === "done") {
+        //                     // Fin du stream : finalise le message
+        //                     const finalRaw = streamingContent.dataset.raw || "";
+        //                     streamingMsg.classList.add("hidden");
+        //                     streamingContent.dataset.raw = "";
+        //                     streamingContent.innerHTML   = "";
+        //                     addAssistantMessage(finalRaw);
+        //                     btn.disabled = false;
+        //                     fetchAndDisplayChunks();   // ← fetch chunks après le stream
+        //                 }
+
+        //             } catch(e) {
+        //                 // Ancien format texte brut (fallback)
+        //                 if (data !== "[DONE]") {
+        //                     const raw = (streamingContent.dataset.raw || "") + data;
+        //                     streamingContent.dataset.raw = raw;
+        //                     streamingContent.innerHTML   = formatContent(raw);
+        //                     scrollToBottom();
+        //                 }
+        //             }
+        //         });
+        //         read();
+        //     });
+        // }
         read();
     })
     .catch(() => {

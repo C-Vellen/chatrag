@@ -10,9 +10,10 @@
 <section class="bg-gray-100 h-full w-full flex overflow-hidden">
 
 <div id="chat-app"
-     data-conversation-id="{% if conversation %}{{ conversation.id }}{% endif %}"
-     data-stream-url="{% url 'chat:chat-stream' %}"
-     data-csrf-token="{{ csrf_token }}">
+    data-conversation-id="{% if conversation %}{{ conversation.id }}{% endif %}"
+    data-stream-url="{% url 'chat:chat-stream' %}"
+    data-chunks-url="{% url 'chat:chat-chunks-base' %}"
+    data-csrf-token="{{ csrf_token }}">
 </div>
 
 <!-- Sidebar -->
@@ -68,24 +69,30 @@
 
             {% else %}
                 <div class="flex flex-col gap-1 w-full">
+
                     <div class="bg-white text-gray-800 px-4 py-3 rounded-2xl rounded-tl-sm text-sm shadow">
                         {{ msg.content }}
                     </div>
+
                     {% if msg.chunks_used %}
-                        <div class="text-xs text-gray-400 px-2">
-                            
-                            {% for chunk in msg.chunks_used %}
-                                <span class="inline-block bg-gray-100 text-gray-500 rounded px-1 py-0.5 mr-1">
-                                    {{ chunk.source }}{% if chunk.page %} p.{{ chunk.page }}{% endif %}
-                                    ({{ chunk.similarity }})
-                                </span>
-                            <!-- -->
-
-                            <!-- -->
-
-                            {% endfor %}
-                        </div>
+                    <div class="text-xs text-gray-400 px-2">
+                        {% for chunk in msg.chunks_used %}
+                            <span class="inline-block bg-gray-100 text-gray-500 rounded px-1 py-0.5 mr-1">
+                                {{ chunk.titre }}{% if chunk.page %} p.{{ chunk.page }}{% endif %}
+                                ({{ chunk.similarity }})
+                            </span>
+                        {% endfor %}
+                    </div>
                     {% endif %}
+
+                    <!-- -->
+                    <div id="chunks-container" class="max-w-xl mt-2 px-2">
+                        {% if last_chunks %}
+                            {% include "chat/_chunks.html" with chunks=last_chunks %}
+                        {% endif %}
+                    </div>
+                    <!-- -->
+
                 </div>
             {% endif %}
 

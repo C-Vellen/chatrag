@@ -1,3 +1,4 @@
+import json
 from openai import OpenAI
 from retrieval.retriever import retrieve_chunks
 from .models import SystemPrompt, Conversation, Message, LLMModel
@@ -13,20 +14,26 @@ def build_context(question: str) -> tuple[str, list]:
     chunks_meta   = []
 
     for r in results:
-        source = r.chunk.metadata.get("source", "?")
-        page   = r.chunk.metadata.get("page", "")
-        page_str = f" p.{page}" if page else ""
+        
+        titre = r.chunk.metadata.get("source", "?")
 
         context_parts.append(
-            f"[Source: {source}{page_str} | similarité: {r.similarity}]\n"
+            f"[Source: {titre} | similarité: {r.similarity}]\n"
             f"{r.chunk.page_content}"
         )
         chunks_meta.append({
-            "source":      source,
-            "page":        page,
-            "similarity":  r.similarity,
-            "distance":    r.distance,
-            "document_id": r.chunk.metadata.get("document_id", ""),
+            "source_type"   : r.chunk.metadata.get("source_type", "?"),
+            "titre"         : titre,
+            "file"          : r.chunk.metadata.get("source_url", "?"),
+            "page"          : r.chunk.metadata.get("page_label", "?"),
+            "video_id"      : r.chunk.metadata.get("video_id", "?"),
+            "starttime"     : r.chunk.metadata.get("start_time", "?"),
+            "endtime"       : r.chunk.metadata.get("end_time", "?"),
+            "start"         : r.chunk.metadata.get("start", "?"),
+            "end"           : r.chunk.metadata.get("end", "?"),
+            "similarity"    : r.similarity,
+            "distance"      : r.distance,
+            "document_id"   : r.chunk.metadata.get("document_id", ""),
         })
 
     return "\n\n---\n\n".join(context_parts), chunks_meta
@@ -95,7 +102,8 @@ def stream_response(conversation_id: str, question: str):
             if delta:
                 full_response += delta
                 # Format SSE : "data: <token>\n\n"
-                yield f"data: {delta}\n\n"
+                # yield f"data: {delta}\n\n"
+                yield f"data: {json.dumps({'type': 'token', 'value': delta})}\n\n"
 
     finally:
         # 4. Sauvegarde de la réponse complète en base
@@ -107,7 +115,8 @@ def stream_response(conversation_id: str, question: str):
                 chunks_used  = chunks_meta,
             )
         # Signal de fin au client
-        yield "data: [DONE]\n\n"
+        # yield "data: [DONE]\n\n"
+        yield f"data: {json.dumps({'type': 'done'})}\n\n"
         
         
         
@@ -135,4 +144,7 @@ def generate_title(question: str) -> str:
     # except Exception as e:
     #     print(f"DEBUG erreur generate_title : {e}")
     #     return question[:60]   # fallback
+    
+    
+    
     
