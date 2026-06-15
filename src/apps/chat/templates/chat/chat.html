@@ -11,7 +11,7 @@
 
 <div id="chat-app"
     data-conversation-id="{% if conversation %}{{ conversation.id }}{% endif %}"
-    data-stream-url="{% url 'chat:chat-stream' %}"
+    {% comment %} data-stream-url="{% url 'chat:chat-stream' %}" {% endcomment %}
     data-chunks-url="{% url 'chat:chat-chunks-base' %}"
     data-csrf-token="{{ csrf_token }}">
 </div>
@@ -74,7 +74,8 @@
                         {{ msg.content }}
                     </div>
 
-                    {% if msg.chunks_used %}
+                    <!-- ### doublons pour historric ... à supprimer-->
+                    {% comment %} {% if msg.chunks_used %}
                     <div class="text-xs text-gray-400 px-2">
                         {% for chunk in msg.chunks_used %}
                             <span class="inline-block bg-gray-100 text-gray-500 rounded px-1 py-0.5 mr-1">
@@ -83,15 +84,16 @@
                             </span>
                         {% endfor %}
                     </div>
-                    {% endif %}
+                    {% endif %} {% endcomment %}
+                    <!-- ###-->
 
-                    <!-- -->
-                    <div id="chunks-container" class="max-w-xl mt-2 px-2">
-                        {% if last_chunks %}
-                            {% include "chat/_chunks.html" with chunks=last_chunks %}
-                        {% endif %}
-                    </div>
-                    <!-- -->
+                    <!-- ### à remplacer par for chunk in msg.chunks_used-->
+                    {% if msg.chunks_used %}
+                        <div id="chunks-container" class="max-w-xl mt-2 px-2">
+                        {% include "chat/_chunks.html" with chunks=msg.chunks_used %}
+                        </div>
+                    {% endif %}
+                    <!-- ###-->
 
                 </div>
             {% endif %}
@@ -140,11 +142,11 @@
 </div>
 
 <script> const conversationId = "{{ conversation.id }}";</script>
-<script type="module" src ="{% static 'chat/js/chat.js' %}"></script>
 
 
 
 </section>
+<script type="module" src ="{% static 'chat/js/chat.js' %}"></script>
 
 
 
