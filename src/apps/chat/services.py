@@ -70,8 +70,6 @@ def stream_response(conversation_id: str, question: str):
     #     conversation.title = generate_title_with_llm(question)
     #     conversation.save()
         
-
-
     # 1. Retrieval
     context, chunks_meta = build_context(question)
 
@@ -84,9 +82,7 @@ def stream_response(conversation_id: str, question: str):
 
     # 3. Appel OpenAI en streaming
     messages = build_messages(conversation, question, context)
-    
     llm = LLMModel.get_active_model()
-
     full_response = ""
 
     try:
@@ -102,7 +98,6 @@ def stream_response(conversation_id: str, question: str):
             if delta:
                 full_response += delta
                 # Format SSE : "data: <token>\n\n"
-                # yield f"data: {delta}\n\n"
                 yield f"data: {json.dumps({'type': 'token', 'value': delta})}\n\n"
 
     finally:
@@ -115,7 +110,6 @@ def stream_response(conversation_id: str, question: str):
                 chunks_used  = chunks_meta,
             )
         # Signal de fin au client
-        # yield "data: [DONE]\n\n"
         yield f"data: {json.dumps({'type': 'done'})}\n\n"
         
         

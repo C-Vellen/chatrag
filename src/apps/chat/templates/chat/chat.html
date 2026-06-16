@@ -10,10 +10,10 @@
 <section class="bg-gray-100 h-full w-full flex overflow-hidden">
 
 <div id="chat-app"
-    data-conversation-id="{% if conversation %}{{ conversation.id }}{% endif %}"
-    {% comment %} data-stream-url="{% url 'chat:chat-stream' %}" {% endcomment %}
-    data-chunks-url="{% url 'chat:chat-chunks-base' %}"
-    data-csrf-token="{{ csrf_token }}">
+    data-conversation-id ="{% if conversation %}{{ conversation.id }}{% endif %}"
+    data-stream-url      ="{% url 'chat:chat-stream' %}"
+    data-chunks-url      ="{% url 'chat:chat-chunks' %}"
+    data-csrf-token      ="{{ csrf_token }}">
 </div>
 
 <!-- Sidebar -->
@@ -89,7 +89,7 @@
 
                     <!-- ### à remplacer par for chunk in msg.chunks_used-->
                     {% if msg.chunks_used %}
-                        <div id="chunks-container" class="max-w-xl mt-2 px-2">
+                        <div id="chunks-container" class="mt-2 px-2">
                         {% include "chat/_chunks.html" with chunks=msg.chunks_used %}
                         </div>
                     {% endif %}
@@ -131,7 +131,6 @@
                        placeholder-gray-400"></textarea>
             <button
                 id="send-btn"
-                data-url="{% url 'chat:chat-stream' %}"
                 class="text-lightcolor-text bg-color-btn hover:bg-hovercolor-btn disabled:bg-gray-300 disabled:cursor-not-allowed
                     font-medium px-5 py-3 rounded-xl transition shrink-0">
                 Envoyer

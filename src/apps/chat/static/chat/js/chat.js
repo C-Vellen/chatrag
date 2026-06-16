@@ -1,91 +1,11 @@
 const app            = document.getElementById("chat-app");
 let conversationId   = app.dataset.conversationId;   // "" si nouvelle conversation
 const streamUrl      = app.dataset.streamUrl;
+const chunksUrl      = `${app.dataset.chunksUrl}?conversation_id=${conversationId}`;
 const csrfToken      = app.dataset.csrfToken;
-
-// ------------------------------
-
-
-// URL passée via data-attribute dans le template
-const chunksBaseUrl = app.dataset.chunksUrl;  // "/chat/chunks/"
-
-// async function fetchAndDisplayChunks() {
-//     if (!conversationId) return;
-
-//     const url = `${chunksBaseUrl}${conversationId}/`;
-//     console.log("Fetch chunks URL:", url);
-
-//     try {
-//         const response = await fetch(url);
-//         console.log("Fetch chunks status:", response.status);
-
-//         if (!response.ok) {
-//             console.error("Erreur HTTP:", response.status, await response.text());
-//             return;
-//         }
-
-//         const data = await response.json();
-//         console.log("Chunks reçus:", data);
-
-//         if (data.chunks && data.chunks.length > 0) {
-//             renderChunks(data.chunks);
-//         }
-//     } catch(e) {
-//         console.error("Erreur fetch chunks :", e);
-//     }
-// }
+const messages       = document.getElementById("messages");
 
 
-
-
-
-
-
-
-async function fetchAndDisplayChunks() {
-    if (!conversationId) return;
-
-    try {
-        const response = await fetch(`${chunksBaseUrl}${conversationId}/`);
-        const data     = await response.json();
-
-        if (data.chunks && data.chunks.length > 0) {
-            renderChunks(data.chunks);
-        }
-    } catch(e) {
-        console.error("Erreur fetch chunks :", e);
-    }
-}
-
-function renderChunks(chunks) {
-    const container = document.getElementById("chunks-container");
-    container.innerHTML = "";   // reset
-
-    const title = document.createElement("p");
-    title.className   = "text-xs text-gray-400 mb-1 mt-2";
-    title.textContent = "📚 Sources utilisées :";
-    container.appendChild(title);
-
-    const tagsWrapper = document.createElement("div");
-    tagsWrapper.className = "flex flex-wrap gap-1";
-
-    chunks.forEach(chunk => {
-        const tag      = document.createElement("span");
-        tag.className  = "inline-block bg-gray-100 text-gray-500 text-xs rounded px-2 py-0.5";
-        const page       = chunk.page       ? ` p.${chunk.page}`       : "";
-        const similarity = chunk.similarity ? ` — ${chunk.similarity}` : "";
-        tag.textContent  = `${chunk.source}${page}${similarity}`;
-        tagsWrapper.appendChild(tag);
-    });
-
-    container.appendChild(tagsWrapper);
-}
-
-
-
-
-
-// ------------------------------
 
 // Formatter la date
 function formatDate(dateStr) {
@@ -97,10 +17,46 @@ function formatDate(dateStr) {
     return `${day}/${month} ${hours}:${minutes}`;
 }
 
-function scrollToBottom() {
-    const msgs = document.getElementById("messages");
-    msgs.scrollTop = msgs.scrollHeight;
+// Afficher les chunks sous le stream, sans recharger la page
+function displayChunks(chunks) {
+    console.log(chunks)
+
+    if (!chunks || chunks.length === 0) return;
+
+    const container = document.createElement("div");
+    container.className = "mt-2 px-2";
+
+    const title = document.createElement("p");
+    title.className   = "text-xs text-gray-400 mb-1";
+    title.textContent = "📚 Sources :";
+    container.appendChild(title);
+    const chunksList = document.createElement("div");
+    chunksList.className = "flex flex-col gap-1"
+    container.appendChild(chunksList)
+
+    chunks.forEach(chunk => {
+        const tag = document.createElement("span");
+        tag.className = "inline-block bg-gray-100 text-gray-500 text-xs rounded px-2";
+
+        const titre       = chunk.titre   ? ` ${chunk.titre}`          : "";
+        const page       = chunk.page       ? ` p.${chunk.page}`          : "";
+        const similarity = chunk.similarity ? ` (${chunk.similarity})`    : "";
+        tag.textContent  = `${titre}${page}${similarity}`;
+
+        chunksList.appendChild(tag);
+    });
+
+    messages.appendChild(container)
+
+    // const lastMessage = document.querySelector("#messages > div:last-child");
+    // lastMessage.insertAdjacentElement("afterend", container);
 }
+
+
+function scrollToBottom() {
+    messages.scrollTop = messages.scrollHeight;
+}
+
 
 function addUserMessage(content) {
     const wrapper = document.createElement("div");
@@ -109,9 +65,10 @@ function addUserMessage(content) {
         <div class="bg-color-header text-white px-4 py-3 rounded-2xl rounded-tr-sm max-w-xl text-sm shadow">
             ${escapeHtml(content)}
         </div>`;
-    document.getElementById("messages").appendChild(wrapper);
+    messages.appendChild(wrapper);
     scrollToBottom();
 }
+
 
 function addAssistantMessage(content) {
     const wrapper = document.createElement("div");
@@ -121,9 +78,25 @@ function addAssistantMessage(content) {
         <div class="bg-white text-gray-800 px-4 py-3 rounded-2xl rounded-tl-sm text-sm shadow">
             ${escapeHtml(content)}
         </div>`;
-    document.getElementById("messages").appendChild(wrapper);
+    messages.appendChild(wrapper);
+
+    // Récupérer les chunks du dernier message de l'assistant, sans recharger la page
+    fetch(chunksUrl)
+        .then(response => {
+          if (!response.ok) {
+            throw new Error("Erreur réseau : " + response.status);
+          }
+          return response.json();
+        })
+        .then(data => {
+            displayChunks(data.chunks)
+        })
+        .catch(error => {
+          console.error("Erreur :", error);
+        });
     scrollToBottom();
 }
+
 
 function escapeHtml(text) {
     return text
@@ -133,11 +106,12 @@ function escapeHtml(text) {
         .replace(/\n/g, "<br>");
 }
 
+
 function sendMessage() {
     const input    = document.getElementById("question");
     const btn      = document.getElementById("send-btn");
-    // const url = btn.dataset.url;                                         ---
     const question = input.value.trim();
+    
     if (!question) return;
 
     addUserMessage(question);
@@ -145,11 +119,10 @@ function sendMessage() {
     btn.disabled = true;
 
     // Affiche la zone streaming + animation
-    const messagesContainer = document.getElementById("messages");
     const streamingMsg     = document.getElementById("streaming-msg");
     const streamingContent = document.getElementById("streaming-content");
     
-    messagesContainer.appendChild(streamingMsg);   // ← déplace à la fin du DOM
+    messages.appendChild(streamingMsg);   // ← déplace à la fin du DOM
     streamingContent.textContent = "";
     streamingContent.dataset.raw    = "";   // reset du texte brut accumulé     +++
     streamingMsg.classList.remove("hidden");
@@ -187,7 +160,11 @@ function sendMessage() {
         const decoder = new TextDecoder();
 
         function read() {
+
+            // reader est un ReadableStreamDefaultReader — il lit le flux SSE octet par octet. reader.read() retourne une Promise qui se résout quand un nouveau morceau de données arrive. done est true quand le serveur ferme la connexion, value est un Uint8Array (tableau d'octets bruts).
             reader.read().then(({ done, value }) => {
+
+                // Si le serveur a fermé la connexion, on cache le bloc streaming et on réactive le bouton. Le return arrête la récursion.
                 if (done) {
                     streamingMsg.classList.add("hidden");
                     streamingContent.textContent = "";
@@ -195,7 +172,10 @@ function sendMessage() {
                     return;
                 }
 
+                // Convertit les octets bruts Uint8Array en texte lisible via TextDecoder (UTF-8 par défaut).
                 const text = decoder.decode(value);
+
+                // Découpe le texte reçu ligne par ligne, ignore les lignes vides et celles qui ne commencent pas par data:  (format SSE), puis parse le JSON de chaque ligne utile.
                 text.split("\n").forEach(line => {
                     if (!line) return;   
 
@@ -204,7 +184,6 @@ function sendMessage() {
                     const data = line.slice(6).trim();
 
                     if (!data) return;
-                    console.log("RAW DATA:", data);
 
                     try {
                         const msg = JSON.parse(data);
@@ -213,13 +192,24 @@ function sendMessage() {
                             streamingContent.textContent += msg.value.replace(/\n/g, " ");
                             scrollToBottom();
 
+                        // // --- chunks
+                        // } else if (msg.type === "chunks") {
+                        //     console.log("> chunks > msg.value : ", msg.value)
+                        //     pendingChunks = msg.value;
+                        // // // --- 
+
                         } else if (msg.type === "done") {
                             const finalContent = streamingContent.textContent;
                             streamingMsg.classList.add("hidden");
                             streamingContent.textContent = "";
                             addAssistantMessage(finalContent);
+                            // console.log("> displayChunks  : ", pendingChunks)
+                            // if (pendingChunks) {
+                            //     displayChunks(pendingChunks);
+                            //     pendingChunks = null;
+                            // }
                             btn.disabled = false;
-                            fetchAndDisplayChunks();
+                            // fetchAndDisplayChunks();
                         }
 
                     } catch(e) {
@@ -234,72 +224,7 @@ function sendMessage() {
                 read();
             });
         }
-        // function read() {
-        //     reader.read().then(({ done, value }) => {
-        //         if (done) {
-        //             // const finalContent = streamingContent.textContent;           ---
-        //             streamingMsg.classList.add("hidden");
-        //             streamingContent.dataset.raw = "";                          //  +++
-        //             streamingContent.innerHTML   = "";                          //  +++
-        //             // streamingContent.textContent = "";                           ---
-        //             // addAssistantMessage(finalContent);                           ---
-        //             btn.disabled = false;
-        //             return;
-        //         }
-                
-
-        //         const text = decoder.decode(value);
-        //         text.split("\n").forEach(line => {
-
-
-        //             // if (line.startsWith("data: ")) {
-        //             //     const token = line.slice(6);
-        //             //     if (token !== "[DONE]") {
-        //             //         streamingContent.textContent += token;
-        //             //         scrollToBottom();
-        //             //     }
-        //             // }
-
-
-        //             if (!line.startsWith("data: ")) return;
-
-        //             const data = line.slice(6).trim();
-        //             if (!data) return;
-
-        //             try {
-        //                 const msg = JSON.parse(data);
-
-        //                 if (msg.type === "token") {
-        //                     // Accumule le texte brut et formate
-        //                     const raw = (streamingContent.dataset.raw || "") + msg.value;
-        //                     streamingContent.dataset.raw = raw;
-        //                     streamingContent.innerHTML   = formatContent(raw);
-        //                     scrollToBottom();
-
-        //                 } else if (msg.type === "done") {
-        //                     // Fin du stream : finalise le message
-        //                     const finalRaw = streamingContent.dataset.raw || "";
-        //                     streamingMsg.classList.add("hidden");
-        //                     streamingContent.dataset.raw = "";
-        //                     streamingContent.innerHTML   = "";
-        //                     addAssistantMessage(finalRaw);
-        //                     btn.disabled = false;
-        //                     fetchAndDisplayChunks();   // ← fetch chunks après le stream
-        //                 }
-
-        //             } catch(e) {
-        //                 // Ancien format texte brut (fallback)
-        //                 if (data !== "[DONE]") {
-        //                     const raw = (streamingContent.dataset.raw || "") + data;
-        //                     streamingContent.dataset.raw = raw;
-        //                     streamingContent.innerHTML   = formatContent(raw);
-        //                     scrollToBottom();
-        //                 }
-        //             }
-        //         });
-        //         read();
-        //     });
-        // }
+      
         read();
     })
     .catch(() => {
@@ -307,6 +232,7 @@ function sendMessage() {
         addAssistantMessage("❌ Erreur de connexion.");
         btn.disabled = false;
     });
+
 }
 
 document.getElementById("question").addEventListener("keydown", e => {

@@ -74,15 +74,19 @@ def stream_view(request):
     return response
 
 
-def get_chunks_view(request, conversation_id):
+def get_chunks_view(request):
     """Retourne les chunks du dernier message assistant d'une conversation."""
-    conversation = get_object_or_404(Conversation, id=conversation_id)
     
-    last_assistant = conversation.messages.filter(
-        role="assistant"
-    ).last()
+    conversation_id = request.GET.get("conversation_id", None)
+  
+    if conversation_id:
+        conversation = get_object_or_404(Conversation, id=conversation_id)
     
-    if not last_assistant:
+        last_assistant = conversation.messages.filter(
+            role="assistant"
+        ).last()
+    
+    if not conversation_id or not last_assistant:
         return JsonResponse({"chunks": []})
     
     return JsonResponse({"chunks": last_assistant.chunks_used})
