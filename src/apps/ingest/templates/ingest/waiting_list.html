@@ -37,9 +37,7 @@
             </a>
         </div>
     </div>
-    <ul id="list-documents" class="text-xs max-w-5xl flex flex-col ">
-            
-        {% comment %} <li class="w-full flex justify-between"> {% endcomment %}
+    <ul id="list-documents" data-click-receiver class="text-xs max-w-5xl flex flex-col ">
         <li class="mb-2 font-bold grid grid-cols-[100px_1fr_80px_100px] gap-4 items-start">
         
                 <span class="">Video_id</span>
@@ -49,25 +47,20 @@
                     <input type="checkbox" id="check-all" />
                     <span>Tout cocher / décocher</span>
                 </label>
-        
         </li>
         {% for doc in docList %}
             <li id="{{doc.id}}" class="headline-title status-{{doc.status}} {{ doc.color }}
                 grid grid-cols-[100px_1fr_80px_100px] gap-4 items-start hover:font-bold">
-
                 <span class="w-16 text-left whitespace-nowrap">{{ doc.video_id}}</span>
                 <span class="">{{doc.titre}}</span>
                 <span class="">{{doc.datef}}</span>
                 {% if doc.status == doc.Status.NEW %}
-                 <input type="checkbox" class="doc-checkbox" name="doc" value="{{doc.video_id}}"/>
-                
+                    <input type="checkbox" class="doc-checkbox" name="doc" value="{{doc.video_id}}"/>
                 {%endif%}
-                
             </li>
         {% empty %}
             <li><span>Aucun document trouvé</span><li>
         {% endfor %}
-
     </ul>
 </form>
 

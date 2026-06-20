@@ -8,4 +8,6 @@ app_name = apps.ChatConfig.name
 urlpatterns = [
     path("",        views.chat_view,   name="chat"),
     path("stream/", views.stream_view, name="chat-stream"),
+    path("chunks/", views.get_chunks_view, name="chat-chunks"),
 ]
+

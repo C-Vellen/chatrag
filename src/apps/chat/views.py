@@ -1,3 +1,5 @@
+import json
+from django.http import JsonResponse
 from django.shortcuts import render, get_object_or_404
 from django.http import StreamingHttpResponse, HttpResponseNotAllowed, HttpResponseBadRequest
         
@@ -13,18 +15,25 @@ def chat_view(request):
     # Nouvelle conversation ou reprise d'une existante
     conversation_id = request.GET.get("conversation_id")
     conversation    = None
-    messages        = []
+    chat_messages   = []
+    last_chunks     = []
     
     if conversation_id:
         conversation = get_object_or_404(Conversation, id=conversation_id)
-        messages     = conversation.messages.all()
+        chat_messages = conversation.messages.all()
     
-    conversations = Conversation.objects.filter(user=request.user)[:20]
+        # Récupérer les chunks du dernier message assistant
+        last_assistant = conversation.messages.filter(role="assistant").last()
+        if last_assistant:
+            last_chunks = last_assistant.chunks_used
+    
+    conversations = Conversation.objects.filter(user=request.user)
     
     context = {
         "conversation":  conversation,
         "conversations": conversations,
-        "chat_messages": messages,
+        "chat_messages": chat_messages,
+        "last_chunks":   last_chunks,
     }
     
     return render(request, "chat/chat.html", context)
@@ -65,3 +74,20 @@ def stream_view(request):
     return response
 
 
+def get_chunks_view(request):
+    """Retourne les chunks du dernier message assistant d'une conversation."""
+    
+    conversation_id = request.GET.get("conversation_id", None)
+  
+    if conversation_id:
+        conversation = get_object_or_404(Conversation, id=conversation_id)
+    
+        last_assistant = conversation.messages.filter(
+            role="assistant"
+        ).last()
+        context = {"msgId":last_assistant.id, "chunks": last_assistant.chunks_used}
+    
+    if not conversation_id or not last_assistant:
+        context = {"msgId":None, "chunks": []}
+    
+    return render(request, "chat/_chunks.html", context)

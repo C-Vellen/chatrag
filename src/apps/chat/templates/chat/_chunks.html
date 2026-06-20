@@ -1,0 +1,48 @@
+{% load static template_tags%}
+{% if chunks %}
+
+    {% comment %} Afficher les chunks sur une nouvelle page {% endcomment %}
+    <p class="text-xs text-gray-400 mb-1">📚 Sources :</p>
+    <div class="flex flex-col gap-1">
+        {% for chunk in chunks %}
+            
+                <button class="headline-title view-doc flex items-center gap-4  text-gray-500 text-xs rounded px-2 hover:bg-hovercolor-line"
+                        data-msg="{{msgId}}"
+                        data-source="{{ chunk.source_type }}" 
+                        data-titre="{{ chunk.titre }}"
+                        data-video-id="{{ chunk.video_id }}" 
+                        data-file="{{ chunk.file }}"
+                        data-page="{{ chunk.page}}" 
+                        data-starttime="{{ chunk.starttime }}" 
+                        data-endtime="{{ chunk.endtime }}"
+                        data-start="{{ chunk.start }}" 
+                        data-end="{{ chunk.end }}" >
+                    <span>{{ chunk.titre }}</span>
+
+
+                    {% if chunk.source_type == "YT" %}
+                        <img class="flex w-3" src="{% static "img/youtube.svg" %}" alt="urlvideo">
+                        <span>à {{ chunk.starttime | format_time  }} </span>
+                    {% elif chunk.source_type == "PDF" %}
+                        <img class="w-4" src="{% static "img/PDF.svg" %}" alt="pdf">
+                        <span>page: {{ chunk.page }}</span>
+                    {% elif chunk.source_type == "TXT" %}        
+                        <img class="w-4" src="{% static "img/TXT.svg" %}" alt="txt">
+                        <span>index:{{ chunk.start }}</span>
+                    {% endif %}
+                
+                
+                    <span>- similarité: {{ chunk.similarity }}</span>
+                </button>
+        
+        {% empty %}
+            <p class="text-xs text-gray-400 mb-1">📚 Aucune source trouvée</p>
+        {% endfor %}
+    </div>
+    <div data-viewer="{{msgId}}" class="w-full max-w-xl mx-auto mt-4 grid grid-rows-[0fr] transition-[grid-template-rows] duration-300 ease-in-out overflow-hidden">
+      {% include 'viewer/document_viewer.html' %}
+      <div id="chunks-list" class="hidden">
+      </div>
+    </div>
+
+{% endif %}

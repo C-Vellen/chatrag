@@ -1,7 +1,10 @@
 const app            = document.getElementById("chat-app");
 let conversationId   = app.dataset.conversationId;   // "" si nouvelle conversation
 const streamUrl      = app.dataset.streamUrl;
+const chunksUrl      = app.dataset.chunksUrl;
 const csrfToken      = app.dataset.csrfToken;
+const messages       = document.getElementById("messages");
+
 
 
 // Formatter la date
@@ -14,10 +17,11 @@ function formatDate(dateStr) {
     return `${day}/${month} ${hours}:${minutes}`;
 }
 
+
 function scrollToBottom() {
-    const msgs = document.getElementById("messages");
-    msgs.scrollTop = msgs.scrollHeight;
+    messages.scrollTop = messages.scrollHeight;
 }
+
 
 function addUserMessage(content) {
     const wrapper = document.createElement("div");
@@ -26,21 +30,40 @@ function addUserMessage(content) {
         <div class="bg-color-header text-white px-4 py-3 rounded-2xl rounded-tr-sm max-w-xl text-sm shadow">
             ${escapeHtml(content)}
         </div>`;
-    document.getElementById("messages").appendChild(wrapper);
+    messages.appendChild(wrapper);
     scrollToBottom();
 }
 
-function addAssistantMessage(content) {
+
+function addAssistantMessage(conversationId, content) {
     const wrapper = document.createElement("div");
-    // wrapper.className = "flex flex-col gap-1 max-w-xl";
-    wrapper.className = "flex flex-col gap-1 w-full";
+    wrapper.className = "assistant-message flex flex-col gap-1 w-full";
     wrapper.innerHTML = `
         <div class="bg-white text-gray-800 px-4 py-3 rounded-2xl rounded-tl-sm text-sm shadow">
             ${escapeHtml(content)}
         </div>`;
-    document.getElementById("messages").appendChild(wrapper);
-    scrollToBottom();
+    messages.appendChild(wrapper);
+
+    fetch(`${chunksUrl}?conversation_id=${conversationId}`)
+    .then(response => {
+        if (!response.ok) {
+            throw new Error("Erreur réseau : " + response.status);
+        }
+        return response.text();
+    })
+    .then(htmlFragment => {
+        const chunksContainer = document.createElement("div");
+        chunksContainer.className = "chunks-wrapper mt-2 px-2";
+        chunksContainer.innerHTML = htmlFragment;
+        wrapper.appendChild(chunksContainer)        
+         scrollToBottom();                          
+    })
+    .then(scrollToBottom)
+    .catch(error => {
+        console.error("Problème avec le fetch :", error);
+    })
 }
+
 
 function escapeHtml(text) {
     return text
@@ -50,11 +73,12 @@ function escapeHtml(text) {
         .replace(/\n/g, "<br>");
 }
 
+
 function sendMessage() {
     const input    = document.getElementById("question");
     const btn      = document.getElementById("send-btn");
-    const url = btn.dataset.url;
     const question = input.value.trim();
+    
     if (!question) return;
 
     addUserMessage(question);
@@ -62,12 +86,12 @@ function sendMessage() {
     btn.disabled = true;
 
     // Affiche la zone streaming + animation
-    const messagesContainer = document.getElementById("messages");
     const streamingMsg     = document.getElementById("streaming-msg");
     const streamingContent = document.getElementById("streaming-content");
     
-    messagesContainer.appendChild(streamingMsg);   // ← déplace à la fin du DOM
+    messages.appendChild(streamingMsg);   // ← déplace à la fin du DOM
     streamingContent.textContent = "";
+    streamingContent.dataset.raw    = "";   // reset du texte brut accumulé 
     streamingMsg.classList.remove("hidden");
     scrollToBottom();
 
@@ -103,29 +127,53 @@ function sendMessage() {
         const decoder = new TextDecoder();
 
         function read() {
+
+            // reader est un ReadableStreamDefaultReader — il lit le flux SSE octet par octet. reader.read() retourne une Promise qui se résout quand un nouveau morceau de données arrive. done est true quand le serveur ferme la connexion, value est un Uint8Array (tableau d'octets bruts).
             reader.read().then(({ done, value }) => {
+
+                // Si le serveur a fermé la connexion, on cache le bloc streaming et on réactive le bouton. Le return arrête la récursion.
                 if (done) {
-                    const finalContent = streamingContent.textContent;
                     streamingMsg.classList.add("hidden");
                     streamingContent.textContent = "";
-                    addAssistantMessage(finalContent);
                     btn.disabled = false;
                     return;
                 }
 
+                // Convertit les octets bruts Uint8Array en texte lisible via TextDecoder (UTF-8 par défaut).
                 const text = decoder.decode(value);
+
+                // Découpe le texte reçu ligne par ligne, ignore les lignes vides et celles qui ne commencent pas par data:  (format SSE), puis parse le JSON de chaque ligne utile.
                 text.split("\n").forEach(line => {
-                    if (line.startsWith("data: ")) {
-                        const token = line.slice(6);
-                        if (token !== "[DONE]") {
-                            streamingContent.textContent += token;
+                    if (!line) return;   
+                    if (!line.startsWith("data: ")) return;
+                    const data = line.slice(6).trim();
+                    if (!data) return;
+                    try {
+                        const msg = JSON.parse(data);
+                        if (msg.type === "token") {
+                            streamingContent.textContent += msg.value.replace(/\n/g, " ");
+                            scrollToBottom();
+                        } else if (msg.type === "done") {
+                            const finalContent = streamingContent.textContent;
+                            streamingMsg.classList.add("hidden");
+                            streamingContent.textContent = "";
+                            console.log(">>> conversationId", conversationId)
+                            addAssistantMessage(conversationId, finalContent);
+                            btn.disabled = false;
+                        }
+                    } catch(e) {
+                        // Fallback texte brut
+                        if (data !== "[DONE]") {
+                            streamingContent.textContent += data;
                             scrollToBottom();
                         }
                     }
                 });
+
                 read();
             });
         }
+      
         read();
     })
     .catch(() => {
@@ -133,6 +181,7 @@ function sendMessage() {
         addAssistantMessage("❌ Erreur de connexion.");
         btn.disabled = false;
     });
+
 }
 
 document.getElementById("question").addEventListener("keydown", e => {

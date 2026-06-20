@@ -7,12 +7,13 @@
 
 {% block content %}
 
-<section class="bg-gray-100 h-full w-full flex overflow-hidden">
+<section class="fixed left-0 right-0 bottom-0 top-12 bg-gray-100 h-[calc(100vh-100px)] w-full flex overflow-hidden">
 
 <div id="chat-app"
-     data-conversation-id="{% if conversation %}{{ conversation.id }}{% endif %}"
-     data-stream-url="{% url 'chat:chat-stream' %}"
-     data-csrf-token="{{ csrf_token }}">
+    data-conversation-id ="{% if conversation %}{{ conversation.id }}{% endif %}"
+    data-stream-url      ="{% url 'chat:chat-stream' %}"
+    data-chunks-url      ="{% url 'chat:chat-chunks' %}"
+    data-csrf-token      ="{{ csrf_token }}">
 </div>
 
 <!-- Sidebar -->
@@ -54,8 +55,7 @@
     </header>
 
     <!-- Messages -->
-
-    <div id="messages" class="flex-1 overflow-y-auto px-6 py-4 space-y-4">
+    <div id="messages" data-click-receiver class="flex-1 overflow-y-auto px-6 py-4 space-y-4 scroll-smooth">
 
         {% for msg in chat_messages %}
 
@@ -67,25 +67,19 @@
                 </div>
 
             {% else %}
-                <div class="flex flex-col gap-1 w-full">
+                {% comment %} message assistant affiché par l'historique {% endcomment %}
+                <div class="assistant-message flex flex-col gap-1 w-full">
+
                     <div class="bg-white text-gray-800 px-4 py-3 rounded-2xl rounded-tl-sm text-sm shadow">
                         {{ msg.content }}
                     </div>
+
                     {% if msg.chunks_used %}
-                        <div class="text-xs text-gray-400 px-2">
-                            
-                            {% for chunk in msg.chunks_used %}
-                                <span class="inline-block bg-gray-100 text-gray-500 rounded px-1 py-0.5 mr-1">
-                                    {{ chunk.source }}{% if chunk.page %} p.{{ chunk.page }}{% endif %}
-                                    ({{ chunk.similarity }})
-                                </span>
-                            <!-- -->
-
-                            <!-- -->
-
-                            {% endfor %}
+                        <div class="chunks-wrapper mt-2 px-2">
+                        {% include "chat/_chunks.html" with chunks=msg.chunks_used msgId=msg.id %}
                         </div>
                     {% endif %}
+
                 </div>
             {% endif %}
 
@@ -101,6 +95,7 @@
             <div id="streaming-content"
                  class="min-h-12 w-full bg-white text-gray-800 px-4 py-3 rounded-2xl rounded-tl-sm text-sm shadow">
             </div>
+            <!-- bouncing dots -->
             <div class="flex gap-1 px-2 mt-2">
                 <span class="w-2 h-2 bg-color-header rounded-full animate-bounce [animation-delay:0ms]"></span>
                 <span class="w-2 h-2 bg-color-header rounded-full animate-bounce [animation-delay:150ms]"></span>
@@ -122,7 +117,6 @@
                        placeholder-gray-400"></textarea>
             <button
                 id="send-btn"
-                data-url="{% url 'chat:chat-stream' %}"
                 class="text-lightcolor-text bg-color-btn hover:bg-hovercolor-btn disabled:bg-gray-300 disabled:cursor-not-allowed
                     font-medium px-5 py-3 rounded-xl transition shrink-0">
                 Envoyer
@@ -132,13 +126,18 @@
 
 </div>
 
-<script> const conversationId = "{{ conversation.id }}";</script>
-<script type="module" src ="{% static 'chat/js/chat.js' %}"></script>
-
-
-
 </section>
-
-
+<script type="module" src ="{% static 'chat/js/chat.js' %}"></script>
+<script src="{% static 'js/pdf.min.js' %}"></script>
+<script>
+  var PDF_WORKER_URL = "{% static 'js/pdf.worker.min.js' %}";
+</script>
+<script src="https://www.youtube.com/iframe_api"></script>
+{% comment %} <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script> {% endcomment %}
+<script src="{% static 'js/playvideo.js' %}"></script>
+<script src="{% static 'js/readPDF.js' %}"></script>
+<script src="{% static 'js/readTXT.js' %}"></script>
+<script src="{% static 'js/chunkslist.js' %}"></script>
+<script src="{% static 'js/documentlistener.js' %}"></script>
 
 {% endblock %}
