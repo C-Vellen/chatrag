@@ -4,8 +4,10 @@ var currentVideo = null;
 let ytPlayer = null;
 let endTimer = null;
 
+
 // Appelé automatiquement par l'API YouTube quand elle est prête
 function onYouTubeIframeAPIReady() {}
+
 
 function formatTime(seconds) {
   const m = Math.floor(seconds / 60).toString().padStart(2, '0');
@@ -13,58 +15,75 @@ function formatTime(seconds) {
   return `${m}:${s}`;
 }
 
-function selectVideo(btn) {
+
+function truncate(text, maxLength = 20) {
+    if (!text) return "";
+    return text.length > maxLength
+        ? text.slice(0, maxLength) + "..."
+        : text;
+}
+
+
+function selectVideo(btn, displayZone) {
+  closePlayer();
   closePdf();
   closeTxt();
   closeChunksList();
-  stopAndReset();
   btn.closest('.headline-title').classList.add('bg-focuscolor-line');
   currentVideo = {
+    msg: btn.dataset.msg,
     id: btn.dataset.videoId,
     start: parseInt(btn.dataset.starttime),
     end: parseInt(btn.dataset.endtime),
     titre: btn.dataset.titre,
     duration: parseInt(btn.dataset.duration),
   };
-  document.getElementById('player-iframe').classList.add('hidden');
-  document.getElementById('player-thumb').classList.remove('hidden');
-  const img = document.getElementById('thumb-img');
+  
+
+  displayZone.querySelector('[data-element="player-iframe"]').classList.add('hidden');
+  displayZone.querySelector('[data-element="thumbnail-frame"]').classList.remove('hidden');
+  const img = displayZone.querySelector('[data-element="thumbnail"]');
   img.src = `https://img.youtube.com/vi/${currentVideo.id}/maxresdefault.jpg`;
   img.onerror = function() {
     this.src = `https://img.youtube.com/vi/${currentVideo.id}/hqdefault.jpg`;
   };
-  window.scrollTo({top: 0, behavior: "smooth"});
-  document.getElementById('thumb-titre-horodate').classList.remove('hidden');
-  document.getElementById('thumb-titre-horodate').classList.add('flex');
-  document.getElementById('thumb-titre').textContent = currentVideo.titre;
+  // window.scrollTo({top: 0, behavior: "smooth"});
+  displayZone.querySelector('[data-element="headline"]').classList.remove('hidden');
+  displayZone.querySelector('[data-element="headline"]').classList.add('flex');
+  displayZone.querySelector('[data-element="titre"]').textContent = truncate(currentVideo.titre, 60);
   if (currentVideo.end) {
-    document.getElementById('timestamp').textContent = `${formatTime(currentVideo.start)} → ${formatTime(currentVideo.end)}`;
+    displayZone.querySelector('[data-element="timestamp"]').textContent = `${formatTime(currentVideo.start)} → ${formatTime(currentVideo.end)}`;
   } else if (currentVideo.duration) {
-    document.getElementById('timestamp').textContent = `durée: ${formatTime(currentVideo.duration)}`; 
+    displayZone.querySelector('[data-element="timestamp"]').textContent = `durée: ${formatTime(currentVideo.duration)}`; 
   }
 }
 
-function playVideo() {
-  if (!currentVideo) return;
-  document.getElementById('player-thumb').classList.add('hidden');
-  document.getElementById('player-iframe').classList.remove('hidden');
+
+function playVideo(e) {
+  const displayZone =  e.target.closest('[data-block-type]')
+  displayZone.querySelector('[data-element="thumbnail-frame"]').classList.add('hidden');
+  displayZone.querySelector('[data-element="player-iframe"]').classList.remove('hidden');
   // Détruire le player précédent si existant
   if (ytPlayer) {
     ytPlayer.destroy();
     ytPlayer = null;
   }
   // Recréer le div cible (destroy() le supprime du DOM)
-  const container = document.getElementById('player-iframe');
-  let target = document.getElementById('yt-player');
+  const container = displayZone.querySelector('[data-element="player-iframe"]');
+  let target = displayZone.querySelector('[data-element="yt-player"]');
   if (!target) {
     target = document.createElement('div');
-    target.id = 'yt-player';
+    target.setAttribute('data-element', 'yt-player');
+    target.id = `yt-player-${currentVideo.msg}`
     target.className = 'w-full h-full';
     container.insertBefore(target, container.firstChild);
+  } else {
+    target.id = `yt-player-${currentVideo.msg}`
   }
   const start = currentVideo.start;
   const end = currentVideo.end;
-  ytPlayer = new YT.Player('yt-player', {
+  
+  ytPlayer = new YT.Player(`yt-player-${currentVideo.msg}`, {
     width: '100%',
     height: '100%',
     videoId: currentVideo.id,
@@ -77,6 +96,8 @@ function playVideo() {
     events: {
       onReady: function(e) {
         e.target.playVideo();
+        console.log("------- e.target: --------")
+        console.log(target)
         if (end) {
           scheduleEnd(end - start);
         }
@@ -93,6 +114,7 @@ function playVideo() {
   });
 }
 
+
 function scheduleEnd(seconds) {
   clearTimeout(endTimer);
   endTimer = setTimeout(function() {
@@ -102,11 +124,12 @@ function scheduleEnd(seconds) {
   }, seconds * 1000);
 }
 
-function stopAndReset() {
+
+function stopAndReset(displayZone) {
   clearTimeout(endTimer);
   document.querySelectorAll('.headline-title').forEach(d => d.classList.remove('bg-focuscolor-line'));
-  document.getElementById('thumb-titre').textContent = "";
-  document.getElementById('timestamp').textContent = "";
+  displayZone.querySelector('[data-element="titre"]').textContent = "";
+  displayZone.querySelector('[data-element="timestamp"]').textContent = "";
   if (ytPlayer) {
     try { ytPlayer.stopVideo(); } catch(e) {}
   }
@@ -114,26 +137,24 @@ function stopAndReset() {
 
 
 function closePlayer() {
-  stopAndReset();
-  if (ytPlayer) {
-    ytPlayer.destroy();
-    ytPlayer = null;
-  }
-  // Recréer le div cible pour la prochaine utilisation
-  const container = document.getElementById('player-iframe');
-  let target = document.getElementById('yt-player');
-  if (!target) {
-    target = document.createElement('div');
-    target.id = 'yt-player';
-    target.className = 'w-full h-full';
-    container.insertBefore(target, container.firstChild);
-  }
-  document.getElementById('thumb-titre-horodate').classList.add('hidden');
-  document.getElementById('thumb-titre').textContent = "xxx";
-  document.getElementById('timestamp').textContent = "xxx";
-
-
-  document.getElementById('player-iframe').classList.add('hidden');
-  document.getElementById('player-thumb').classList.add('hidden');
-  currentVideo = null;
+  document.querySelectorAll('[data-block-type="YT"]').forEach(displayZone => {
+    stopAndReset(displayZone);
+    if (ytPlayer) {
+      ytPlayer.destroy();
+      ytPlayer = null;
+    }
+    // Recréer le div cible pour la prochaine utilisation
+    const container = displayZone.querySelector('[data-element="player-iframe"]');
+    let target = displayZone.querySelector('[data-element="yt-player"]');
+    if (!target) {
+      target = document.createElement('div');
+      target.setAttribute('data-element', 'yt-player');
+      target.className = 'w-full h-full';
+      container.insertBefore(target, container.firstChild);
+    }
+    displayZone.querySelector('[data-element="headline"]').classList.add('hidden');
+    displayZone.querySelector('[data-element="player-iframe"]').classList.add('hidden');
+    displayZone.querySelector('[data-element="thumbnail-frame"]').classList.add('hidden');
+    currentVideo = null;
+  }) 
 }

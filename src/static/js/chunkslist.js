@@ -1,5 +1,4 @@
 
-
 async function selectChunksList(btn) {
 
     const docId = btn.getAttribute('data-id');
@@ -11,8 +10,8 @@ async function selectChunksList(btn) {
     closePlayer()
     closePdf();
     closeTxt();
-    document.querySelectorAll('.headline-title').forEach(d => d.classList.remove('bg-headline')); 
-    btn.closest('.headline-title').classList.add('bg-headline');
+    document.querySelectorAll('.headline-title').forEach(d => d.classList.remove('bg-focuscolor-line')); 
+    btn.closest('.headline-title').classList.add('bg-focuscolor-line');
     try {
         // appel URL de la vue Django fournie par ingest.views.read_chunks
         const response = await fetch(chunksUrl);
@@ -35,7 +34,7 @@ function closeChunksList() {
     chunksList.classList.add('hidden')
     chunksList.innerHTML = ''
 
-    document.querySelectorAll('.headline-title').forEach(d => d.classList.remove('bg-headline'));
+    document.querySelectorAll('.headline-title').forEach(d => d.classList.remove('bg-focuscolor-line'));
 
 
 }

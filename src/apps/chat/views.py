@@ -27,7 +27,7 @@ def chat_view(request):
         if last_assistant:
             last_chunks = last_assistant.chunks_used
     
-    conversations = Conversation.objects.filter(user=request.user)[:20]
+    conversations = Conversation.objects.filter(user=request.user)
     
     context = {
         "conversation":  conversation,
@@ -85,8 +85,9 @@ def get_chunks_view(request):
         last_assistant = conversation.messages.filter(
             role="assistant"
         ).last()
+        context = {"msgId":last_assistant.id, "chunks": last_assistant.chunks_used}
     
     if not conversation_id or not last_assistant:
-        return JsonResponse({"chunks": []})
+        context = {"msgId":None, "chunks": []}
     
-    return JsonResponse({"chunks": last_assistant.chunks_used})
+    return render(request, "chat/_chunks.html", context)

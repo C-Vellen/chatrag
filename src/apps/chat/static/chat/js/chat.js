@@ -1,7 +1,7 @@
 const app            = document.getElementById("chat-app");
 let conversationId   = app.dataset.conversationId;   // "" si nouvelle conversation
 const streamUrl      = app.dataset.streamUrl;
-const chunksUrl      = `${app.dataset.chunksUrl}?conversation_id=${conversationId}`;
+const chunksUrl      = app.dataset.chunksUrl;
 const csrfToken      = app.dataset.csrfToken;
 const messages       = document.getElementById("messages");
 
@@ -15,41 +15,6 @@ function formatDate(dateStr) {
     const hours   = String(date.getHours()).padStart(2, "0");
     const minutes = String(date.getMinutes()).padStart(2, "0");
     return `${day}/${month} ${hours}:${minutes}`;
-}
-
-// Afficher les chunks sous le stream, sans recharger la page
-function displayChunks(chunks) {
-    console.log(chunks)
-
-    if (!chunks || chunks.length === 0) return;
-
-    const container = document.createElement("div");
-    container.className = "mt-2 px-2";
-
-    const title = document.createElement("p");
-    title.className   = "text-xs text-gray-400 mb-1";
-    title.textContent = "📚 Sources :";
-    container.appendChild(title);
-    const chunksList = document.createElement("div");
-    chunksList.className = "flex flex-col gap-1"
-    container.appendChild(chunksList)
-
-    chunks.forEach(chunk => {
-        const tag = document.createElement("span");
-        tag.className = "inline-block bg-gray-100 text-gray-500 text-xs rounded px-2";
-
-        const titre       = chunk.titre   ? ` ${chunk.titre}`          : "";
-        const page       = chunk.page       ? ` p.${chunk.page}`          : "";
-        const similarity = chunk.similarity ? ` (${chunk.similarity})`    : "";
-        tag.textContent  = `${titre}${page}${similarity}`;
-
-        chunksList.appendChild(tag);
-    });
-
-    messages.appendChild(container)
-
-    // const lastMessage = document.querySelector("#messages > div:last-child");
-    // lastMessage.insertAdjacentElement("afterend", container);
 }
 
 
@@ -70,31 +35,33 @@ function addUserMessage(content) {
 }
 
 
-function addAssistantMessage(content) {
+function addAssistantMessage(conversationId, content) {
     const wrapper = document.createElement("div");
-    // wrapper.className = "flex flex-col gap-1 max-w-xl";
-    wrapper.className = "flex flex-col gap-1 w-full";
+    wrapper.className = "assistant-message flex flex-col gap-1 w-full";
     wrapper.innerHTML = `
         <div class="bg-white text-gray-800 px-4 py-3 rounded-2xl rounded-tl-sm text-sm shadow">
             ${escapeHtml(content)}
         </div>`;
     messages.appendChild(wrapper);
 
-    // Récupérer les chunks du dernier message de l'assistant, sans recharger la page
-    fetch(chunksUrl)
-        .then(response => {
-          if (!response.ok) {
+    fetch(`${chunksUrl}?conversation_id=${conversationId}`)
+    .then(response => {
+        if (!response.ok) {
             throw new Error("Erreur réseau : " + response.status);
-          }
-          return response.json();
-        })
-        .then(data => {
-            displayChunks(data.chunks)
-        })
-        .catch(error => {
-          console.error("Erreur :", error);
-        });
-    scrollToBottom();
+        }
+        return response.text();
+    })
+    .then(htmlFragment => {
+        const chunksContainer = document.createElement("div");
+        chunksContainer.className = "chunks-wrapper mt-2 px-2";
+        chunksContainer.innerHTML = htmlFragment;
+        wrapper.appendChild(chunksContainer)        
+         scrollToBottom();                          
+    })
+    .then(scrollToBottom)
+    .catch(error => {
+        console.error("Problème avec le fetch :", error);
+    })
 }
 
 
@@ -124,7 +91,7 @@ function sendMessage() {
     
     messages.appendChild(streamingMsg);   // ← déplace à la fin du DOM
     streamingContent.textContent = "";
-    streamingContent.dataset.raw    = "";   // reset du texte brut accumulé     +++
+    streamingContent.dataset.raw    = "";   // reset du texte brut accumulé 
     streamingMsg.classList.remove("hidden");
     scrollToBottom();
 
@@ -178,40 +145,22 @@ function sendMessage() {
                 // Découpe le texte reçu ligne par ligne, ignore les lignes vides et celles qui ne commencent pas par data:  (format SSE), puis parse le JSON de chaque ligne utile.
                 text.split("\n").forEach(line => {
                     if (!line) return;   
-
                     if (!line.startsWith("data: ")) return;
-
                     const data = line.slice(6).trim();
-
                     if (!data) return;
-
                     try {
                         const msg = JSON.parse(data);
-
                         if (msg.type === "token") {
                             streamingContent.textContent += msg.value.replace(/\n/g, " ");
                             scrollToBottom();
-
-                        // // --- chunks
-                        // } else if (msg.type === "chunks") {
-                        //     console.log("> chunks > msg.value : ", msg.value)
-                        //     pendingChunks = msg.value;
-                        // // // --- 
-
                         } else if (msg.type === "done") {
                             const finalContent = streamingContent.textContent;
                             streamingMsg.classList.add("hidden");
                             streamingContent.textContent = "";
-                            addAssistantMessage(finalContent);
-                            // console.log("> displayChunks  : ", pendingChunks)
-                            // if (pendingChunks) {
-                            //     displayChunks(pendingChunks);
-                            //     pendingChunks = null;
-                            // }
+                            console.log(">>> conversationId", conversationId)
+                            addAssistantMessage(conversationId, finalContent);
                             btn.disabled = false;
-                            // fetchAndDisplayChunks();
                         }
-
                     } catch(e) {
                         // Fallback texte brut
                         if (data !== "[DONE]") {

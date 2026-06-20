@@ -13,7 +13,7 @@
         <h1 class="text-grostitre mb-4">Gestion des documents ingérés dans la base de donnée vectorielle</h1>
         <a href="{% url 'retrieval:search' %}" class="text-xs px-2 py-1 h-6 text-lightcolor-text bg-color-btn hover:bg-hovercolor-btn"> Recherche >> </a>
     </div>
-    <div class="w-full mb-8 flex flex-col md:flex-row md:justify-between md:gap-12">
+    <div data-click-receiver class="w-full mb-8 flex flex-col md:flex-row md:justify-between md:gap-12">
         <div class="mb-16 md:w-1/2 md:justify-around">
             <!-- formulaire nouveau document-->
             <form class="w-full mb-6" method="post" action="." enctype="multipart/form-data" >       
@@ -52,37 +52,27 @@
                 </div>
             </form>
 
-           
-
-
-
-
             <div class="flex justify-between mb-2">
                 <h1 class="text-titre">Documents ingérés: {{n_docs}} </h1>
                 <span class="text-xs">Taille DB: {{db_size}}</span>
                 <span class="text-xs text-blue-500">Total chunks: {{n_chunks}}</span>
             </div>
             <ul id="list-documents" class="text-xs flex flex-col">
-                 
-                {% comment %} <li class="w-full flex justify-between"> {% endcomment %}
                 <li class="mb-2 grid grid-cols-[40px_1fr_40px_20px_20px] gap-4 items-start">
-                    
                         <span class="">Date</span>
                         <span>Titre document</span>
-                   
                         <span class="">source</span>
                         <span class=" text-blue-500">chunks</span>
                         <span class=""></span>
-                
                 </li>
                 {% for doc in docs %}
                     <li id="{{doc.id}}" class="headline-title grid grid-cols-[40px_1fr_40px_20px_20px] gap-4 items-start hover:bg-hovercolor-line">
-
                         <span class="w-16 text-left">{{doc.created_at|date:"d/m/y"}}</span>
                         <a href="{% url 'admin:ingest_documentref_change' doc.id %}" class="text-left">
                             <span class=" hover:font-bold">{{doc.titre}}</span>
                         </a>
                         <button class="view-doc flex justify-center"
+                                data-msg=""
                                 data-source="{{doc.source_type}}"
                                 data-titre="{{ doc.titre }}"
                                 data-video-id="{{ doc.video_id }}" 
@@ -109,7 +99,6 @@
                 {% empty %}
                     <li><span>Aucun document trouvé</span><li>
                 {% endfor %}
-
             </ul>
             <div class="mt-8 mb-4 flex gap-2 justify-start">
                 <p class="text-xs text-slate-500 italic"> Collection:</p>
@@ -117,27 +106,16 @@
                     <img class="w-4 h-4" src="{% static 'img/crayon.svg' %}" alt="Modifier">     
                 </a>
             </div>
-
         </div>
 
-        
-        <div class="flex flex-col md:w-1/2">
-
+        <div class="flex flex-col md:w-1/2" data-viewer="all">
             {% include 'viewer/document_viewer.html' %}
-            
-            <div id="chunks-list" class="hidden">
-            </div>
-            
-            
-
-            
-            
-            
+            <div id="chunks-list" class="hidden"></div>
         </div>
+
     </div>
 </section>
 {% include "alert_box.html" with alert="alert-delete-doc" message="" act_button="hidden" act_link="" link="" back_text="Annuler" act_text="Supprimer" %}
-
 
 <script src="{% static 'js/pdf.min.js' %}"></script>
 <script>
@@ -148,14 +126,8 @@
 <script src="{% static 'js/playvideo.js' %}"></script>
 <script src="{% static 'js/readPDF.js' %}"></script>
 <script src="{% static 'js/readTXT.js' %}"></script>
-
 <script src="{% static 'js/deletedoc.js' %}"></script>
 <script src="{% static 'js/chunkslist.js' %}"></script>
-
 <script src="{% static 'js/documentlistener.js' %}"></script>
-
-
-
-
 
 {% endblock %}
