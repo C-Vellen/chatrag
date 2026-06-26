@@ -3,7 +3,7 @@ from django.db.models import Sum
 from apps.special_bridge import has_special, ingest_waitingList, get_documents_from_api
 from .models import Collection, DocumentRef, WaitingList
 from .forms import DocumentForm
-from .services.ingest import ingest_file, ingest_uri
+from .services.ingest import add_file, add_uri, ingest #, ingest_file, ingest_uri
 from .services.inspector import delete_document, list_chunks, get_ragdb_size
 from src.config import settings
 
@@ -15,37 +15,49 @@ def documents_list(request):
     form = DocumentForm()
     
     if request.method == "POST":
-        form = DocumentForm(request.POST, request.FILES)
-        if form.is_valid():
-            file = form.cleaned_data.get('file')
-            uri = form.cleaned_data.get('uri')
-            if file:
-                print("> nom fichier: ", file.name)
-                source_origin = "download"
-                ingest_file(source_origin, file)
-            elif uri:           
-                print("> URI : ", uri)
-                ingest_uri(uri)
+        print("------- POST -----------")
+        if 'add-documents' in request.POST:
+            form = DocumentForm(request.POST, request.FILES)
+            if form.is_valid():
+                file = form.cleaned_data.get('file')
+                uri = form.cleaned_data.get('uri')
+                if file:
+                    print("> nom fichier: ", file.name)
+                    source_origin = "download"
+                    add_file(source_origin, file)
+                elif uri:           
+                    print("> URI : ", uri)
+                    add_uri(uri)
     
-            return redirect("ingest:documents_list")
+                return redirect("ingest:documents_list")
+        elif 'ingest-documents' in request.POST:
+            form = DocumentForm(request.POST)
+            if form.is_valid():
+                docs = DocumentRef.objects.filter(id__contains=request.POST.getlist("doc"))
+                for d in docs:
+                    print("--- ", d.titre)
+                # ingest(request.POST.getlist("doc"))
+                
+                
     
-    docs = DocumentRef.objects.filter(collection=collection, is_active=True).order_by("-created_at")
+    docs = DocumentRef.objects.filter(collection=collection, is_active=True).order_by("-created_at")       
+    
+    ingestion_running = False
+    docs_stat = DocumentRef.docs_stat()
+    for s in docs_stat:
+        print(s)
+    
     context = {
         "title": "Liste des documents ingérés:",     
         "collection":collection,
         "docs":docs,
-        "n_docs":len(docs),
+        "docs_stat": DocumentRef.docs_stat(),
         "n_chunks": DocumentRef.objects.aggregate(total=Sum('nb_chunks'))["total"],
         "form":form,
         "db_size": get_ragdb_size(),
         "has_special": has_special,
     }
     
-    print("############################")
-    print(docs.filter(video_id="4EDJfvUzcXE"))
-
-
-    print("############################")
     
     return render(request, "ingest/list.html", context)
     

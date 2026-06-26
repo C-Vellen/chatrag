@@ -1,7 +1,8 @@
 import uuid
 from django.db import models
-from django.dispatch import receiver
+from django.db.models import Count
 from django.db.models.signals import post_delete, pre_save, post_save
+from django.dispatch import receiver
 from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
@@ -88,7 +89,24 @@ class Collection(models.Model):
 
     
 class DocumentRef(models.Model):
-    """Référentiel des documents ingérés dans pgvector."""
+    """Référentiel des documents """
+    
+    class Status(models.TextChoices):
+        NEW =           'NEW', _('Nouveaux documents')
+        REGISTERED =    'REG', _('Documents ingérés')
+        ERROR =         'ERR', _('Documents introuvables')
+        IN_PROGRESS =   'WIP', _("En cours d'ingestion")
+        
+        @classmethod
+        def colors(cls):
+            return {
+                cls.NEW:         "text-gray-500",
+                cls.REGISTERED:  "text-gray-800",
+                cls.ERROR:       "text-red-600",
+                cls.IN_PROGRESS: "text-blue-600",
+            }
+        
+    
     id          = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     collection  = models.ForeignKey("Collection", on_delete=models.CASCADE, related_name="document")
     titre       = models.CharField(max_length=500)
@@ -103,12 +121,58 @@ class DocumentRef(models.Model):
     nb_chunks   = models.IntegerField(blank=True, null=True)
     nb_words    = models.IntegerField(blank=True, null=True)
     nb_chars    = models.IntegerField(blank=True, null=True)
-     
+    
+    status = models.CharField(
+        max_length=3,
+        choices=Status.choices,
+        default=Status.NEW,
+    )
+    date  = models.DateTimeField(blank=True, null=True)
     created_at  = models.DateTimeField(auto_now_add=True)
     
    
     def __str__(self):
-        return f"{self.titre} [{self.id}]"
+        return f"{self.titre[:20]} | {self.source_type} | {self.status}"
+    
+    @property
+    def color(self):
+        """Retourne les classes de couleur selon le status """
+        # colors = {
+        #     self.Status.NEW:        "text-gray-500",
+        #     self.Status.REGISTERED: "text-gray-800",
+        #     self.Status.ERROR:      "text-red-600",
+        #     self.Status.IN_PROGRESS:"text-blue-600",
+        # }
+        # Retourne une couleur par défaut si le statut est inconnu
+        return self.Status.colors().get(self.status, "text-gray-800")
+        # return colors.get(self.status, "text-gray-800")
+    
+    @classmethod
+    def docs_stat(cls):
+        """Retourne le nombre de documents par status """
+        counts = cls.objects.values_list('status').annotate(total=Count('id'))
+        counts_dict = dict(counts)
+        
+        color_map = cls.Status.colors()
+
+        return [
+            {
+                'status':   status.value,
+                'label':    status.label,
+                'count':    counts_dict.get(status.value, 0),
+                'color':    color_map.get(status.value, "text-gray-800")
+            }
+            for status in cls.Status
+        ]    
+        
+    
+    @property
+    def datef(self):
+        """Retourne la date sous forme de chaîne au format jj/mm/aaaa."""
+        if self.date:
+            return self.date.strftime("%d/%m/%Y")
+        return ""
+    
     
     def get_file(self):
         """ liste des fichiers media, pour gérer leur mise à jour et suppression """
