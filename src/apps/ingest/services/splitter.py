@@ -55,11 +55,7 @@ def split_documents(docs: list[Document]) -> list[Document]:
     )
     chunks = splitter.split_documents(docs)
         
-    # ajout du nombre de chunks au documentref
-    documentref.nb_chunks = len(chunks)
-    documentref.save()
-    
-     # Tri par (page, start_index) pour reconstituer l'ordre naturel
+    # Tri par (page, start_index) pour reconstituer l'ordre naturel
     # page peut être int ou string selon le loader → on force int
     chunks.sort(key=lambda c: (
         int(c.metadata.get("page", 0)),
@@ -88,8 +84,6 @@ def split_documents(docs: list[Document]) -> list[Document]:
                 print(f"{first_index}:{chunk.metadata["start_time"]}  ->  {last_index}:{chunk.metadata["end_time"]}")
 
                
-
-        
     # affichage chunk en console:
     if DEBUG:
         if chunks:

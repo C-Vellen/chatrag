@@ -10,7 +10,7 @@ from src.utils import extract_title, is_youtube_url, parse_uri, iter_uri, get_yo
 
 
 
-def ingest_file(source_origin, file:UploadedFile) -> None:
+def add_file(source_origin, file:UploadedFile) -> None:
     """ Ingestion d'un fichier : 
             - création du DocumentRef
             - lancement du pipeline d'ingestion
@@ -35,11 +35,13 @@ def ingest_file(source_origin, file:UploadedFile) -> None:
             source_file=    file,
             )    
         documentref.save()
+        documentref.date = documentref.created_at
+        documentref.save()
         
-        ingest(documentref)
+        # ingest(documentref)
         
         
-def ingest_uri(source_origin: str) -> None:
+def add_uri(source_origin: str) -> None:
     """ Ingestion d'un document à partir d'un uri : 
             - création du DocumentRef
             - lancement du pipeline d'ingestion
@@ -55,7 +57,7 @@ def ingest_uri(source_origin: str) -> None:
     Returns: None
     """
     if is_youtube_url(source_origin):
-        ingest_video(source_origin)
+        add_video(source_origin)
         
     else:
         source = parse_uri(source_origin)
@@ -67,23 +69,23 @@ def ingest_uri(source_origin: str) -> None:
                 # analyse récursive du dossier:
                 for result in iter_uri(source["path"]): 
                     if result["type"] == "filepath":
-                        ingest_file(result["path"], result["file"])
+                        add_file(result["path"], result["file"])
                     elif result["type"] == "error":
                         pass
             
             # cas où l'uri est un fichier:
             case "filepath":
-                ingest_file(source_origin, source["file"])
+                add_file(source_origin, source["file"])
                 
             # cas où l'uri est l'url d'un fichier:
             case "fileurl":
-                ingest_file(source_origin, source["file"])
+                add_file(source_origin, source["file"])
                 
             case "error":
                 pass
                 
 
-def ingest_video(source_origin: str) -> None:
+def add_video(source_origin: str) -> None:
     """ Ingestion d'une video Youtube : 
             - transcription avec horodatage
             - création du DocumentRef
@@ -103,7 +105,8 @@ def ingest_video(source_origin: str) -> None:
         source_origin=  source_origin,
         video_id=       videoscript["video_id"],
         timestamp=      videoscript["timestamp"],
-        duration =      videoscript["duration"]
+        duration =      videoscript["duration"],
+        date =          videoscript["date"]
         )    
     
     # enregistrement du script dans un fichier:
@@ -111,8 +114,12 @@ def ingest_video(source_origin: str) -> None:
     filename = f"{videoscript["titre"]}.txt"
     documentref.source_file.save(filename, temporary_file, save=True)
     
-    ingest(documentref)
+    if not documentref.date:
+        documentref.date = documentref.created_at
+        documentref.save()
     
+    # ingest(documentref)
+
         
 def ingest(doc: DocumentRef | list[DocumentRef]) -> None:
     """Traite l'ingestion d'un document ou d'une liste de documents"""
@@ -143,20 +150,24 @@ def ingest(doc: DocumentRef | list[DocumentRef]) -> None:
     
 def ingest_pipeline(documentref: DocumentRef) -> None:
     """Pipeline complète d'ingestion : load -> split → embed → store."""
-    
+        
     print(f"\n📂 Chargement des documents depuis : {documentref}")
     documents = load_documents(documentref)  
     print(f"  → document chargé")           
-        
+
     print("\n✂️  Découpage en chunks...")
     chunks = split_documents(documents)  
+    documentref.nb_chunks = len(chunks)
+    documentref.save()
     
-    print("==========================================")
     for c in chunks:
         print(c.metadata)
    
     print("\n🔢 Embedding et stockage dans pgvector...")
     embed_and_store(chunks)
+
+    documentref.status = DocumentRef.Status.REGISTERED
+    documentref.save()
 
     print("\n✅ Ingestion terminée !\n")
     

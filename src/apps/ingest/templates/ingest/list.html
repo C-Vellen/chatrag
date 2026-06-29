@@ -20,7 +20,7 @@
                 {% csrf_token %}
                 <div class="mb-2 w-full flex justify-between">
                     <h1 class="text-titre">Ajouter un nouveau document: fichier txt, md, pdf ou video youtube</h1>
-                    <button type="submit" name="submit_file" class="" title="Ajouter un fichier ou un lien">
+                    <button type="submit" name="add-documents" class="" title="Ajouter un fichier ou un lien">
                         <img class="w-4 h-4" src="{% static 'img/plus_round.svg' %}" alt="Ajouter">     
                     </button>
                 </div>
@@ -52,26 +52,41 @@
                 </div>
             </form>
 
-            <div class="flex justify-between mb-2">
-                <h1 class="text-titre">Documents ingérés: {{n_docs}} </h1>
-                <span class="text-xs">Taille DB: {{db_size}}</span>
-                <span class="text-xs text-blue-500">Total chunks: {{n_chunks}}</span>
+            <form method="post" action="."  enctype="multipart/form-data"> 
+                {% csrf_token %}
+            <div class="flex justify-between pb-4 mb-2 border-b-2">
+                <div class="text-titre flex flex-col items-start">
+                {% for stat in docs_stat %}
+                    <button type="button" class="{{ stat.color }} hover:bg-hovercolor-line" data-status="{{ stat.status }}">{{ stat.label }}: {{ stat.count }}</button>
+                {% endfor %}
+                </div>
+                <div class="flex flex-col justify-start items-end">
+                    <button type="submit" name="ingest-documents" class="text-xs px-2 py-1 h-6 border rounded border-blue-800 bg-gray-50 hover:bg-gray-100" title="">
+                        Ingérer la sélection
+                    </button>
+                    <span class="text-xs">Taille DB: {{db_size}}</span>
+                    <span class="text-xs text-blue-500">Total chunks: {{n_chunks}}</span>
+                </div>
             </div>
+
             <ul id="list-documents" class="text-xs flex flex-col">
-                <li class="mb-2 grid grid-cols-[40px_1fr_40px_20px_20px] gap-4 items-start">
+                <li class="mb-2 font-bold  grid grid-cols-[40px_1fr_40px_20px_20px_20px] gap-4 items-start">
                         <span class="">Date</span>
                         <span>Titre document</span>
                         <span class="">source</span>
-                        <span class=" text-blue-500">chunks</span>
+                        <span class="text-blue-500">chunks</span>
                         <span class=""></span>
+                        <button type="button" id="check-all" class="space-x-2 cursor-pointer font-semibold">
+                            <input type="checkbox" />
+                        </button>
                 </li>
                 {% for doc in docs %}
-                    <li id="{{doc.id}}" class="headline-title grid grid-cols-[40px_1fr_40px_20px_20px] gap-4 items-start hover:bg-hovercolor-line">
-                        <span class="w-16 text-left">{{doc.created_at|date:"d/m/y"}}</span>
+                    <li id="{{doc.id}}" class="headline-title status-{{doc.status}} {{doc.color}} grid grid-cols-[40px_1fr_40px_20px_20px_20px] gap-4 items-start hover:bg-hovercolor-line">
+                        <span class="w-16 text-left">{{doc.date|date:"d/m/y"}}</span>
                         <a href="{% url 'admin:ingest_documentref_change' doc.id %}" class="text-left">
                             <span class=" hover:font-bold">{{doc.titre}}</span>
                         </a>
-                        <button class="view-doc flex justify-center"
+                        <button type="button" class="view-doc flex justify-center"
                                 data-msg=""
                                 data-source="{{doc.source_type}}"
                                 data-titre="{{ doc.titre }}"
@@ -85,21 +100,31 @@
                                 data-end="0" >
                             <img class="w-4 " src="{% static doc.source_logo %}" alt="urlvideo">
                         </button>
-                        <button class="view-chunks" 
+                        {% if doc.status == "REG" %}
+                        <button type="button" class="view-chunks" 
                                 data-id="{{doc.id}}"
                                 data-url="{% url 'ingest:read_chunks' doc.id %}" >
                             <span class="w-12 text-right text-blue-500 hover:font-bold">{{doc.nb_chunks}}</span>
                         </button>
-                        <button class="delete-doc" 
+                        {% else %}
+                        <p class="w-6 text-center text-blue-500 hover:font-bold">-</p>
+                        {% endif %}
+                        <button type="button" class="delete-doc" 
                                 data-id="{{ doc.id }}" 
                                 data-titre="{{ doc.titre }}">
                             <img class="w-4" src="{% static 'img/cross_round_black.svg' %}" />
                         </button>
+                        {% if doc.status == doc.Status.NEW %}
+                        <button type="button" class="doc-checkbox">
+                            <input type="checkbox" class="" name="doc" value="{{doc.id}}"/>
+                        </button>
+                        {% endif %}
                     </li>
                 {% empty %}
                     <li><span>Aucun document trouvé</span><li>
                 {% endfor %}
             </ul>
+            </form>
             <div class="mt-8 mb-4 flex gap-2 justify-start">
                 <p class="text-xs text-slate-500 italic"> Collection:</p>
                 <a href="{% url 'admin:ingest_collection_change' collection.id %}" class="">   
@@ -129,5 +154,6 @@
 <script src="{% static 'js/deletedoc.js' %}"></script>
 <script src="{% static 'js/chunkslist.js' %}"></script>
 <script src="{% static 'js/documentlistener.js' %}"></script>
+
 
 {% endblock %}

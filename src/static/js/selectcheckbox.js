@@ -40,39 +40,5 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    // --- FONCTIONNALITE 3 : AFFICHER / MASQUER LES DOCUMENTS
-    const filterButtons = document.querySelectorAll('.display-doc');
-
-    filterButtons.forEach(button => {
-        button.addEventListener('click', function () {
-            // 1. On récupère le statut cible (ex: NEW, REG, ERR)
-            const statusTarget = this.getAttribute('data-status');
-            
-            // 2. On cible tous les <li> qui ont la classe correspondante
-            // Exemple : .status-NEW, .status-REG, .status-ERR
-            const matchingDocs = document.querySelectorAll(`.status-${statusTarget}`);
-
-            // 3. On vérifie si les documents sont actuellement visibles ou masqués
-            // On se base sur le premier élément trouvé pour décider de l'action
-            let isHidden = false;
-            if (matchingDocs.length > 0) {
-                isHidden = matchingDocs[0].style.display === 'none';
-            }
-
-            // 4. On effectue le TOGGLE
-            if (isHidden) {
-                // S'ils étaient masqués, on les réaffiche
-                matchingDocs.forEach(doc => doc.style.display = '');
-                // On remet le bouton à une opacité normale
-                this.style.opacity = '1';
-                this.style.textDecoration = 'none';
-            } else {
-                // S'ils étaient visibles, on les masque
-                matchingDocs.forEach(doc => doc.style.display = 'none');
-                // On grise visuellement le bouton pour indiquer que le statut est masqué
-                this.style.opacity = '0.5';
-                this.style.textDecoration = 'line-through';
-            }
-        });
-    });
+ 
 });

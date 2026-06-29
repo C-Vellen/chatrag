@@ -3,6 +3,8 @@ import re
 import requests
 from pathlib import Path
 from urllib.parse import urlparse
+from datetime import datetime
+from zoneinfo import ZoneInfo
 from django.core.files.uploadedfile import InMemoryUploadedFile, SimpleUploadedFile
 from youtube_transcript_api import YouTubeTranscriptApi
 import yt_dlp
@@ -109,7 +111,6 @@ def extract_video_id(url):
     match = re.search(pattern, url)
     return match.group(1) if match else None
 
-import yt_dlp
 
 def get_video_info(url:str) -> dict :
     """
@@ -125,16 +126,32 @@ def get_video_info(url:str) -> dict :
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         try:
             info = ydl.extract_info(url, download=False)
+            raw_date = info.get('upload_date')  # Format 'AAAAMMJJ'
+            print("raw_date: ", raw_date)
             
+            # if raw_date and len(raw_date) == 8:
+            #     year = int(raw_date[:4])
+            #     month = int(raw_date[4:6])
+            #     day = int(raw_date[6:])
+            #     django_dt = timezone.datetime(year, month, day, tzinfo=timezone.utc)
+            if raw_date:
+                django_dt = datetime.strptime(raw_date, "%Y%m%d").replace(tzinfo=ZoneInfo("UTC"))
+            else:
+                django_dt = None
+                
+            print("django_dt: ", django_dt)
             return {
                 "title": info.get("title", "Titre inconnu"),
-                "duration": info.get("duration", 0) # durée en format secondes
+                "duration": info.get("duration", 0), # durée en format secondes
+                "date": django_dt
             }
-        except Exception:
+        except Exception as e:
             # En cas d'erreur (URL invalide, vidéo privée, etc.)
+            print(e)
             return {
                 "title": "Titre inconnu (Erreur d'extraction)",
-                "duration": 0
+                "duration": 0,
+                "date": None 
             }
 
 
@@ -164,6 +181,7 @@ def get_youtube_script_with_timestamp(video_url: str) -> dict:
     video_info = get_video_info(video_url)
     title = video_info["title"]
     duration = video_info["duration"]
+    date = video_info["date"]
     
 
     # Récupération des sous-titres
@@ -204,7 +222,14 @@ def get_youtube_script_with_timestamp(video_url: str) -> dict:
     # On fusionne tous les morceaux avec un espace
     full_content = " ".join(full_content)
 
-    return {"titre": title, "content": full_content, "timestamp": timestamp, "video_id": video_id, "duration": duration}
+    return {
+        "titre": title, 
+        "content": full_content, 
+        "timestamp": timestamp, 
+        "video_id": video_id, 
+        "duration": duration,
+        "date": date
+        }
 
 
 def is_youtube_url(url: str) -> bool:

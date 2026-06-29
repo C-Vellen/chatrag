@@ -2,13 +2,23 @@
 //    -> affichage de la video, pdf ou txt (view-doc)
 // ou -> affichage de la liste des chunks (view-chunks)
 // ou -> suppression du document (delete-doc)
+// ou -> sélection de nouveaux documents pour injection
+
+let lastChecked = null; // Garde en mémoire la dernière case cliquée
 
 const clickReceiver = document.querySelector('[data-click-receiver]')
 clickReceiver.addEventListener('click', async (e) => {
     const button = e.target.closest('button')
+     if (!button) return
 
-    if (!button) return
-
+     if (button.type === "submit") {
+        return
+    };
+    
+    if (e.target.type !== 'checkbox') {
+        e.preventDefault();
+    }
+   
     const msgId = (button.dataset.msg)? button.dataset.msg : "all"
     const viewer = document.querySelector(`[data-viewer="${msgId}"]`)
     let displayZone = null
@@ -52,6 +62,8 @@ clickReceiver.addEventListener('click', async (e) => {
                             block: 'start',
                     });
                 }, 310); 
+
+
             }
         }
       
@@ -62,7 +74,71 @@ clickReceiver.addEventListener('click', async (e) => {
     } else if (button.classList.contains("delete-doc")) {
         // suppression du document
         deleteDoc(button)
+    
+    } else if (button.hasAttribute('data-status')) {
+        // affichage / masquage des documents selon leur status
+        const statusTarget = button.dataset.status
+        console.log(">>>", statusTarget)
+        const matchingDocs = document.querySelectorAll(`.status-${statusTarget}`);
+        let isHidden = false;
+        if (matchingDocs.length > 0) {
+            isHidden = matchingDocs[0].style.display === 'none';
+        }
+        if (isHidden) {
+                // S'ils étaient masqués, on les réaffiche
+                matchingDocs.forEach(doc => doc.style.display = '');
+                // On remet le bouton à une opacité normale
+                button.style.opacity = '1';
+                button.style.textDecoration = 'none';
+            } else {
+                // S'ils étaient visibles, on les masque
+                matchingDocs.forEach(doc => doc.style.display = 'none');
+                // On grise visuellement le bouton pour indiquer que le statut est masqué
+                button.style.opacity = '0.5';
+                button.style.textDecoration = 'line-through';
+            }
 
+    } else if (button.id === 'check-all') {
+        // tout cocher / décocher la liste de nouveaux documents 
+        const checkAll = button.querySelector('input');
+        // Si on a cliqué sur le bouton autour de l'input, on change son état manuellement :
+        if (e.target !== checkAll){
+            checkAll.checked = !checkAll.checked
+        }
+        console.log('>', button.id)
+        const checkboxes = document.querySelectorAll('.doc-checkbox input');
+        console.log(`> ${checkboxes.length} documents trouvés à modifier.`);
+        checkboxes.forEach(cb => {
+            cb.checked = checkAll.checked;
+        });
+  
+    } else if (button.classList.contains('doc-checkbox')) {
+        // sélection multiple de nouveaux documents avec SHIFT
+        const checkboxes = Array.from(document.querySelectorAll('.doc-checkbox input'));
+        const clickedCheckbox = button.querySelector("input")
+        // Si on a cliqué sur le bouton autour de l'input, on change son état manuellement :
+        if (e.target !== clickedCheckbox) {
+            clickedCheckbox.checked = !clickedCheckbox.checked;
+        }
+        if (e.shiftKey && lastChecked !== null) {
+            const currentIndex = checkboxes.indexOf(clickedCheckbox);
+            const lastIndex = checkboxes.indexOf(lastChecked);
+
+            // On détermine le début et la fin de l'intervalle (sélection vers le haut ou le bas)
+            const start = Math.min(lastIndex, currentIndex);
+            const end = Math.max(lastIndex, currentIndex);
+
+            // On applique l'état de la case actuelle (cochée ou décochée) à tout l'intervalle
+            for (let i = start; i <= end; i++) {
+                if ( checkboxes[i]) {
+                    checkboxes[i].checked = clickedCheckbox.checked;
+                }
+            }
+        }
+        // On sauvegarde cette case pour le prochain Shift+clic
+        lastChecked = clickedCheckbox;
+    
+    
     } else if (button.dataset.action ) {
 
         switch(button.dataset.action) {
