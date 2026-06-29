@@ -164,6 +164,11 @@ def ingest_pipeline(documentref: DocumentRef) -> None:
    
     print("\n🔢 Embedding et stockage dans pgvector...")
     embed_and_store(chunks)
+    
+    #----
+    documentref.status = DocumentRef.Status.REGISTERED
+    documentref.save()
+    #----
 
     print("\n✅ Ingestion terminée !\n")
     

@@ -17,6 +17,7 @@ def documents_list(request):
     if request.method == "POST":
         print("------- POST -----------")
         if 'add-documents' in request.POST:
+            print("......add......")
             form = DocumentForm(request.POST, request.FILES)
             if form.is_valid():
                 file = form.cleaned_data.get('file')
@@ -25,18 +26,25 @@ def documents_list(request):
                     print("> nom fichier: ", file.name)
                     source_origin = "download"
                     add_file(source_origin, file)
-                elif uri:           
+                if uri:           
                     print("> URI : ", uri)
                     add_uri(uri)
     
                 return redirect("ingest:documents_list")
         elif 'ingest-documents' in request.POST:
+            print("......ingest......")
             form = DocumentForm(request.POST)
             if form.is_valid():
-                docs = DocumentRef.objects.filter(id__contains=request.POST.getlist("doc"))
-                for d in docs:
-                    print("--- ", d.titre)
-                # ingest(request.POST.getlist("doc"))
+                #----
+                print("form is valid")
+                print(request.POST.getlist("doc"))
+                docs = DocumentRef.objects.filter(id__in=request.POST.getlist("doc"))
+                print(docs)
+                for doc in docs:
+                    print("--- ", doc.id, doc.titre)
+                    ingest(doc)
+                    print("--- ", doc.id, doc.nb_chunks)
+                #----
                 
                 
     
@@ -44,9 +52,7 @@ def documents_list(request):
     
     ingestion_running = False
     docs_stat = DocumentRef.docs_stat()
-    for s in docs_stat:
-        print(s)
-    
+       
     context = {
         "title": "Liste des documents ingérés:",     
         "collection":collection,

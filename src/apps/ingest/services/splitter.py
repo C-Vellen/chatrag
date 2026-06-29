@@ -56,8 +56,10 @@ def split_documents(docs: list[Document]) -> list[Document]:
     chunks = splitter.split_documents(docs)
         
     # ajout du nombre de chunks au documentref
+    print("->->-> ",len(chunks))
     documentref.nb_chunks = len(chunks)
     documentref.save()
+    print("->->-> ",documentref.nb_chunks, documentref.id)
     
      # Tri par (page, start_index) pour reconstituer l'ordre naturel
     # page peut être int ou string selon le loader → on force int
