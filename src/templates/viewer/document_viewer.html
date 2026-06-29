@@ -8,7 +8,7 @@
     <p data-element="titre" class="text-black text-sm font-medium drop-shadow truncate"></p>
     <div class="flex gap-1">
       <span data-element="timestamp" class="text-sm  text-black font-mono"></span>
-      <button data-action="closeVideo" class="ml-4 text-sm">✕</button>
+      <button type="button" data-action="closeVideo" class="ml-4 text-sm">✕</button>
     </div>
   </div>
 
@@ -19,7 +19,7 @@
     
     
     <!-- Bouton Logo YT (play video) -->
-    <button data-action="play" class="absolute inset-0 flex items-center justify-center group" aria-label="Lire la vidéo">
+    <button type="button" data-action="play" class="absolute inset-0 flex items-center justify-center group" aria-label="Lire la vidéo">
       <div class="flex items-center justify-center shadow-xl transition-all duration-150 group-hover:scale-110">
         <img class="w-14" src="{% static "img/youtube.svg" %}" alt="bouton youtube"> 
       </div>
@@ -41,10 +41,10 @@
   <div data-element="headline" class="hidden mb-2 justify-between gap-4" >
     <p data-element="titre" class="text-black text-sm font-medium drop-shadow truncate"></p>
     <div class="flex gap-1 text-sm">
-      <button data-action="pageDown" class="">◄</button>
+      <button type="button" data-action="pageDown" class="">◄</button>
       <span>Page <span data-element="current-page">1</span> / <span data-element="total-pages">?</span></span>
-      <button data-action="pageUp" class="">►</button>
-      <button data-action="closePdf" class="ml-4 text-sm">✕</button>
+      <button type="button" data-action="pageUp" class="">►</button>
+      <button type="button" data-action="closePdf" class="ml-4 text-sm">✕</button>
     </div>
   </div>
   <!-- Zone scrollable -->
@@ -65,7 +65,7 @@
     <p data-element="titre" class="text-black text-sm font-medium drop-shadow truncate"></p>
     <div class="flex gap-1 text-sm">
       <span data-element="indexing" class="text-sm  text-black font-mono"></span>
-      <button data-action="closeTxt" onclick="closeTxt()" class="ml-4 text-sm">✕</button>
+      <button type="button" data-action="closeTxt" onclick="closeTxt()" class="ml-4 text-sm">✕</button>
     </div>
   </div>
   <!-- Zone scrollable -->

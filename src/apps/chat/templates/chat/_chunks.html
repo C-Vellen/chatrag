@@ -1,12 +1,12 @@
 {% load static template_tags%}
 {% if chunks %}
 
-    {% comment %} Afficher les chunks sur une nouvelle page {% endcomment %}
+    <!-- Afficher les chunks sur une nouvelle page -->
     <p class="text-xs text-gray-400 mb-1">📚 Sources :</p>
     <div class="flex flex-col gap-1">
         {% for chunk in chunks %}
             
-                <button class="headline-title view-doc flex items-center gap-4  text-gray-500 text-xs rounded px-2 hover:bg-hovercolor-line"
+                <button type="button" class="headline-title view-doc flex items-center gap-4  text-gray-500 text-xs rounded px-2 hover:bg-hovercolor-line"
                         data-msg="{{msgId}}"
                         data-source="{{ chunk.source_type }}" 
                         data-titre="{{ chunk.titre }}"

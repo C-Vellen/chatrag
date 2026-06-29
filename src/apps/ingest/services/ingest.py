@@ -150,25 +150,24 @@ def ingest(doc: DocumentRef | list[DocumentRef]) -> None:
     
 def ingest_pipeline(documentref: DocumentRef) -> None:
     """Pipeline complète d'ingestion : load -> split → embed → store."""
-    
+        
     print(f"\n📂 Chargement des documents depuis : {documentref}")
     documents = load_documents(documentref)  
     print(f"  → document chargé")           
-        
+
     print("\n✂️  Découpage en chunks...")
     chunks = split_documents(documents)  
+    documentref.nb_chunks = len(chunks)
+    documentref.save()
     
-    print("==========================================")
     for c in chunks:
         print(c.metadata)
    
     print("\n🔢 Embedding et stockage dans pgvector...")
     embed_and_store(chunks)
-    
-    #----
+
     documentref.status = DocumentRef.Status.REGISTERED
     documentref.save()
-    #----
 
     print("\n✅ Ingestion terminée !\n")
     
