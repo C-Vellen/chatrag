@@ -42,10 +42,10 @@
 
                     {% if has_special %}
                     <div class="font-semibold text-gray-700 whitespace-nowrap">
-                        Liste API :
+                        Importer :
                     </div>  
-                    <a href="{% url 'ingest:waiting_list' %}" class="text-xs w-80 mr-4 py-1 px-2 rounded border border-gray-300 bg-gray-50 text-gray-700 hover:bg-gray-100 cursor-pointer">
-                        <span >Sélectionner dans la liste >></span>
+                    <a href="{% url 'ingest:update_list' %}" class="text-xs w-80 mr-4 py-1 px-2 rounded border border-gray-300 bg-gray-50 text-gray-700 hover:bg-gray-100 cursor-pointer">
+                        <span >Importer depuis l'API >></span>
                     </a>
                     {% endif %}
         

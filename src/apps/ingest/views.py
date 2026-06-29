@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.db.models import Sum
-from apps.special_bridge import has_special, ingest_waitingList, get_documents_from_api
+from apps.special_bridge import has_special, add_documents_from_api
 from .models import Collection, DocumentRef, WaitingList
 from .forms import DocumentForm
 from .services.ingest import add_file, add_uri, ingest #, ingest_file, ingest_uri
@@ -109,28 +109,28 @@ def read_chunks(request, document_id: str):
   
 
 
-def waiting_list(request):
-    """ Affiche la liste d'attente des documents """
+# def waiting_list(request):
+#     """ Affiche la liste d'attente des documents """
     
-    if request.method == "POST":
-        ingest_waitingList(request.POST.getlist("doc"))
+#     if request.method == "POST":
+#         ingest_waitingList(request.POST.getlist("doc"))
             
-    docList = WaitingList.objects.all().order_by("-date")
-    context={
-        "text": "Liste des videos",
-        "docList": docList,
-        "n_docs": len(docList),
-        "n_new": len(WaitingList.objects.filter(status="NEW")),
-        "n_reg": len(WaitingList.objects.filter(status="REG")),
-        "n_err": len(WaitingList.objects.filter(status="ERR")),
-    }
+#     docList = WaitingList.objects.all().order_by("-date")
+#     context={
+#         "text": "Liste des videos",
+#         "docList": docList,
+#         "n_docs": len(docList),
+#         "n_new": len(WaitingList.objects.filter(status="NEW")),
+#         "n_reg": len(WaitingList.objects.filter(status="REG")),
+#         "n_err": len(WaitingList.objects.filter(status="ERR")),
+#     }
         
-    return render(request, "ingest/waiting_list.html", context)
+#     return render(request, "ingest/waiting_list.html", context)
 
 
-def update_waiting_list(request):
+def update_list(request):
     """ Met à jour la liste d'attente à partir d'une API externe"""
     
-    get_documents_from_api()
-    return redirect("ingest:waiting_list")
+    add_documents_from_api()
+    return redirect("ingest:documents_list")
   
