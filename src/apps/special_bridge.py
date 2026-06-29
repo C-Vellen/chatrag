@@ -5,11 +5,8 @@ from django.conf import settings
 has_special = settings.HAS_SPECIAL_APP
 
 if has_special:
-    from special.service import ingest_waitingList
-    from special.service import get_documents_from_api
+    from special.service import add_documents_from_api
     
 else:
-    def ingest_waitingList(*args, **kwargs):
+    def add_documents_from_api(*args, **kwargs):
         return None 
-    def get_documents_from_api(*args, **kwargs):
-        return None
