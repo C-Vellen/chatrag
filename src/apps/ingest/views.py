@@ -1,3 +1,4 @@
+from django.contrib import messages
 from django.shortcuts import render, redirect, get_object_or_404
 from django.db.models import Sum
 from apps.special_bridge import has_special, add_documents_from_api
@@ -25,12 +26,26 @@ def documents_list(request):
                 if file:
                     print("> nom fichier: ", file.name)
                     source_origin = "download"
-                    add_file(source_origin, file)
+                    try:
+                        titre = add_file(source_origin, file)
+                        messages.success(request, f"Nouveau document {titre} ajouté dans la liste")
+                    except ValueError as e:
+                        print(f"Erreur: {e}")
+                        messages.warning(request, f"Erreur: {e}")
+                    except Exception as e:
+                        messages.error(request, f"Une erreur imprévue est survenue : {e}")
                 if uri:           
                     print("> URI : ", uri)
-                    add_uri(uri)
-    
+                    try:
+                        success_msg = add_uri(uri)
+                        messages.success(request, success_msg)
+                    except ValueError as e:
+                        messages.warning(request, f"Erreur: {e}")
+                    except Exception as e:
+                        print(f"Erreur: {e}")
+                        messages.error(request, f"Erreur: {e}")
                 return redirect("ingest:documents_list")
+    
         elif 'ingest-documents' in request.POST:
             print("......ingest......")
             form = DocumentForm(request.POST)

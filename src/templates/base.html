@@ -59,6 +59,21 @@
 
 
             <main class="mt-16 mb-12 px-6 w-full flex flex-col justify-between items-center xl:px-24"> 
+                {% if messages %}
+                <div class="fixed  z-20 w-full text-xs font-bold">
+                    {% for message in messages %}
+                        <a href="{{ request.path }}" class="px-6 py-1 rounded-md border flex flex-row justify-between
+                            {% if message.tags == 'success' %} bg-green-50 border-green-200 text-green-800
+                            {% elif message.tags == 'error' %} bg-red-50 border-red-200 text-red-800
+                            {% elif message.tags == 'warning' %} bg-yellow-50 border-yellow-200 text-yellow-800
+                            {% else %} bg-blue-50 border-blue-200 text-blue-800 {% endif %}">
+                            <span>{{ message }}</span>
+                            <span>OK</span>
+                            
+                        </a>    
+                    {% endfor %}
+                </div>
+                {% endif %}
                 {% block content %}{% endblock %}
             </main>
             <footer class="w-full mt-auto px-16 py-4 bg-page text-slate-700">

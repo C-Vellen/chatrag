@@ -124,37 +124,90 @@ def get_video_info(url:str) -> dict :
     }
     
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        try:
-            info = ydl.extract_info(url, download=False)
-            raw_date = info.get('upload_date')  # Format 'AAAAMMJJ'
-            print("raw_date: ", raw_date)
+        info = ydl.extract_info(url, download=False)
+        raw_date = info.get('upload_date')  # Format 'AAAAMMJJ'
+        print("raw_date: ", raw_date)
+        
+        # if raw_date and len(raw_date) == 8:
+        #     year = int(raw_date[:4])
+        #     month = int(raw_date[4:6])
+        #     day = int(raw_date[6:])
+        #     django_dt = timezone.datetime(year, month, day, tzinfo=timezone.utc)
+        if raw_date:
+            django_dt = datetime.strptime(raw_date, "%Y%m%d").replace(tzinfo=ZoneInfo("UTC"))
+        else:
+            django_dt = None
             
-            # if raw_date and len(raw_date) == 8:
-            #     year = int(raw_date[:4])
-            #     month = int(raw_date[4:6])
-            #     day = int(raw_date[6:])
-            #     django_dt = timezone.datetime(year, month, day, tzinfo=timezone.utc)
-            if raw_date:
-                django_dt = datetime.strptime(raw_date, "%Y%m%d").replace(tzinfo=ZoneInfo("UTC"))
-            else:
-                django_dt = None
-                
-            print("django_dt: ", django_dt)
-            return {
-                "title": info.get("title", "Titre inconnu"),
-                "duration": info.get("duration", 0), # durée en format secondes
-                "date": django_dt
-            }
-        except Exception as e:
-            # En cas d'erreur (URL invalide, vidéo privée, etc.)
-            print(e)
-            return {
-                "title": "Titre inconnu (Erreur d'extraction)",
-                "duration": 0,
-                "date": None 
-            }
+        print("django_dt: ", django_dt)
+        return {
+            "video_id": info.get("id"),
+            "title": info.get("title", "Titre inconnu"),
+            "duration": info.get("duration", 0), # durée en format secondes
+            "date": django_dt
+        }
+        # except Exception as e:
+        #     # En cas d'erreur (URL invalide, vidéo privée, etc.)
+        #     print(e)
+        #     return {
+        #         "title": "Titre inconnu (Erreur d'extraction)",
+        #         "duration": 0,
+        #         "date": None 
+        #     }
 
 
+def get_video_script_and_timestamp(video_id:str) -> dict:
+    """ 
+    Effectue la transcription d'une video youtube avac l'API youtube_transcript_api
+    Args:
+        video_id (str): id d'une video youtube
+   
+    Raises:
+        ValueError:     L'URL de la vidéo YouTube est invalide.
+        RuntimeError:   Impossible de récupérer les sous-titres
+    Returns:
+        dict: { "content" (str):    transcrption de la video
+                "timestamp (dict):  dictionnaire horodatage {index_caractère : start_time} 
+    """
+    
+    # Récupération des sous-titres
+    
+    try:
+        ytt_api = YouTubeTranscriptApi()
+        fetched_transcript = ytt_api.fetch(video_id, languages=["fr", "en"])
+        raw_transcript = fetched_transcript.to_raw_data()
+        
+    except Exception as e:
+        raise RuntimeError(f"Impossible de récupérer les sous-titres : {str(e)}")
+
+    # Construction du contenu et de la table de correspondance horodatage
+    full_content = []
+    timestamp = {}
+    current_char_index = 0 # initialisation de l'index au 1er caractère
+
+    for item in raw_transcript:
+        text_segment = item["text"]
+        # On arrondit le temps en secondes (ex: 3.45 -> 3) selon votre besoin
+        start_time = int(round(item["start"])) # arrondi à la seconde
+
+        # On enregistre l'index de départ de ce bloc de texte
+        timestamp[current_char_index] = start_time
+
+        # On ajoute le texte
+        full_content.append(text_segment)
+
+        # Mise à jour de l'index en comptant le texte + 1 pour l'espace de séparation
+        current_char_index += len(text_segment) + 1
+
+    # On fusionne tous les morceaux avec un espace
+    full_content = " ".join(full_content)
+
+    return {
+        "content": full_content, 
+        "timestamp": timestamp, 
+        }
+
+
+# à supprimer
 def get_youtube_script_with_timestamp(video_url: str) -> dict:
     """ 
     Effectue la transcription d'une video youtube avac l'API youtube_transcript_api
