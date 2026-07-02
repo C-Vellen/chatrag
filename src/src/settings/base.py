@@ -4,6 +4,7 @@ import socket
 import importlib.util
 from pathlib import Path
 from dotenv import load_dotenv
+from src.config import settings
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
@@ -154,3 +155,23 @@ HAS_SPECIAL_APP = _app_is_ready("special")
 
 if HAS_SPECIAL_APP:
     INSTALLED_APPS.append("special")
+    
+    
+# Configuration Celery 
+
+# Broker : Redis reçoit les tâches envoyées par Django et les met en file d'attente pour les workers Celery
+CELERY_BROKER_URL = settings.redis_url
+
+# Backend : Redis stocke les résultats et états des tâches (permet à Django de savoir si une tâche est en cours, terminée, en erreur)
+CELERY_RESULT_BACKEND = settings.redis_url
+
+# Sérialisation JSON 
+CELERY_TASK_SERIALIZER   = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_ACCEPT_CONTENT    = ['json']
+
+# Fuseau horaire cohérent avec Django
+CELERY_TIMEZONE = TIME_ZONE
+
+# Garde les résultats 24h dans Redis (évite d'encombrer la mémoire)
+CELERY_RESULT_EXPIRES = 86400
