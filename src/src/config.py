@@ -4,12 +4,13 @@ from pydantic import computed_field
 class Settings(BaseSettings):
     
     # .env
-    openai_api_key: str
     ragdb_name: str
     ragdb_user: str
     ragdb_password: str
     ragdb_host: str
     ragdb_port: str
+    openai_api_key: str
+    redis_url: str
        
     embedding_api_url: str = "http://embeddings:80"
     

@@ -10,6 +10,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      redis:
+        condition: service_healthy
     ports:
       - "8005:8000"
 
@@ -59,7 +61,36 @@ services:
       retries: 20
       start_period: 120s  
 
+  redis:
+    image: redis:7-alpine    
+    ports:
+      - "6379:6379"        
+    volumes:
+      - redis_data:/data    
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]   
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+
+  celery_worker:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    command: celery -A src worker --loglevel=info --concurrency=2
+    environment:
+      DJANGO_SETTINGS_MODULE: src.settings
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./media:/app/media   # accès aux fichiers uploadés
+
 volumes:
   postgres_data:
   pgvector_data:
   hf_models:
+  redis_data:
