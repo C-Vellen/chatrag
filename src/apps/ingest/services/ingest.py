@@ -6,12 +6,12 @@ from ..models import Collection, DocumentRef
 from .loader import load_documents
 from .splitter import split_documents
 from .embedder import embed_and_store
-from src.utils import extract_title, is_youtube_url, parse_uri, iter_uri, get_youtube_script_with_timestamp
+from src.utils import extract_title, is_youtube_url, parse_uri, iter_uri, get_video_info, get_video_script_and_timestamp, get_youtube_script_with_timestamp
 
 
 
 def add_file(source_origin, file:UploadedFile) -> None:
-    """ Ingestion d'un fichier : 
+    """ Ajout d'un fichier : 
             - création du DocumentRef
             - lancement du pipeline d'ingestion
 
@@ -34,15 +34,17 @@ def add_file(source_origin, file:UploadedFile) -> None:
             source_origin=  source_origin,
             source_file=    file,
             )    
+        documentref.status = DocumentRef.Status.NEW
         documentref.save()
         documentref.date = documentref.created_at
         documentref.save()
-        
-        # ingest(documentref)
+        return(f"{documentref.titre[:20]}...")
+    else:
+        raise ValueError("Fichier non téléchargeable")
         
         
 def add_uri(source_origin: str) -> None:
-    """ Ingestion d'un document à partir d'un uri : 
+    """ Ajout d'un document à partir d'un uri : 
             - création du DocumentRef
             - lancement du pipeline d'ingestion
 
@@ -57,36 +59,56 @@ def add_uri(source_origin: str) -> None:
     Returns: None
     """
     if is_youtube_url(source_origin):
-        add_video(source_origin)
+        titre_video = add_video(source_origin)
+        return f"Document video youtube ajouté : {titre_video[:20]}..."
         
     else:
         source = parse_uri(source_origin)
-        
+        n_files = 0
+        print("n_files: ", n_files)
         match source["type"]:
             
             # cas où l'uri est un dossier:
             case "path": 
                 # analyse récursive du dossier:
+                
                 for result in iter_uri(source["path"]): 
                     if result["type"] == "filepath":
-                        add_file(result["path"], result["file"])
+                        print("n_files: ", n_files)
+                        try:
+                            add_file(result["path"], result["file"])
+                            n_files += 1
+                        except Exception:
+                            pass
+                            
                     elif result["type"] == "error":
-                        pass
+                        print(f"{result["reason"]}")
+
             
             # cas où l'uri est un fichier:
             case "filepath":
-                add_file(source_origin, source["file"])
+                try:
+                    add_file(source_origin, source["file"])
+                    n_files += 1
+                except Exception as e:
+                    print(f"Erreur: {e}")
                 
             # cas où l'uri est l'url d'un fichier:
             case "fileurl":
-                add_file(source_origin, source["file"])
+                try:
+                    add_file(source_origin, source["file"])
+                    n_files += 1
+                except Exception as e:
+                    print(f"Erreur: {e}")
                 
             case "error":
-                pass
+                print(f"{source["reason"]}")
+                
+        return f"Documents ajoutés avec succès: {n_files}"
                 
 
 def add_video(source_origin: str) -> None:
-    """ Ingestion d'une video Youtube : 
+    """ Ajout d'une video Youtube : 
             - transcription avec horodatage
             - création du DocumentRef
             - lancment du pipeline d'ingestion
@@ -96,36 +118,57 @@ def add_video(source_origin: str) -> None:
 
     Returns: None
     """
-    videoscript = get_youtube_script_with_timestamp(source_origin)
+    # videoscript = get_youtube_script_with_timestamp(source_origin)
+    video_info = get_video_info(source_origin)
+    video_id =  video_info["video_id"]
     
-    documentref = DocumentRef(
-        collection=     Collection.get_active(), 
-        titre=          videoscript["titre"],
-        source_type=    "YT",
-        source_origin=  source_origin,
-        video_id=       videoscript["video_id"],
-        timestamp=      videoscript["timestamp"],
-        duration =      videoscript["duration"],
-        date =          videoscript["date"]
-        )    
+    documentref, created = DocumentRef.objects.get_or_create(
+        collection=Collection.get_active(),
+        video_id=video_id
+        )
     
-    # enregistrement du script dans un fichier:
-    temporary_file = ContentFile(videoscript["content"].encode('utf-8')) 
-    filename = f"{videoscript["titre"]}.txt"
-    documentref.source_file.save(filename, temporary_file, save=True)
-    
-    if not documentref.date:
-        documentref.date = documentref.created_at
+    if created:
+        documentref.titre =         video_info["title"]
+        documentref.source_type =   "YT"
+        documentref.source_origin = source_origin,
+        # documentref.timestamp=    videoscript["timestamp"]
+        documentref.duration =      video_info["duration"]
+        documentref.date =          video_info["date"]
         documentref.save()
-    
-    # ingest(documentref)
-
         
+        # enregistrement du script dans un fichier:
+        # temporary_file = ContentFile(videoscript["content"].encode('utf-8')) 
+        # filename = f"{videoscript["titre"]}.txt"
+        # documentref.source_file.save(filename, temporary_file, save=True)
+        
+        if not documentref.date:
+            documentref.date = documentref.created_at
+            documentref.save()
+            
+        return documentref.titre 
+      
+    else:
+        raise ValueError(f"Video en doublon, déjà ajoutée: {video_id} - {documentref.titre[:20]}...")
+   
+     
 def ingest(doc: DocumentRef | list[DocumentRef]) -> None:
     """Traite l'ingestion d'un document ou d'une liste de documents"""
     
     if isinstance(doc, DocumentRef):
         print(f"\n============= Ingestion du document {doc.titre}==================")
+        
+        if doc.source_type == "YT":
+            # récuparation du script :
+            if not doc.source_file or not doc.timestamp:
+                
+                video_script = get_video_script_and_timestamp(doc.video_id)
+                doc.timestamp =  video_script["timestamp"]
+                # enregistrement du script dans un fichier:
+                temporary_file = ContentFile(video_script["content"].encode('utf-8')) 
+                filename = f"{doc.titre}.txt"
+                doc.source_file.save(filename, temporary_file, save=True)
+            
+            
         ingest_pipeline(doc)
         
     elif isinstance(doc, (list, tuple)):
@@ -135,7 +178,7 @@ def ingest(doc: DocumentRef | list[DocumentRef]) -> None:
         for i, item in enumerate(doc):
             
             if not isinstance(item, DocumentRef):
-                print(f"DOcument {i} ne peut pas être ingéré. Type invalide: ({type(item).__name__})")
+                print(f"Document {i} ne peut pas être ingéré. Type invalide: ({type(item).__name__})")
             
             print(f"\n------------ Ingestion du document {i} :  {doc.titre}  ------------")
             ingest_pipeline(item)
