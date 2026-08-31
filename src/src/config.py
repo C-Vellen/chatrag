@@ -1,5 +1,8 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import computed_field
+from pathlib import Path
+
+PROJECT_DIR = Path(__file__).resolve().parent.parent.parent  # → /app/
 
 class Settings(BaseSettings):
     
@@ -15,7 +18,7 @@ class Settings(BaseSettings):
     embedding_api_url: str = "http://embeddings:80"
     
     model_config = SettingsConfigDict(
-        env_file=".env",
+        env_file=PROJECT_DIR / ".env",  
         env_file_encoding="utf-8",
         extra="ignore"  
         )

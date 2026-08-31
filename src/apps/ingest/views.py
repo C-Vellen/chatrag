@@ -1,3 +1,6 @@
+import json
+from django.http import JsonResponse
+from celery.result import AsyncResult
 from django.contrib import messages
 from django.shortcuts import render, redirect, get_object_or_404
 from django.db.models import Sum
@@ -6,6 +9,7 @@ from .models import Collection, DocumentRef, WaitingList
 from .forms import DocumentForm
 from .services.ingest import add_file, add_uri, ingest #, ingest_file, ingest_uri
 from .services.inspector import delete_document, list_chunks, get_ragdb_size
+from .tasks import ingest_documents_task
 from src.config import settings
 
     
@@ -14,6 +18,7 @@ def documents_list(request):
     
     collection = Collection.get_active()
     form = DocumentForm()
+    task_id = None
     
     if request.method == "POST":
         print("------- POST -----------")
@@ -51,16 +56,39 @@ def documents_list(request):
             form = DocumentForm(request.POST)
             if form.is_valid():
                 #----
-                print("form is valid")
-                print(request.POST.getlist("doc"))
-                docs = DocumentRef.objects.filter(id__in=request.POST.getlist("doc"))
-                print(docs)
-                for doc in docs:
-                    print("--- ", doc.id, doc.titre)
-                    ingest(doc)
-                    print("--- ", doc.id, doc.nb_chunks)
-                #----
+                docIdList = request.POST.getlist("doc")
+                if docIdList:
+                    print(docIdList)
+                    # .delay() envoie la tâche dans Redis et retourne IMMÉDIATEMENT
+                    # un AsyncResult avec un task_id unique.
+                    # Django n'attend PAS la fin de l'ingestion.
+                    task = ingest_documents_task.delay(docIdList)
+                    task_id = task.id
+
+                    # Stocke le task_id en session pour le retrouver si l'utilisateur
+                    # navigue et revient sur la page
+                    request.session['ingest_task_id'] = task_id
                 
+                # ANCIENNE VERSION : APPEL DIRECT A INGESTION
+                # docs = DocumentRef.objects.filter(id__in=request.POST.getlist("doc"))
+                # for doc in docs:                    
+                #     ingest(doc)                   
+                #----
+    
+    # Récupère le task_id en session (si ingestion en cours)
+    task_id = task_id or request.session.get('ingest_task_id')
+
+    # Détermine si une ingestion est en cours
+    ingestion_running = False
+    if task_id:
+        result = AsyncResult(task_id)
+        # PENDING = en attente, PROGRESS = en cours
+        ingestion_running = result.state in ('PENDING', 'PROGRESS')
+        if result.state == 'SUCCESS':
+            # Ingestion terminée → on nettoie la session
+            del request.session['ingest_task_id']
+            task_id = None
+         
                 
     
     docs = DocumentRef.objects.filter(collection=collection, is_active=True).order_by("-created_at")       
@@ -76,6 +104,8 @@ def documents_list(request):
         "n_chunks": DocumentRef.objects.aggregate(total=Sum('nb_chunks'))["total"],
         "form":form,
         "db_size": get_ragdb_size(),
+        "task_id":           task_id,
+        "ingestion_running": ingestion_running,
         "has_special": has_special,
     }
     
