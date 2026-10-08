@@ -28,6 +28,7 @@ function selectVideo(btn, displayZone) {
   closePlayer();
   closePdf();
   closeTxt();
+  closeMd();
   closeChunksList();
   btn.closest('.headline-title').classList.add('bg-focuscolor-line');
   currentVideo = {

@@ -9,6 +9,9 @@ let lastChecked = null; // Garde en mémoire la dernière case cliquée
 const clickReceiver = document.querySelector('[data-click-receiver]')
 clickReceiver.addEventListener('click', async (e) => {
     const button = e.target.closest('button')
+
+    console.log(button.type)
+    console.log('TEST')
      if (!button) return
 
      if (button.type === "submit") {
@@ -18,13 +21,14 @@ clickReceiver.addEventListener('click', async (e) => {
     if (e.target.type !== 'checkbox') {
         e.preventDefault();
     }
-   
+    console.log('TEST2')
     const msgId = (button.dataset.msg)? button.dataset.msg : "all"
     const viewer = document.querySelector(`[data-viewer="${msgId}"]`)
     let displayZone = null
-    
+
     if (button.classList.contains("view-doc")) {
         // affichage document dans la displayzone
+        console.log('BUTTON')
         switch (button.dataset.source) {
             case "YT":
                 displayZone = viewer.querySelector('[data-block-type="YT"]')
@@ -38,6 +42,11 @@ clickReceiver.addEventListener('click', async (e) => {
             case "TXT":
                 displayZone = viewer.querySelector('[data-block-type="TXT"]')
                 selectText(button, displayZone)
+                console.log('TXT')
+                break           
+            case "MD":
+                displayZone = viewer.querySelector('[data-block-type="MD"]')
+                selectMarkdown(button, displayZone)
                 break
             default:
                 return
@@ -66,6 +75,11 @@ clickReceiver.addEventListener('click', async (e) => {
 
             }
         }
+    } else if (button.classList.contains("view-script")) {
+        // affichage script dans la displayzone
+        console.log(button.dataset.source)
+        displayZone = viewer.querySelector('[data-block-type="TXT"]')
+        selectText(button, displayZone)
       
     } else if (button.classList.contains("view-chunks")) {
         // affichage chunks du document dans la displayZone
@@ -74,7 +88,20 @@ clickReceiver.addEventListener('click', async (e) => {
     } else if (button.classList.contains("delete-doc")) {
         // suppression du document
         deleteDoc(button)
-    
+   
+
+    } else if (button.classList.contains("delete-documents")) {
+        // suppression des documents sélectionnés
+        checkboxes = clickReceiver.querySelectorAll('input[type="checkbox"][name="doc"]:checked')
+        console.log(checkboxes)
+        docsToDelete = Array.from(checkboxes).map(checkbox => checkbox.value)
+        console.log("DELETE")
+        console.log(docsToDelete)
+        if (docsToDelete) {
+            deleteDocuments(docsToDelete)
+        }
+        
+      
     } else if (button.hasAttribute('data-status')) {
         // affichage / masquage des documents selon leur status
         const statusTarget = button.dataset.status
@@ -155,6 +182,8 @@ clickReceiver.addEventListener('click', async (e) => {
                 break;
             case "closePdf":
                 closePdf();
+            case "closeMd":
+                closeMd();
         }
     }
 })

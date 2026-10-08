@@ -1,9 +1,6 @@
-var txtDoc = null;
-
-async function selectText(btn, displayZone) {
+async function selectMarkdown(btn, displayZone) {
   const fileUrl = btn.dataset.file;
   const titre = btn.dataset.titre;
-  const source = btn.dataset.source
   const startIndex = parseInt(btn.dataset.start);
   const endIndex = parseInt(btn.dataset.end);
   closePlayer();
@@ -24,35 +21,25 @@ async function selectText(btn, displayZone) {
   container.classList.remove('hidden');
   container.classList.add('flex');
 
-  // Charger le fichier texte
-const text = await extractText(fileUrl, source)
+  // Charger le fichier texte brut
+  const response = await fetch(fileUrl);
+  const text = await response.text();
 
-
-
-  // const response = await fetch(fileUrl);
-  // const text = await response.text();
-
-  renderText(displayZone, text, startIndex, endIndex);
+    console.log("INDEX: ", startIndex, endIndex)
+  renderMarkdown(displayZone, text, startIndex, endIndex);
   if (endIndex) {
       displayZone.querySelector('[data-element="indexing"]').textContent = `Index: ${startIndex} → ${endIndex}`;
   }
 }
 
-function renderText(displayZone, text, startIndex, endIndex) {
+function renderMarkdown(displayZone, text, startIndex, endIndex) {
+
   const viewer = displayZone.querySelector('[data-element="viewer"]');
   const container = displayZone.querySelector('[data-element="container"]');
 
-  // Découpe le texte en 3 parties : avant, extrait, après
-  const before = text.slice(0, startIndex);
-  const extract = text.slice(startIndex, endIndex);
-  const after = text.slice(endIndex);
-
-  // Construit le HTML avec la surbrillance
+  // Construit le HTML à partir du texte brut du fichier markdown
   if (viewer) {
-    viewer.innerHTML =
-      escapeHtml(before) +
-      `<mark class="bg-focuscolor-line text-gray-900 rounded px-0.5">${escapeHtml(extract)}</mark>` +
-      escapeHtml(after);
+    viewer.innerHTML = marked.parse(text)
   
     // Hauteur du viewer = hauteur d'une "page" lisible, basée sur la fenêtre
     container.style.height = `${window.innerHeight * 0.7}px`;
@@ -83,8 +70,8 @@ function escapeHtml(str) {
     .replace(/"/g, '&quot;');
 }
 
-function closeTxt() {
-  document.querySelectorAll('[data-block-type="TXT"]').forEach(displayZone => { 
+function closeMd() {
+  document.querySelectorAll('[data-block-type="MD"]').forEach(displayZone => { 
     displayZone.querySelector('[data-element="headline"]').classList.add("hidden");
     displayZone.querySelector('[data-element="container"]').classList.add("hidden");
    
@@ -94,36 +81,4 @@ function closeTxt() {
     }
     document.querySelectorAll('.headline-title').forEach(d => d.classList.remove('bg-focuscolor-line'));
   })
-}
-
-async function extractText(fileUrl, source) {
-  // extrait le texte brut du fichier 
-
-  if (source === 'PDF') {
-    pdfDoc = await pdfjsLib.getDocument(fileUrl).promise;
-
-    let fullText = '';
-
-    // Parcourt toutes les pages du PDF (les pages commencent à 1)
-    for (let pageNum = 1; pageNum <= pdfDoc.numPages; pageNum++) {
-      const page = await pdfDoc.getPage(pageNum);
-      const textContent = await page.getTextContent();
-    
-      // Extrait la propriété .str de chaque élément de texte
-      const pageText = textContent.items
-        .map(item => item.str)
-        .join(' ');
-
-      // Ajoute le texte de la page au résultat global
-      fullText += `--- Page ${pageNum} ---\n` + pageText + '\n\n';
-    }
-
-    return fullText;
-
-  } else {
-    const response = await fetch(fileUrl);
-    const text = await response.text();
-    return text
-  }
-
 }

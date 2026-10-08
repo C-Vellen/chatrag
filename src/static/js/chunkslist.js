@@ -10,10 +10,11 @@ async function selectChunksList(btn) {
     closePlayer()
     closePdf();
     closeTxt();
+    closeMd();
     document.querySelectorAll('.headline-title').forEach(d => d.classList.remove('bg-focuscolor-line')); 
     btn.closest('.headline-title').classList.add('bg-focuscolor-line');
     try {
-        // appel URL de la vue Django fournie par ingest.views.read_chunks
+        // appel URL de la vue Django fournie par ingest_admin.views.read_chunks
         const response = await fetch(chunksUrl);
         
         if (!response.ok) throw new Error("Erreur lors du chargement des chunks");

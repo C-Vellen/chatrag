@@ -200,6 +200,10 @@ def get_video_script_and_timestamp(video_id:str) -> dict:
 
     # On fusionne tous les morceaux avec un espace
     full_content = " ".join(full_content)
+    
+    print("/"*50)
+    print(full_content)
+    print("/"*50)
 
     return {
         "content": full_content, 

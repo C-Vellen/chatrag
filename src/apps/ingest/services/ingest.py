@@ -164,6 +164,11 @@ def ingest(doc: DocumentRef | list[DocumentRef]) -> None:
                 video_script = get_video_script_and_timestamp(doc.video_id)
                 doc.timestamp =  video_script["timestamp"]
                 # enregistrement du script dans un fichier:
+
+                print("!"*50)
+                print(video_script["content"])
+                print("!"*50)
+
                 temporary_file = ContentFile(video_script["content"].encode('utf-8')) 
                 filename = f"{doc.titre}.txt"
                 doc.source_file.save(filename, temporary_file, save=True)
@@ -172,7 +177,7 @@ def ingest(doc: DocumentRef | list[DocumentRef]) -> None:
         ingest_pipeline(doc)
         
     elif isinstance(doc, (list, tuple)):
-        # Optionnel mais professionnel : on valide que la liste n'est pas vide 
+        # On valide que la liste n'est pas vide 
         # et que ses éléments sont bien des instances de Document
         print(f"\n============= Ingestion des {len(doc) } documents ==================")
         for i, item in enumerate(doc):

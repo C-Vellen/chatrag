@@ -7,7 +7,7 @@ from django.views.static import serve
 urlpatterns = [
     re_path(r"^admin/", admin.site.urls),
     re_path(r"^user/", include("user.urls", namespace="user")),
-    re_path(r"^ingest/", include("ingest.urls", namespace="ingest")),
+    re_path(r"^ingest_admin/", include("ingest_admin.urls", namespace="ingest_admin")),
     re_path(r"^retrieval/", include("retrieval.urls", namespace="retrieval")),
     re_path(r"^chat/", include("chat.urls", namespace="chat")),
     re_path(r"^static/(?P<path>.*)$", serve, {"document_root": settings.STATIC_ROOT}),

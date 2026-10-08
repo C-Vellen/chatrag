@@ -76,4 +76,21 @@
 </div>
 <!-- Fin fenêtre de visualisation txt -->
 
-     
+<!-- Fenêtre de visualisation markdown -->
+<div class="display-zone" data-block-type="MD">
+
+  <!-- Titre et pagination -->
+  <div data-element="headline" class="hidden mb-2 justify-between gap-4" >
+    <p data-element="titre" class="text-black text-sm font-medium drop-shadow truncate"></p>
+    <div class="flex gap-1 text-sm">
+      <span data-element="indexing" class="text-sm  text-black font-mono"></span>
+      <button type="button" data-action="closeMd" onclick="closeMd()" class="ml-4 text-sm">✕</button>
+    </div>
+  </div>
+  <!-- Zone scrollable -->
+  <div data-element="container" class="hidden flex flex-col border border-gray-300 rounded-lg overflow-hidden bg-white">
+    <div data-element="viewer" class="prose max-w-none flex-1 overflow-y-auto p-6 min-h-0 text-gray-800 whitespace-pre-wrap leading-relaxed">
+    </div>
+  </div>
+</div>
+<!-- Fin fenêtre de visualisation markdown -->
