@@ -10,6 +10,7 @@ async function selectPdf(btn, displayZone) {
   closePdf();
   closePlayer();
   closeTxt();
+  closeMd();
   closeChunksList();
   document.querySelectorAll('.headline-title').forEach(d => d.classList.remove('bg-focuscolor-line')); 
   btn.closest('.headline-title').classList.add('bg-focuscolor-line');

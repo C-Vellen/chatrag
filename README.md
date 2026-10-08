@@ -13,6 +13,13 @@ Projet Django : chatbot orienté pour répondre en fonction d'une base documenta
 - base de données vectorielles pgvector
 - docker : conteneurs web, db, ragdb, embedding
  
+## Documentation : 
+
+ - lancer mkdocs:
+ ```bash
+    mkdocs serve
+ ```
+ - voir la doc sur **http://localhost:8000**
 
 ## &#8205;&#127891; Démonstration : [ici](#)
 

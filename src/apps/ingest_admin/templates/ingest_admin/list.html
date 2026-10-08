@@ -1,0 +1,218 @@
+{% extends 'base.html' %}
+
+{% load static template_tags%}
+
+{% block header %}
+{% endblock %}
+
+{% block content %}
+
+
+<section id="accueil" class="reachable w-full">
+    <div class="flex flex-row justify-between">
+        <h1 class="text-grostitre mb-4">Gestion des documents ingérés dans la base de donnée vectorielle</h1>
+        <a href="{% url 'retrieval:search' %}" class="text-xs px-2 py-1 h-6 text-lightcolor-text bg-color-btn hover:bg-hovercolor-btn"> Recherche >> </a>
+    </div>
+    <div data-click-receiver class="w-full mb-8 flex flex-col md:flex-row md:justify-between md:gap-12">
+        <div class="mb-16 md:w-1/2 md:justify-around">
+            <!-- formulaire nouveau document-->
+            <form class="w-full mb-6" method="post" action="." enctype="multipart/form-data" >       
+                {% csrf_token %}
+                <div class="mb-2 w-full flex justify-between">
+                    <h1 class="text-titre">Ajouter un nouveau document: fichier txt, md, pdf ou video youtube</h1>
+                    <button type="submit" name="add-documents" class="" title="Ajouter un fichier ou un lien">
+                        <img class="w-4 h-4" src="{% static 'img/plus_round.svg' %}" alt="Ajouter">     
+                    </button>
+                </div>
+                <div class="grid grid-cols-[60px_1fr] gap-y-2 gap-x-4 text-xs items-center">
+        
+                    <label for="{{ form.file.id_for_label }}" class="font-semibold text-gray-700 whitespace-nowrap">
+                        {{ form.file.label }}
+                    </label>
+                    <div class="flex items-center">
+                        {{ form.file }}
+                    </div>
+
+                    <label for="{{ form.uri.id_for_label }}" class="font-semibold text-gray-700 whitespace-nowrap">
+                        {{ form.uri.label }}
+                    </label>
+                    <div class="w-full">
+                        {{ form.uri }}
+                    </div>
+
+                    {% if has_special %}
+                    <div class="font-semibold text-gray-700 whitespace-nowrap">
+                        Importer :
+                    </div>  
+                    <a href="{% url 'ingest_admin:update_list' %}" class="text-xs w-80 mr-4 py-1 px-2 rounded border border-gray-300 bg-gray-50 text-gray-700 hover:bg-gray-100 cursor-pointer">
+                        <span >Importer depuis l'API >></span>
+                    </a>
+                    {% endif %}
+        
+                </div>
+
+
+                <h1 class="text-titre">Mettre à jour le catalogue depuis une source externe</h1>
+              
+                <ul class="p-24 block">
+                    <li class="w-full flex justify-between">
+                        <h2 class="font-semibold text-gray-700 text-xs whitespace-nowrap">Source 1</h2>
+                        <button type="submit" name="add-source1" class="" title="Ajouter un fichier ou un lien">⟳</button>
+                    </li>
+                </ul>
+
+            </form>
+
+            <form method="post" action="."  enctype="multipart/form-data"> 
+                {% csrf_token %}
+            <div class="flex justify-between pb-4 mb-2 border-b-2">
+                <div class="text-titre flex flex-col items-start">
+                {% for stat in docs_stat %}
+                    <button type="button" class="{{ stat.color }} hover:bg-hovercolor-line" data-status="{{ stat.status }}">{{ stat.label }}: {{ stat.count }}</button>
+                {% endfor %}
+                </div>
+                <div class="flex flex-col gap-2 justify-start items-end">
+                    <button type="submit" name="script-documents" class="text-xs px-2 py-1 h-6 border rounded border-blue-800 bg-gray-50 hover:bg-gray-100" title="">
+                        Scripter la sélection
+                    </button>
+                    <button type="submit" name="ingest-documents" class="text-xs px-2 py-1 h-6 border rounded border-blue-800 bg-gray-50 hover:bg-gray-100" title="">
+                        Ingérer la sélection
+                    </button>
+                    <button type="button" class="delete-documents text-xs px-2 py-1 h-6 border rounded border-blue-800 text-red-500 bg-red-50 hover:bg-gray-100" title="">
+                        Supprimer la sélection
+                    </button>
+                    <span class="text-xs">Taille DB: {{db_size}}</span>
+                    <span class="text-xs text-blue-500">Total chunks: {{n_chunks}}</span>
+                </div>
+            </div>
+
+                <table id="list-documents" class="table-auto text-xs">
+                    <thead>
+                        <tr class="bold">
+                            <th class="px-2">Date</th>
+                            <th class="px-2">Titre document</th>
+                            <th class="px-2">source</th>
+                            <th class="px-2">lien</th>
+                            <th class="px-2">script</th>
+                            <th class="px-2 text-blue-500">chunks</th>
+                            <th class="px-2"><button type="button" id="check-all" class="space-x-2 cursor-pointer font-semibold">
+                                <input type="checkbox" />
+                            </button></th>
+                            <th class="px-2">del</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for doc in docs %}
+                        <tr id="{{doc.id}}" class="headline-title status-{{doc.status}} {{doc.color}} hover:bg-hovercolor-line">
+                            <td class="px-2">
+                                <span class="w-16 text-left">{{doc.date|date:"d/m/y"}}</span>
+                            </td>
+                            <td class="px-2 hover:text-blue-400"><a href="{% url 'admin:ingest_documentref_change' doc.id %}" class="text-left">
+                                <span >{{doc.titre|truncatechars:50}}</span>
+                            </a></td>
+                            <td class="px-2">verbatim</td>
+                            <td class="px-2">
+                                <button type="button" class="view-doc flex justify-center"
+                                        data-msg=""
+                                        data-source="{{doc.source_type}}"
+                                        data-titre="{{ doc.titre }}"
+                                        data-video-id="{{ doc.video_id }}" 
+                                        data-file="{{ doc.source_url }}"
+                                        data-page="1"
+                                        data-duration="{{ doc.duration }}"
+                                        data-starttime="0" 
+                                        data-endtime="0"  
+                                        data-start="0" 
+                                        data-end="0" >
+                                    <img class="w-4 " src="{% static doc.source_logo %}" alt="urlvideo">
+                                </button>
+                            </td>
+                            <td class="px-2">
+                                {% if doc.status == "REG" %}
+                                <button type="button" class="view-script flex justify-center" 
+                                        data-id="{{doc.id}}"
+                                        data-source="{{doc.source_type}}"
+                                        data-titre="{{ doc.titre }}"
+                                        data-file="{{ doc.source_file.url }}"
+                                        data-start="0" 
+                                        data-end="0"
+                                        data-url="{% url 'ingest_admin:read_chunks' doc.id %}" >
+                                    {% comment %} <img class="w-4 " src="{% static logo_script.svg %}" alt="script"> {% endcomment %}
+                                    <span class="">📄</span>
+                                </button>
+                                {% else %}
+                                <p class="w-6 text-center text-blue-500 hover:font-bold">-</p>
+                                {% endif %}
+                            </td>
+                            <td class="px-2">
+                                {% if doc.status == "REG" %}
+                                <button type="button" class="view-chunks" 
+                                        data-id="{{doc.id}}"
+                                        data-url="{% url 'ingest_admin:read_chunks' doc.id %}" >
+                                    <span class="text-right text-blue-500 hover:font-bold">{{doc.nb_chunks}}</span>
+                                </button>
+                                {% else %}
+                                <p class="w-6 text-center text-blue-500 hover:font-bold">-</p>
+                                {% endif %}
+                            </td>
+                            <td class="px-2">
+                                <button type="button" class="doc-checkbox">
+                                    <input type="checkbox" class="" name="doc" value="{{doc.id}}"/>
+                                </button>
+                            </td>
+                            <td>
+                                <button type="button" class="delete-doc" 
+                                        data-id="{{ doc.id }}" 
+                                        data-titre="{{ doc.titre }}">
+                                    <img class="w-4" src="{% static 'img/cross_round_black.svg' %}" />
+                                </button>
+                            </td>
+
+                        </tr>
+
+
+                        {% empty %}
+                            <tr ><td class="bold text-red-200">Aucun document trouvé</td></tr>
+                        {% endfor %}
+                    
+
+
+                    </tbody>
+                </table>
+
+            </form>
+            <div class="mt-8 mb-4 flex gap-2 justify-start">
+                <p class="text-xs text-slate-500 italic"> Collection:</p>
+                <a href="{% url 'admin:ingest_collection_change' collection.id %}" class="">   
+                    <img class="w-4 h-4" src="{% static 'img/crayon.svg' %}" alt="Modifier">     
+                </a>
+            </div>
+        </div>
+
+        <div class="flex flex-col md:w-1/2" data-viewer="all">
+            {% include 'viewer/document_viewer.html' %}
+            <div id="chunks-list" class="hidden"></div>
+        </div>
+
+    </div>
+</section>
+{% include "alert_box.html" with alert="alert-delete-doc" message="" act_button="hidden" act_link="" link="" back_text="Annuler" act_text="Supprimer" %}
+
+<script src="{% static 'js/pdf.min.js' %}"></script>
+<script src="{% static 'js/marked.min.js' %}"></script>
+<script>
+  var PDF_WORKER_URL = "{% static 'js/pdf.worker.min.js' %}";
+</script>
+<script src="https://www.youtube.com/iframe_api"></script>
+{% comment %} <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script> {% endcomment %}
+{% comment %} <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script> {% endcomment %}
+<script src="{% static 'js/playvideo.js' %}"></script>
+<script src="{% static 'js/readPDF.js' %}"></script>
+<script src="{% static 'js/readTXT.js' %}"></script>
+<script src="{% static 'js/readMD.js' %}"></script>
+<script src="{% static 'js/deletedoc.js' %}"></script>
+<script src="{% static 'js/chunkslist.js' %}"></script>
+<script src="{% static 'js/documentlistener.js' %}"></script>
+
+
+{% endblock %}

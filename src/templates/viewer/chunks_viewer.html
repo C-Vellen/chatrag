@@ -8,7 +8,7 @@
     </div>
     <div  class="flex justify-between gap-2">
         <span class="w-20 pt-1 text-xs text-blue-500">{{doc.nb_chunks}} chunks </span>
-        <a href="{% url 'ingest:documents_list' %}" onclick="closeChunkList(this)" class="">
+        <a href="{% url 'ingest_admin:documents_list' %}" onclick="closeChunkList(this)" class="">
         <span class="w-8 mb-2 text-sm text-slate-500 hover:text-black">✕</span>
         </a>
     </div>

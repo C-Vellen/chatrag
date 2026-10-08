@@ -27,6 +27,8 @@ INSTALLED_APPS = [
     "home",
     "user",
     "ingest",
+    "ingest_admin",
+    "sources",
     "retrieval",
     "chat",
     "solo",

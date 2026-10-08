@@ -1,0 +1,26 @@
+site_name: Documentation Chatrag
+docs_dir: docs
+
+theme:
+  name: material
+  language: fr
+  features:
+    - navigation.sections
+    - toc.integrate
+
+plugins:
+  - search
+  - drawio                  # Support des fichiers .drawio
+
+markdown_extensions:
+  - tables                  # Support des tableaux
+  - pymdownx.superfences:   # Support des schémas Mermaid
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.arithmatex:    # Support de LaTeX
+      generic: true
+
+extra_javascript:
+  - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js

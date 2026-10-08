@@ -23,8 +23,32 @@ function deleteDoc(button) {
     const docTitre = button.getAttribute('data-titre')
     const shortTitre = docTitre.length > 60 ? docTitre.slice(0, 60) + "..." : docTitre;
     const shadowMask = document.getElementById("shadow-mask")
-    alertBox.querySelector("a").href = `/ingest/remove_document/${docId}`
+    alertBox.querySelector("a").href = `/ingest_admin/remove_document/${[docId]}`
     alertBox.querySelector("p").textContent = `Voulez-vous vraiment supprimer le document "${shortTitre}" ?`
+    alertBox.classList.remove("hidden")
+    shadowMask.classList.remove("hidden")
+    backButton.addEventListener('click', hideAlertBox)
+} 
+    
+function deleteDocuments(docsToDelete) {
+    const alertBox = document.getElementById("alert-delete-doc")
+    const backButton = alertBox.querySelector("#back-button")
+    const shadowMask = document.getElementById("shadow-mask")
+    nToDelete = docsToDelete.length
+    console.log(nToDelete)
+    let msg = null
+
+    if (nToDelete === 1) {
+        msg = "Voulez-vous vraiment supprimer le document sélectionné ?"
+    } else if (nToDelete > 1) {
+        msg = `Voulez-vous vraiment supprimer les ${nToDelete} documents sélectionnés ?`
+    } else {
+        return;
+    }
+    const queryString = '?' + docsToDelete.map(item => `doc=${item}`).join('&');
+    console.log(queryString)
+    alertBox.querySelector("a").href = `/ingest_admin/remove_document/${queryString}`
+    alertBox.querySelector("p").textContent = msg
     alertBox.classList.remove("hidden")
     shadowMask.classList.remove("hidden")
     backButton.addEventListener('click', hideAlertBox)
